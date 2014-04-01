@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Protean</title>
+    <link rel="stylesheet" href="/resource/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/resource/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" media="screen" href="/resource/css/main.css">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Protean</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/">Home</a></li>
+            <li><a href="/documentation/api">API</a></li>
+            <li class="active"><a href="/documentation">Documentation</a></li>
+            <li><a href="/roadmap">Roadmap</a></li>
+            <li><a href="/documentation/projects">Projects</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">v<span id="project-version">0.5.0</span></a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div id="documentation" class="container">
+      <div class="page-header">
+        <h1>Documentation</h1>
+      </div>
+      <p class="lead">Getting started information.</p>
+
+      <section id="getting-started">
+        <div class="page-header">
+          <h2>Getting Started</h2>
+        </div>
+
+        <p>
+          Grab the latest runnable jar and run <code>java -jar protean.jar 3000 3001</code>.  This will launch the app with the admin port set to 3001 and the main projects API port set to 3000.
+        </p>
+
+        <p>
+        Any project configuration files (see below) in the same directory as the runnable jar will be loaded on app startup.  Project config files must have an <strong>edn</strong> extension.  If there are no project configuration files available a defaut <strong>sample</strong> project is made available.
+        </p>
+      </section>
+
+      <section id="changatron">
+        <div class="page-header">
+          <h2>Project API configuration</h2>
+        </div>
+
+        <p>
+          Project API's are configured in simple text files which are a lot like JSON, the simplest possible example of which is listed below:
+        </p>
+
+        <pre>
+{:simple {:paths {"path/data" {}}}}
+        </pre>
+
+        <p>
+          This creates a single resource which can be accessed with <code>curl -v http://localhost:3000/simple/path/data</code>.  This will return a 200 response with no body.
+        </p>
+
+        <p>
+        It is possible to define more complex simulated project API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> project API.
+        </p>
+
+        <pre>
+{:sample
+  {:paths {"get/test/*" {:rsp {:body {"t1key" "t1val"}
+                               :errors {:status [504]
+                                        :probability 50}}}        [1]
+           "get/xml" {:rsp {:content-type "text/xml"
+                            :body [:parent
+                                    [:child {:type "xml"}]]}}     [2]
+           "get/slow" {:rsp {:time 10}}                           [3] 
+           "post/test" {:req {:method :post                       [4]
+                              :form {"k1" "v1"}}
+                        :rsp {:headers {"Location" "7"}}}
+           "put/test1" {:req {:body {"k1" "v1" "k2" "v2"}}        [5]
+                        :rsp {:status 200}}
+           "put/test2" {}
+           "random/test2" {:req {:headers {"X-Auth" "XYZ"}        [6]
+                                 :req-params {"blurb" "flibble"}} [7]
+                           :rsp {:body {"t2key" "t2val"}}}}
+   :errors {:status [500 503] :probability 25}}}                  [8]
+        </pre>
+
+        <p>
+          This demonstrates:
+        </p>
+
+        <ul>
+          <li><span class="label label-info">[1]</span> GET with response body, wildcard match and resource path errors and probability</li>
+          <li><span class="label label-info">[2]</span> GET with XML response body</li>
+          <li><span class="label label-info">[3]</span> GET with slow response specified (10 seconds)</li>
+          <li><span class="label label-info">[4]</span> POST with response headers and verification of request method and url encoded form payload</li>
+          <li><span class="label label-info">[5]</span> PUT with overriden response status and request body json payload verification</li>
+          <li><span class="label label-info">[6]</span> verification of request headers</li>
+          <li><span class="label label-info">[7]</span> verification of request query string parameters</li>
+          <li><span class="label label-info">[8]</span> project level simulated response errors with a configurable probability</li>
+        </ul>
+      </section>
+
+    </div>
+  </body>
+</html>

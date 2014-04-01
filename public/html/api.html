@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Protean</title>
+    <link rel="stylesheet" href="/resource/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/resource/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" media="screen" href="/resource/css/main.css">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Protean</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/">Home</a></li>
+            <li class="active"><a href="/documentation/api">API</a></li>
+            <li><a href="/documentation">Documentation</a></li>
+            <li><a href="/roadmap">Roadmap</a></li>
+            <li><a href="/documentation/projects">Projects</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">v<span id="project-version">0.5.0</span></a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div id="home" class="container">
+      <div class="page-header">
+        <h1>API</h1>
+      </div>
+
+      <h2 id="sample-project-api">Test the sample project API</h2>
+
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Curl command</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>curl -v <a href="http://localhost:3000/sample/get/test/1" target="_blank">http://localhost:3000/sample/get/test/1</a></td>
+            <td>Access a sample rest resource with wildcard</td>
+          </tr>
+          <tr>
+            <td>curl -v -H "X-Auth: flibble" http://localhost:3000/sample/random/test2?blurb=flibble</td>
+            <td>Access a sample rest resource</td>
+          </tr>
+           <tr>
+            <td>curl -v <a href="http://localhost:3000/sample/get/xml" target="_blank">http://localhost:3000/sample/get/xml</a></td>
+            <td>Access a sample rest resource with xml response type</td>
+          </tr>
+          <tr>
+            <td>curl -v -X POST http://localhost:3000/sample/post/test</td>
+            <td>Post to a rest resource</td>
+          </tr>
+          <tr>
+            <td>curl -v -X PUT -H "Content-type: application/json" --data '{"k1": "v1", "k2": "v2"}' http://localhost:3000/sample/put/test1</td>
+            <td>Put to a rest resource</td>
+          </tr>
+          <tr>
+            <td>curl -v -X PUT http://localhost:3000/sample/put/test2</td>
+            <td>Put to a rest resource</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 id="admin-api">Admin</h2>
+
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Curl command</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>curl -v <a href="http://localhost:3001/projects" target="_blank">http://localhost:3001/projects</a></td>
+            <td>Get a list of projects</td>
+          </tr>
+          <tr>
+            <td>curl -v <a href="http://localhost:3001/projects/sample" target="_blank">http://localhost:3001/projects/sample</a></td>
+            <td>Get the sample usage (curl command form)</td>
+          </tr>
+          <tr>
+            <td>curl -v <a href="http://localhost:3001/projects/sample/usage" target="_blank">http://localhost:3001/projects/sample/usage</a></td>
+            <td>Get the sample project configuration</td>
+          </tr>
+          <tr>
+            <td>curl -v -X PUT http://localhost:3001/projects --data-binary "@/path/sample.edn"</td>
+            <td>Put one or more projects into the service</td>
+          </tr>
+          <tr>
+            <td>curl -v -X DELETE http://localhost:3001/projects/sample</td>
+            <td>Delete a project from the service</td>
+          </tr>
+          <tr>
+            <td>curl -v -X DELETE http://localhost:3001/projects/sample/errors</td>
+            <td>Turn off simulated response errors for this project</td>
+          </tr>
+          <tr>
+            <td>curl -v -X PUT http://localhost:3001/projects/sample/errors/status/500</td>
+            <td>Add a simulated 500 error response for this project</td>
+          </tr>
+          <tr>
+            <td>curl -v -X PUT http://localhost:3001/projects/sample/errors/probability/20</td>
+            <td>Set the probability of a simulated error to 20% for this project</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
