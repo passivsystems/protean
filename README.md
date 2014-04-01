@@ -2,6 +2,7 @@
 
 Mock RESTful Apis, for all of your projects, swap behaviour out real time.  Control it all with REST via curl.  Simulate errors.  Automatically generate curl commands to test your services.  All projects added get documentation generated in webapp form.
 
+
 ## Usage
 
     lein deps
@@ -16,6 +17,12 @@ You can override the port with:
 Build a distributable with lein uberjar, then run with:
 
     java -jar protean.jar 4000 4001
+
+
+## Documentation
+
+Documentation is available on the admin port when you start the server up.
+
 
 ## License
 
