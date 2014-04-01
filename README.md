@@ -2,7 +2,8 @@
 
 Mock RESTful API's, for all of your projects, swap behaviour out real time.  Control it all with REST via curl.  Simulate errors.  Automatically generate curl commands to test your services.  All projects added get documentation generated in webapp form.
 
-This is a Clojure project which uses edn to build simulated RESTful API projects.
+This is a Clojure project which uses edn to build simulated RESTful API projects. Protean is used commerically to help speed development and test complex distributed systems.
+
 
 ## Usage
 
@@ -24,38 +25,64 @@ Build a distributable with lein uberjar, then run with:
 
 Documentation is available on http://localhost:3001 when you run Protean locally. 
 
-An example RESTful API project configuration is list below.
+### How to setup your project
 
-    {:sample
+Create a file with a .edn extension. An example is shown below. Once you are finished your can add your project by;
+* pushing your project with Protean CLI
+    - protean-cli add-projects -f /path/to/project.edn
+* pushing your project with Curl
+    - curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.end"
+* drop the .edn file in the root of your Protean directory and restart it
+
+An example RESTful API project configuration is listed below.
+
+    {:myproject
       {:paths {"get/test/*" {:rsp {:body {"t1key" "t1val"}
                                    :errors {:status [504]
-                                            :probability 50}}}        [1]
+                                            :probability 50}}}        
                "get/xml" {:rsp {:content-type "text/xml"
                                 :body [:parent
-                                        [:child {:type "xml"}]]}}     [2]
-               "get/slow" {:rsp {:time 10}}                           [3] 
-               "post/test" {:req {:method :post                       [4]
+                                        [:child {:type "xml"}]]}}     
+               "get/slow" {:rsp {:time 10}}                            
+               "post/test" {:req {:method :post                       
                                   :form {"k1" "v1"}}
                             :rsp {:headers {"Location" "7"}}}
-               "put/test1" {:req {:body {"k1" "v1" "k2" "v2"}}        [5]
+               "put/test1" {:req {:body {"k1" "v1" "k2" "v2"}}        
                             :rsp {:status 200}}
                "put/test2" {}
-               "random/test2" {:req {:headers {"X-Auth" "XYZ"}        [6]
-                                     :req-params {"blurb" "flibble"}} [7]
+               "random/test2" {:req {:headers {"X-Auth" "XYZ"}        
+                                     :req-params {"blurb" "flibble"}} 
                                :rsp {:body {"t2key" "t2val"}}}}
-       :errors {:status [500 503] :probability 25}}}                  [8]
+       :errors {:status [500 503] :probability 25}}}                  
 
 
 This demonstrates:
 
-* [1] GET with response body, wildcard match and resource path errors and error probability
-* [2] GET with XML response body
-* [3] GET with slow response specified (10 seconds)
-* [4] POST with response headers and verification of request method and url encoded form payload
-* [5] PUT with overriden response status and request body json payload verification
-* [6] verification of request headers
-* [7] verification of request query string parameters
-* [8] project level simulated response errors with a configurable probability
+* [get/test] GET with response body, wildcard match and resource path errors and error probability
+* [get/xml] GET with XML response body
+* [get/slow] GET with slow response specified (10 seconds)
+* [post/test] POST with response headers and verification of request method and url encoded form payload
+* [put/test1] PUT with overriden response status and request body json payload verification
+* [put/test2] PUT simplest example of a path, 200 response code
+* [random/test2] verification of request headers and verification of request query string parameters
+* [errors] project level simulated response errors with a configurable probability
+
+
+### How to query your project
+
+    protean-cli projects 
+    
+Lists all projects.
+
+    protean-cli project -n myproject 
+
+Shows the project configuration for myproject.
+
+    protean-cli project-usage -n myproject 
+    
+Shows the curl commands that can be used for myproject.
+
+Please explore the CLI to find out further commands.
 
 
 ## Contributing
