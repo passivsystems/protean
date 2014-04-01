@@ -4,18 +4,18 @@ Mock RESTful Apis, for all of your projects, swap behaviour out real time.  Cont
 
 ## Usage
 
-lein deps
-lein run
+    lein deps
+    lein run
 
 by default the admin area runs on 3001 and the main app area on 3000.
 
 You can override the port with:
 
-lein run 4000 4001.
+    lein run 4000 4001
 
 Build a distributable with lein uberjar, then run with:
 
-java -jar protean.jar 4000 4001.
+    java -jar protean.jar 4000 4001
 
 ## License
 
