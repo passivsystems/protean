@@ -1,6 +1,6 @@
 # Protean
 
-Mock RESTful API's, for all of your projects, hotswap API behaviour at run time.  Control it all with REST via curl or a command line interface.  Simulate errors.  Automatically generate curl commands to test your services.  All projects added get documentation generated in webapp form.
+Mock RESTful API's, for all of your projects, hotswap API behaviour at run time.  Control it all with REST via curl or a command line interface.  Simulate errors.  Automatically generate curl commands to test your services.  All projects added get documentation generated in webapp form, this describes the surface area of your API's - mandatory headers etc.
 
 This is a Clojure project which uses edn to build simulated RESTful API projects. Protean is used commerically to help speed development and test complex distributed systems.
 
