@@ -29,10 +29,7 @@
 
 (defn curly-body-> [entry payload]
   (if-let [b (:body-keys entry)]
-    ;(let [json (jsn/generate-string
-     ;            (zipmap b (repeat "blurb")))]
     (str payload " -H 'Content-type: application/json'" " --data '" (jsn/generate-string b) "'")
-      ;)
     payload))
 
 (defn curly-uri-> [entry payload]
