@@ -1,6 +1,6 @@
-(defproject protean "0.6.0"
-  :description "Mock your RESTful API's dynamically"
-  :url "http://github.com/rossputin/protean"
+(defproject protean "0.6.1"
+  :description "Simulate RESTful API's, easily"
+  :url "http://github.com/passivsystems/protean"
   :license {:name "Apache License v2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :min-lein-version "2.0.0"
