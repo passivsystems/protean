@@ -6,6 +6,7 @@
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/core.incubator "0.1.3"]
+                 [org.clojure/tools.namespace "0.2.4"]
                  [ring/ring-jetty-adapter "1.2.1"]
                  [ring/ring-core "1.2.1"]
                  [ring/ring-codec "1.0.0"]

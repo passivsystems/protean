@@ -56,15 +56,37 @@
        (curly-req-params-> entry)
        (curly-postprocess-> entry)))
 
+(defn- testy-method-> [entry payload]
+  (println "entry method : " (:method entry))
+  (let [method
+         (cond
+           (= (:method entry) :post) 'client/post
+           (= (:method entry) :put) 'client/put
+           :else 'client/get)]
+    (println "method : " method)
+    (conj payload method)))
+
+(defn- testy-uri-> [entry payload]
+  (concat payload (list (str \"(:uri entry)\"))))
+
+; remove wildcard portions of uri
+(defn- testy-postprocess-> [])
+
+(defn testy-> [entry]
+  (->> '()
+       (testy-method-> entry)
+       (testy-uri-> entry)))
+
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn test-analysis-> [project proj-payload port]
+(defn testy-analysis-> [project proj-payload port]
   (let [paths (:paths proj-payload)]
     (let [analysed (txan/analysis-> project proj-payload port)]
       ;(map #(curly-> %) analysed)
       ;(println "analysed : " analysed)
+      (let [testy (map #(testy-> %) analysed)] (println "first of testy : " (first testy)))
       analysed
       )))

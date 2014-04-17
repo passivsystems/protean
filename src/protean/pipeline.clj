@@ -41,6 +41,40 @@
                             "get/slow" {:rsp {:time 10}}}
                     :errors {:status [500 503] :probability 25}}}))
 
+(def teststate (atom {
+  :depapi {
+    :paths {
+      ;get a token
+      "token" {
+        :req {
+          :headers {
+            "Authorization" "Basic token"
+            "Content-type" "application/x-www-form-urlencoded"
+          }
+          :req-params {
+            "grant_type" "password"
+            "username" "ops_user"
+            "password" "apassword"
+          }
+        }
+        :rsp {
+          :body {
+            "access_token" "c710eb92-9a1a-4fae-8ac3-2943b0c11fe8"
+            "token_type" "bearer"
+            "expires_in" "27848010"
+          }
+        }
+      }
+
+      ;already activated ?
+      "v/1/hubs/*/homes" {
+        :req { :headers {"Authorization" "Bearer token"} }
+        :rsp { :status 404 }
+      }
+    }
+  }
+}))
+
 (defn substring? [sub st] (not= (.indexOf st sub) -1))
 
 (defn- partial-path? [key path]
