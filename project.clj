@@ -16,6 +16,7 @@
                  [com.taoensso/timbre "3.1.1"]
                  [clj-http "0.9.1"]
                  [me.raynes/laser "1.1.1"]
+                 [me.raynes/hickory "0.4.2"]
                  [me.rossputin/diskops "0.1.1"]]
   :plugins [[lein-ring "0.8.7"]]
   :aot :all
