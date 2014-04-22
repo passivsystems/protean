@@ -41,7 +41,8 @@
                             "get/slow" {:rsp {:time 10}}}
                     :errors {:status [500 503] :probability 25}}}))
 
-(def teststate (atom {
+(def teststate (atom
+                {
   :depapi {
     :paths {
       ;get a token
@@ -66,10 +67,29 @@
         }
       }
 
+      ;create a user account
+      "v/1/users/create" {
+        :req {
+          :headers {"Authorization" "Bearer token"}
+          :body {
+            "firstName" "Joe"
+            "lastName" "Bloggs"
+            "emailAddress" "joe.bloggs@bloggs.com"
+            "password" "some-secure-password"
+            "secretQuestion" "what is it ?"
+            "secretAnswer" "I dunno"
+          }
+        }
+        :rsp { :headers {"Location" "users/ross@bheap.co.uk"} }
+      }
+
       ;already activated ?
       "v/1/hubs/*/homes" {
         :req { :headers {"Authorization" "Bearer token"} }
-        :rsp { :status 404 }
+        :rsp {
+          :body {"homeURI" "/homes/607"}
+          ;:status 404
+        }
       }
     }
   }
