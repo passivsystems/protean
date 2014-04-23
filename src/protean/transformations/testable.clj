@@ -40,6 +40,7 @@
   (conj payload (->> {}
                      (assoc-tx-> entry :headers :headers)
                      (assoc-tx-> entry :req-params :query-params)
+                     (assoc-tx-> entry :form-keys :form-params)
                      (body-> entry))))
 
 (defn testy-> [entry]
