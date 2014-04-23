@@ -6,7 +6,9 @@
             [clojure.data.xml :as xml]
             [ring.util.codec :as cod]
             [cheshire.core :as jsn]
-            [protean.transformations.analysis :as txan])
+            [protean.transformations.analysis :as txan]
+            [clj-http.client :as client])
+  (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.net.InetAddress))
 
 ;; =============================================================================
@@ -60,5 +62,7 @@
     (let [analysed (txan/analysis-> project proj-payload port)]
       (let [testy (map #(testy-> %) analysed)]
         (doseq [t testy]
-          (prn "executing test against API : " (eval t))))
-      (println "All tests executed"))))
+          (info "executing test : " t)
+          (require '[clj-http.client :as client])
+          (eval t)))
+      {:status "passed"})))

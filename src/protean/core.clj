@@ -60,6 +60,7 @@
   (GET    "/projects" [] (pipe/projects))
   (GET    "/projects/:id" [id] (pipe/project id))
   (GET    "/projects/:id/usage" [id] (pipe/project-usage id @port))
+  (GET    "/projects/:id/test" [id] (pipe/project-test id @port))
   (wrap-multipart-params (PUT    "/projects" req (pipe/put-projects req)))
   (DELETE "/projects/:id" [id] (pipe/del-proj-handled id))
   (GET    "/status" [] (pipe/status)))

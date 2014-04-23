@@ -8,7 +8,8 @@
             [protean.transformations.api :as txapi]
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc]
-            [protean.transformations.docs :as txdocs])
+            [protean.transformations.docs :as txdocs]
+            [protean.transformations.testable :as txt])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
@@ -40,60 +41,6 @@
                             "put/test2" {}
                             "get/slow" {:rsp {:time 10}}}
                     :errors {:status [500 503] :probability 25}}}))
-
-(def teststate (atom
-                {
-  :depapi {
-    :paths {
-      ;get a token
-      "token" {
-        :req {
-          :headers {
-            "Authorization" "Basic token"
-            "Content-type" "application/x-www-form-urlencoded"
-          }
-          :req-params {
-            "grant_type" "password"
-            "username" "ops_user"
-            "password" "apassword"
-          }
-        }
-        :rsp {
-          :body {
-            "access_token" "c710eb92-9a1a-4fae-8ac3-2943b0c11fe8"
-            "token_type" "bearer"
-            "expires_in" "27848010"
-          }
-        }
-      }
-
-      ;create a user account
-      "v/1/users/create" {
-        :req {
-          :headers {"Authorization" "Bearer token"}
-          :body {
-            "firstName" "Joe"
-            "lastName" "Bloggs"
-            "emailAddress" "joe.bloggs@bloggs.com"
-            "password" "some-secure-password"
-            "secretQuestion" "what is it ?"
-            "secretAnswer" "I dunno"
-          }
-        }
-        :rsp { :headers {"Location" "users/ross@bheap.co.uk"} }
-      }
-
-      ;already activated ?
-      "v/1/hubs/*/homes" {
-        :req { :headers {"Authorization" "Bearer token"} }
-        :rsp {
-          :body {"homeURI" "/homes/607"}
-          ;:status 404
-        }
-      }
-    }
-  }
-}))
 
 (defn substring? [sub st] (not= (.indexOf st sub) -1))
 
@@ -164,7 +111,11 @@
 
 (defn project-usage [id port]
   (assoc json :body
-    (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) port))))
+         (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) port))))
+
+(defn project-test [id port]
+  (assoc json :body
+         (txco/js-> (txt/testy-analysis-> id ((keyword id) @state) port))))
 
 (defn del-proj [id]
   (reset! state (dissoc @state (keyword id)))
