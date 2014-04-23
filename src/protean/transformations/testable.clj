@@ -39,7 +39,7 @@
     payload))
 
 (defn- testy-map-> [entry payload]
-  (conj payload (->> {}
+  (conj payload (->> {:throw-exceptions false}
                      (assoc-tx-> entry :headers :headers)
                      (assoc-tx-> entry :req-params :query-params)
                      (assoc-tx-> entry :form-keys :form-params)
@@ -57,12 +57,13 @@
 ;; Transformation functions
 ;; =============================================================================
 
+(defn- test-result [t]
+  (info "executing test : " t)
+  (require '[clj-http.client :as client])
+  [(second t) (:status (eval t))])
+
 (defn testy-analysis-> [project proj-payload port]
   (let [paths (:paths proj-payload)]
     (let [analysed (txan/analysis-> project proj-payload port)]
       (let [testy (map #(testy-> %) analysed)]
-        (doseq [t testy]
-          (info "executing test : " t)
-          (require '[clj-http.client :as client])
-          (eval t)))
-      {:status "passed"})))
+        {:results (map #(test-result %) testy)}))))
