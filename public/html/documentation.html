@@ -69,40 +69,64 @@
         </p>
 
         <pre>
-{:sample
-  {:paths {"get/test/*" {:rsp {:body {"t1key" "t1val"}
-                               :errors {:status [504]
-                                        :probability 50}}}        [1]
-           "get/xml" {:rsp {:content-type "text/xml"
-                            :body [:parent
-                                    [:child {:type "xml"}]]}}     [2]
-           "get/slow" {:rsp {:time 10}}                           [3] 
-           "post/test" {:req {:method :post                       [4]
-                              :form {"k1" "v1"}}
-                        :rsp {:headers {"Location" "7"}}}
-           "put/test1" {:req {:body {"k1" "v1" "k2" "v2"}}        [5]
-                        :rsp {:status 200}}
-           "put/test2" {}
-           "random/test2" {:req {:headers {"X-Auth" "XYZ"}        [6]
-                                 :req-params {"blurb" "flibble"}} [7]
-                           :rsp {:body {"t2key" "t2val"}}}}
-   :errors {:status [500 503] :probability 25}}}                  [8]
+{
+  :sample {
+    :paths {
+      "get/simple" {:doc "Simplest example of a resource - doc is optional"}
+      "get/test/*" {
+        :doc "Get with path parameter wildcard and configurable
+              error and probability"
+        :rsp {
+          :body {"t1key" "t1val"}
+          :errors {:status [504] :probability 50}
+        }
+      }
+      "random/test2" {
+        :doc "Get with mandatory request headers/query str params"
+        :req {
+          :headers {"X-Auth" "XYZ"}
+          :req-params {"blurb" "flibble"}
+        }
+        :rsp {:body {"t2key" "t2val"}}
+      }
+      "get/xml" {
+        :doc "Get with XML content type/response"
+        :rsp {
+          :content-type "text/xml"
+          :body [:parent [:child {:type "xml"}]]
+        }
+      }
+      "post/test" {
+        :doc "Post with mandatory request url encoded form"
+        :req {
+          :method :post
+          :form {"k1" "v1"}
+        }
+        :rsp {:headers {"Location" "7"}}
+      }
+      "put/test1" {
+        :doc "Put with mandatory body payload - defaults to JSON,
+              demonstrates overriding response status code"
+        :req {
+          :method :put
+          :body {"k1" "v1" "k2" "v2"}
+        }
+        :rsp {:status 200}
+      }
+      "delete/test" {
+        :doc "Delete sample"
+        :req {:method :delete}
+      }
+      "get/slow" {
+        :doc "Get with slow response (secs) - useful for testing timeouts"
+        :rsp {:time 2}
+      }
+    }
+    :errors {:status [500 503] :probability 25}
+  }
+}
         </pre>
 
-        <p>
-          This demonstrates:
-        </p>
-
-        <ul>
-          <li><span class="label label-info">[1]</span> GET with response body, wildcard match and resource path errors and probability</li>
-          <li><span class="label label-info">[2]</span> GET with XML response body</li>
-          <li><span class="label label-info">[3]</span> GET with slow response specified (10 seconds)</li>
-          <li><span class="label label-info">[4]</span> POST with response headers and verification of request method and url encoded form payload</li>
-          <li><span class="label label-info">[5]</span> PUT with overriden response status and request body json payload verification</li>
-          <li><span class="label label-info">[6]</span> verification of request headers</li>
-          <li><span class="label label-info">[7]</span> verification of request query string parameters</li>
-          <li><span class="label label-info">[8]</span> project level simulated response errors with a configurable probability</li>
-        </ul>
       </section>
 
     </div>

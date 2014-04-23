@@ -54,7 +54,13 @@
   (map #(li (str (key %) ": " (val %))) (:body-keys payload)))
 
 (defn build-project-td [payload]
-  (vec [(td (upper-case (name (:method payload))))
+  (vec [(td
+         (ul-unstyled
+          (vec [(li (upper-case (name (:method payload))))
+                (li
+                  (l/node :span
+                          :attrs {:class "glyphicon glyphicon-info-sign"
+                                  :title (or (:doc payload) "")}))])))
         (l/node :td :attrs {:width "500px"} :content
           (ul-unstyled
               (vec [(li (:uri payload))
