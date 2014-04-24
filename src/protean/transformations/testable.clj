@@ -62,8 +62,8 @@
   (require '[clj-http.client :as client])
   [(second t) (:status (eval t))])
 
-(defn testy-analysis-> [project proj-payload port]
+(defn testy-analysis-> [project proj-payload host port]
   (let [paths (:paths proj-payload)]
-    (let [analysed (txan/analysis-> project proj-payload port)]
+    (let [analysed (txan/analysis-> project proj-payload host port)]
       (let [testy (map #(testy-> %) analysed)]
         {:results (map #(test-result %) testy)}))))
