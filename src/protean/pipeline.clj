@@ -8,7 +8,8 @@
             [protean.transformations.api :as txapi]
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc]
-            [protean.transformations.docs :as txdocs])
+            [protean.transformations.docs :as txdocs]
+            [protean.transformations.testable :as txt])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
@@ -21,25 +22,7 @@
 
 (def json {:headers {"Content-Type" "application/json; charset=utf-8"}})
 
-(def state (atom {:sample
-                   {:paths {"get/test/*" {:rsp {:body {"t1key" "t1val"}
-                                                :errors {:status [504]
-                                                :probability 50}}}
-                            "random/test2" {:req {:headers {"X-Auth" "XYZ"}
-                                                  :req-params
-                                                    {"blurb" "flibble"}}
-                                            :rsp {:body {"t2key" "t2val"}}}
-                            "get/xml" {:rsp {:content-type "text/xml"
-                                             :body [:parent
-                                                     [:child {:type "xml"}]]}}
-                            "post/test" {:req {:method :post
-                                               :form {"k1" "v1"}}
-                                         :rsp {:headers {"Location" "7"}}}
-                            "put/test1" {:req {:body {"k1" "v1" "k2" "v2"}}
-                                         :rsp {:status 200}}
-                            "put/test2" {}
-                            "get/slow" {:rsp {:time 10}}}
-                    :errors {:status [500 503] :probability 25}}}))
+(def state (atom {}))
 
 (defn substring? [sub st] (not= (.indexOf st sub) -1))
 
@@ -110,7 +93,11 @@
 
 (defn project-usage [id port]
   (assoc json :body
-    (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) port))))
+         (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) port))))
+
+(defn project-test [id port]
+  (assoc json :body
+         (txco/js-> (txt/testy-analysis-> id ((keyword id) @state) port))))
 
 (defn del-proj [id]
   (reset! state (dissoc @state (keyword id)))

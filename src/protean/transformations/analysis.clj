@@ -24,6 +24,11 @@
     (assoc payload in-k ext-out)
     payload))
 
+(defn doc-> [path payload]
+  (if-let [doc (:doc (val path))]
+    (assoc payload :doc doc)
+    payload))
+
 (defn uri-> [project path port payload]
   (let [uri (str "http://"
                  (.getCanonicalHostName (InetAddress/getLocalHost))
@@ -36,7 +41,8 @@
        (assoc-tx-> path :form :form-keys)
        (assoc-tx-> path :body :body-keys)
        (uri-> project path port)
-       (assoc-tx-> path :req-params :req-params)))
+       (assoc-tx-> path :req-params :req-params)
+       (doc-> path)))
 
 
 ;; =============================================================================

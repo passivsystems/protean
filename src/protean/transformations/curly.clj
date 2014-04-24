@@ -24,15 +24,14 @@
 
 (defn curly-form-> [entry payload]
   (if-let [f (:form-keys entry)]
-    (str payload " --data '" (stg/join "&" (map #(str (key %) "=" (val %)) f)) "'")
+    (str payload " --data '" (stg/join "&" (map #(str (key %) "=" (val %)) f))
+      "'")
     payload))
 
 (defn curly-body-> [entry payload]
   (if-let [b (:body-keys entry)]
-    ;(let [json (jsn/generate-string
-     ;            (zipmap b (repeat "blurb")))]
-    (str payload " -H 'Content-type: application/json'" " --data '" (jsn/generate-string b) "'")
-      ;)
+    (str payload " -H 'Content-type: application/json'" " --data '"
+      (jsn/generate-string b) "'")
     payload))
 
 (defn curly-uri-> [entry payload]
@@ -40,7 +39,8 @@
 
 (defn curly-req-params-> [entry payload]
   (if-let [rp (:req-params entry)]
-    (str payload "?" (stg/join "&" (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'")
+    (str payload "?" (stg/join "&" (map #(str (key %) "="
+      (cod/form-encode (val %))) rp)) "'")
     (str payload "'")))
 
 (defn curly-postprocess-> [entry payload]
