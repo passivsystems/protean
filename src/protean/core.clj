@@ -11,7 +11,7 @@
   (:use ring.adapter.jetty
         [ring.middleware.multipart-params]
         [taoensso.timbre :as timbre :only (trace debug info warn error)])
-  (:import java.io.File)
+  (:import java.io.File java.net.InetAddress)
   (:gen-class))
 
 ;; =============================================================================
@@ -20,6 +20,8 @@
 
 (timbre/set-config! [:appenders :spit :enabled?] true)
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
+
+(def host (atom (.getCanonicalHostName (InetAddress/getLocalHost))))
 
 (def port (atom 3000))
 
@@ -48,7 +50,7 @@
 
   (GET    "/" [] (pipe/project-index))
   (GET    "/documentation/api" [] (pipe/project-api))
-  (GET    "/documentation/projects/:id" [id] (pipe/project-docs id @port))
+  (GET    "/documentation/projects/:id" [id] (pipe/project-docs id @host @port))
   (GET    "/documentation/projects" [] (pipe/projects-docs))
   (GET    "/documentation" [] (pipe/project-documentation))
   (GET    "/roadmap" [] (pipe/project-road))
@@ -59,8 +61,8 @@
     (pipe/put-proj-error-prob id prob))
   (GET    "/projects" [] (pipe/projects))
   (GET    "/projects/:id" [id] (pipe/project id))
-  (GET    "/projects/:id/usage" [id] (pipe/project-usage id @port))
-  (GET    "/projects/:id/test" [id] (pipe/project-test id @port))
+  (GET    "/projects/:id/usage" [id] (pipe/project-usage id @host @port))
+  (POST   "/projects/:id/test" req (pipe/project-test req @host @port))
   (wrap-multipart-params (PUT    "/projects" req (pipe/put-projects req)))
   (DELETE "/projects/:id" [id] (pipe/del-proj-handled id))
   (GET    "/status" [] (pipe/status)))

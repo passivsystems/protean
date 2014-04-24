@@ -61,7 +61,7 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn curly-analysis-> [project proj-payload port]
+(defn curly-analysis-> [project proj-payload host port]
   (let [paths (:paths proj-payload)]
-    (let [analysed (txan/analysis-> project proj-payload port)]
+    (let [analysed (txan/analysis-> project proj-payload host port)]
       (map #(curly-> %) analysed))))

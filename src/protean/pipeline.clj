@@ -85,19 +85,20 @@
 ;; projects
 ;;;;;;;;;;;
 
-(defn projects []
-  (assoc json :body (txco/js-> (keys @state))))
+(defn projects []  (assoc json :body (txco/js-> (keys @state))))
 
-(defn project [id]
-  (assoc json :body (txco/js-> ((keyword id) @state))))
+(defn project [id] (assoc json :body (txco/js-> ((keyword id) @state))))
 
-(defn project-usage [id port]
+(defn project-usage [id host port]
   (assoc json :body
-         (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) port))))
+         (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) host port))))
 
-(defn project-test [id port]
-  (assoc json :body
-         (txco/js-> (txt/testy-analysis-> id ((keyword id) @state) port))))
+(defn project-test [{:keys [params] :as req} host port]
+  (println "req : " req)
+  (let [id (:id params) pp ((keyword id) @state)
+        rbody (slurp (:body req))
+        body (if (not-empty rbody) (txco/clj-> rbody) nil)]
+    (assoc json :body (txco/js-> (txt/testy-analysis-> id pp host port body)))))
 
 (defn del-proj [id]
   (reset! state (dissoc @state (keyword id)))
@@ -135,8 +136,9 @@
 
 (defn projects-docs [] (txdocs/projects-template (keys @state)))
 
-(defn project-docs [id port]
-  (txdocs/project-template id (txan/analysis-> id ((keyword id) @state) port)))
+(defn project-docs [id host port]
+  (txdocs/project-template id
+    (txan/analysis-> id ((keyword id) @state) host port)))
 
 (l/defdocument project-index (file "public/html/index.html") []
   (l/id="project-version") (l/content (txdocs/get-version)))

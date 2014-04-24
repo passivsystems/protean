@@ -29,18 +29,16 @@
     (assoc payload :doc doc)
     payload))
 
-(defn uri-> [project path port payload]
-  (let [uri (str "http://"
-                 (.getCanonicalHostName (InetAddress/getLocalHost))
-                 ":" port "/" project "/" (key path))]
+(defn uri-> [project path host port payload]
+  (let [uri (str "http://" host ":" port "/" project "/" (key path))]
     (assoc payload :uri uri)))
 
-(defn analyse-> [project path port]
+(defn analyse-> [project path host port]
   (->> (method-> path)
        (assoc-tx-> path :headers :headers)
        (assoc-tx-> path :form :form-keys)
        (assoc-tx-> path :body :body-keys)
-       (uri-> project path port)
+       (uri-> project path host port)
        (assoc-tx-> path :req-params :req-params)
        (doc-> path)))
 
@@ -49,6 +47,6 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn analysis-> [project proj-payload port]
+(defn analysis-> [project proj-payload host port]
   (let [paths (:paths proj-payload)]
-    (map #(analyse-> project % port) paths)))
+    (map #(analyse-> project % host port) paths)))

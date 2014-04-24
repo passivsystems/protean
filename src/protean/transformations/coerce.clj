@@ -12,6 +12,8 @@
 
 (defn js-> [d] (jsn/generate-string d))
 
+(defn clj-> [d] (jsn/parse-string d))
+
 (defn xml-> [d] (xml/sexp-as-element d))
 
 (defn indent-> [d] (xml/indent-str d))
