@@ -81,10 +81,7 @@
 ;; configuration etc
 ;;;;;;;;;;;;;;;;;;;;
 
-(defn- body-item [body item]
-  (if body
-    (or (body item) nil)
-    nil))
+(defn- body-item [body item] (if body (or (body item) nil) nil))
 
 
 ;; =============================================================================
