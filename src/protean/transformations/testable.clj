@@ -31,6 +31,7 @@
 ;; base test analysis
 ;;
 ;; satisfies testing codex simulations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- testy-method-> [entry payload]
   (let [method
@@ -73,6 +74,7 @@
 ;;
 ;; enhances the result of the base test analysis
 ;; sows in seed data fed in as JSON payload
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- testy-api-> [testy body]
   (println "body : " body)
