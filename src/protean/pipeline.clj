@@ -14,7 +14,7 @@
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
         [taoensso.timbre :as timbre :only (trace debug info warn error)]
-        [protean.transformations.docs :only [<-]])
+        [me.rossputin.pew])
   (:import java.io.IOException))
 
 ;; =============================================================================
