@@ -13,7 +13,8 @@
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
-        [taoensso.timbre :as timbre :only (trace debug info warn error)])
+        [taoensso.timbre :as timbre :only (trace debug info warn error)]
+        [protean.transformations.docs :only [<-]])
   (:import java.io.IOException))
 
 ;; =============================================================================
@@ -141,16 +142,16 @@
     (txan/analysis-> id ((keyword id) @state) host port)))
 
 (l/defdocument project-index (file "public/html/index.html") []
-  (l/id="project-version") (l/content (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/get-version)))
 
 (l/defdocument project-api (file "public/html/api.html") []
-  (l/id="project-version") (l/content (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/get-version)))
 
 (l/defdocument project-documentation (file "public/html/documentation.html") []
-  (l/id="project-version") (l/content (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/get-version)))
 
 (l/defdocument project-road (file "public/html/roadmap.html") []
-  (l/id="project-version") (l/content (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/get-version)))
 
 
 ;; service status

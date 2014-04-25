@@ -21,12 +21,13 @@
 (defmacro get-version []
   (System/getProperty "protean.version"))
 
-(defn- a [h c] (l/node :a :attrs {:href h} :content c))
-(defn- ul-unstyled [d] (l/node :ul :attrs {:class "list-unstyled"} :content d))
-(defn- li [d] (l/node :li :content d))
-(defn- tr [d] (l/node :tr :content d))
-(defn- td [d] (l/node :td :content d))
-(defn- small [d] (l/node :small :content d))
+(defn a [h c] (l/node :a :attrs {:href h} :content c))
+(defn ul-unstyled [d] (l/node :ul :attrs {:class "list-unstyled"} :content d))
+(defn li [d] (l/node :li :content d))
+(defn tr [d] (l/node :tr :content d))
+(defn td [d] (l/node :td :content d))
+(defn small [d] (l/node :small :content d))
+(defn <- [d] (l/content d))
 
 
 ;; =============================================================================
@@ -38,8 +39,8 @@
 
 (l/defdocument projects-template (file "public/html/projects.html")
   [payload]
-  (l/id="project-version") (l/content (get-version))
-  (l/id="projects-list") (l/content (build-projects-tr payload)))
+  (l/id="project-version") (<- (get-version))
+  (l/id="projects-list") (<- (build-projects-tr payload)))
 
 (defn project-td
   [{:keys [method doc headers req-params body-keys form-keys uri] :as payload}]
@@ -65,6 +66,6 @@
 
 (l/defdocument project-template (file "public/html/project.html")
   [id payload]
-  (l/id="project-version") (l/content (get-version))
-  (l/id="project-name") (l/content (name id))
-  (l/element= :tbody) (l/content (build-project-tr payload)))
+  (l/id="project-version") (<- (get-version))
+  (l/id="project-name") (<- (name id))
+  (l/element= :tbody) (<- (build-project-tr payload)))
