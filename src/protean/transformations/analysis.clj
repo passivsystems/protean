@@ -42,11 +42,27 @@
        (assoc-tx-> path :req-params :req-params)
        (doc-> path)))
 
+(defn- paths-range [codices locs]
+  )
+
+(defn- paths [codices locs]
+  (if locs
+    (paths-range codices locs)
+    (reduce conj (map #(:paths (second %)) codices))))
+
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn analysis-> [project proj-payload host port]
-  (let [paths (:paths proj-payload)]
-    (map #(analyse-> project % host port) paths)))
+(defn analysis-> [host port codices corpus]
+  ;  (comment (let [paths (:paths proj-payload)]
+   ;          (map #(analyse-> project % host port) paths)))
+  (let [p (paths codices (get corpus :locs))]
+    (println "paths : " p)
+    (println "type of paths : " (type p))
+    (println "count of paths : " (count p))
+    )
+
+  "sample"
+  )

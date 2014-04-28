@@ -9,7 +9,8 @@
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc]
             [protean.transformations.docs :as txdocs]
-            [protean.transformations.testable :as txt])
+            [protean.transformations.testsim :as txts]
+            [protean.transformations.testapi :as txta])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
@@ -58,6 +59,9 @@
       (error (.getMessage ioex))
       {:status 500})))
 
+(defn- body [req-body]
+  (let [rbody (slurp req-body)] (if (not-empty rbody) (txco/clj-> rbody) nil)))
+
 
 ;; =============================================================================
 ;; Project pipelines
@@ -78,6 +82,14 @@
         rsp)
       {:status 404})))
 
+(defn test! [{:keys [params] :as req} host port]
+  (let [body (body (:body req)) h (get body "host") p (get body "port")]
+    (let [host (or h host) port (or p port)
+          res (if (or h p)
+                (txta/testapi-analysis-> host port @state body)
+                (txts/testsim-analysis-> host port @state body))]
+      (assoc json :body (txco/js-> res)))))
+
 
 ;; =============================================================================
 ;; Admin pipelines
@@ -93,13 +105,6 @@
 (defn project-usage [id host port]
   (assoc json :body
          (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) host port))))
-
-(defn project-test [{:keys [params] :as req} host port]
-  (println "req : " req)
-  (let [id (:id params) pp ((keyword id) @state)
-        rbody (slurp (:body req))
-        body (if (not-empty rbody) (txco/clj-> rbody) nil)]
-    (assoc json :body (txco/js-> (txt/testy-analysis-> id pp host port body)))))
 
 (defn del-proj [id]
   (reset! state (dissoc @state (keyword id)))

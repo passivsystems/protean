@@ -62,9 +62,9 @@
   (GET    "/projects" [] (pipe/projects))
   (GET    "/projects/:id" [id] (pipe/project id))
   (GET    "/projects/:id/usage" [id] (pipe/project-usage id @host @port))
-  (POST   "/projects/:id/test" req (pipe/project-test req @host @port))
   (wrap-multipart-params (PUT    "/projects" req (pipe/put-projects req)))
   (DELETE "/projects/:id" [id] (pipe/del-proj-handled id))
+  (POST   "/test" req (pipe/test! req @host @port))
   (GET    "/status" [] (pipe/status)))
 
 (defroutes api-routes

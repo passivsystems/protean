@@ -1,0 +1,53 @@
+;; PROTEAN TEST DESIGN
+;;
+;; test documents may be migrated to datomic at a later date for now edn definitions
+
+;; Testing API
+; mixing service/path combinations and providing seed data
+{
+  :host "localhost"
+  :port 9000
+  :auth {:basic {:token "TOKEN"}}
+  :locs #{{:svc "s1" :path "p1"} {:svc "s1" :path "p2"}}
+  :seed #{"agents/1"}
+}
+
+;; Testing API
+; specifying services and providing seed data
+{
+  :host "localhost"
+  :port 9000
+  :auth {:basic {:token "TOKEN"}}
+  :locs #{s1 s3}
+  :seed #{"agents/1"}
+}
+
+;; Testing API
+; testing all services providing seed data
+{
+  :host "localhost"
+  :port 9000
+  :auth {:basic {:token "TOKEN"}}
+  :seed #{"agents/1"}
+}
+
+;; Testing SIM
+; testing service/path combinations
+{:locs #{s1/p1 s2/p1}}
+
+;; Testing SIM
+; testing services
+{:locs #{s1 s3}}
+
+;; Testing SIM
+; testing all
+{}
+
+;; Testing notes
+; testing works across two routes, SIM and API
+; the shape of the test doc determines the route
+; both range acoss svc/path sequences in the same way
+; API testing:
+;    - concerns itself with authzn/authcn
+;    - calls svc/path items when it can stitch data in from the seed
+;    - aggregates results back into the seed to unlock further svc/path items

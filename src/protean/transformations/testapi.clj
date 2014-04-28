@@ -1,6 +1,7 @@
-(ns protean.transformations.testable
+(ns protean.transformations.testapi
   "Uses output from the analysis transformations to generate a
-   datastructure which can drive automated testing."
+   datastructure which can drive automated testing.  This variant
+   tests the live API surface area."
   (:require [clojure.string :as stg]
             [clojure.set :as st]
             [clojure.data.xml :as xml]
@@ -23,10 +24,6 @@
   (require '[clj-http.client :as client])
   [(second t) (:status (eval t))])
 
-(defn- test-api! [tests body]
-  (println "testing API")
-  (println "body : " body)
-  (map #(test! %) tests))
 
 ;; base test analysis
 ;;
@@ -70,38 +67,16 @@
        (testy-map-> entry)
        seq))
 
-;; real API
-;;
-;; enhances the result of the base test analysis
-;; sows in seed data fed in as JSON payload
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn- testy-api-> [testy body]
-  (println "body : " body)
-  testy)
-
-;; configuration etc
-;;;;;;;;;;;;;;;;;;;;
-
-(defn- body-item [body item] (if body (or (body item) nil) nil))
-
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-
-
-(defn testy-analysis->
-  "If we have a non nil body param test real API resources - post process test
-   analysis stitching in config and seed data from the body, then agggregate
-   state while testing, order of tests may be overriden etc."
-  [project proj-payload host port body]
-  (println "type of body : " (type body))
-  (let [h (or (body-item body "host") host)
-        p (or (body-item body "port") port)
-        analysed (txan/analysis-> project proj-payload h p)
-        testy (map #(testy-> %) analysed)
-        tests (if body (testy-api-> testy body) testy)
-        res (if body (test-api! tests body) (map #(test! %) tests))]
-    {:results res}))
+(defn testapi-analysis->
+  [host port codices corpus]
+  (comment (let [analysed (txan/analysis-> host port codices nil)
+                  tests (map #(testy-> %) analysed)
+                  res (map #(test! %) tests)]
+             {:results res}))
+  (println "testing the API")
+  {:status []})
