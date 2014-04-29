@@ -8,7 +8,7 @@
   :host "localhost"
   :port 9000
   :auth {:basic {:token "TOKEN"}}
-  :locs #{{:svc "s1" :path "p1"} {:svc "s1" :path "p2"}}
+  :locs #{"s1 p1" "s2 p1 p2 p3" "s3"}
   :seed #{"agents/1"}
 }
 
@@ -18,7 +18,7 @@
   :host "localhost"
   :port 9000
   :auth {:basic {:token "TOKEN"}}
-  :locs #{s1 s3}
+  :locs #{"s1" "s2"}
   :seed #{"agents/1"}
 }
 
@@ -33,11 +33,11 @@
 
 ;; Testing SIM
 ; testing service/path combinations
-{:locs #{s1/p1 s2/p1}}
+{:locs #{"s1 p1" "s2 p1 p2"}}
 
 ;; Testing SIM
 ; testing services
-{:locs #{s1 s3}}
+{:locs #{"s1" "s2"}}
 
 ;; Testing SIM
 ; testing all
