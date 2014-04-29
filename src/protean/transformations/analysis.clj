@@ -12,40 +12,52 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn method-> [path]
-  (if-let [method (:method (:req (val path)))]
+(defn method-> [resource]
+  (if-let [method (:method (:req (:spec resource)))]
     {:method method}
     {:method :get}))
 
 (defn assoc-tx->
   "Extracts out-k out of path and assocs to payload as in-k."
-  [path out-k in-k payload]
-  (if-let [ext-out (out-k (:req (val path)))]
+  [resource out-k in-k payload]
+  (if-let [ext-out (out-k (:req (:spec resource)))]
     (assoc payload in-k ext-out)
     payload))
 
-(defn doc-> [path payload]
-  (if-let [doc (:doc (val path))]
+(defn doc-> [resource payload]
+  (if-let [doc (:doc (:spec resource))]
     (assoc payload :doc doc)
     payload))
 
-(defn uri-> [project path host port payload]
-  (let [uri (str "http://" host ":" port "/" project "/" (key path))]
+(defn uri-> [{:keys [svc path]} host port payload]
+  (let [uri (str "http://" host ":" port "/" (name svc) "/" path)]
     (assoc payload :uri uri)))
 
-(defn analyse-> [project path host port]
-  (->> (method-> path)
-       (assoc-tx-> path :headers :headers)
-       (assoc-tx-> path :form :form-keys)
-       (assoc-tx-> path :body :body-keys)
-       (uri-> project path host port)
-       (assoc-tx-> path :req-params :req-params)
-       (doc-> path)))
+(defn analyse-> [resource host port]
+  (->> (method-> resource)
+       (assoc-tx-> resource :headers :headers)
+       (assoc-tx-> resource :form :form-keys)
+       (assoc-tx-> resource :body :body-keys)
+       (uri-> resource host port)
+       (assoc-tx-> resource :req-params :req-params)
+       (doc-> resource)))
+
+(defn- encode [svc path spec] {:svc svc :path path :spec spec})
+
+(defn- svc-paths [codices combi]
+  (let [svc (keyword (first combi)) paths (rest combi)]
+    (map #(encode svc % (get-in codices [svc :paths %])) paths)))
 
 (defn- paths-range [codices locs]
-  )
+  (let [groups ((juxt filter remove) #(= (count (stg/split % #" ")) 1) locs)
+        combi (map #(stg/split (apply str %) #" ") (second groups))
+        paths (flatten (reduce conj (map #(svc-paths codices %) combi)))]
+    paths))
 
-(defn- paths [codices locs]
+(defn- paths
+  "Get all service paths or specified combinations of service/path | service."
+  [codices locs]
+  (println "locs : " locs)
   (if locs
     (paths-range codices locs)
     (reduce conj (map #(:paths (second %)) codices))))
@@ -56,13 +68,5 @@
 ;; =============================================================================
 
 (defn analysis-> [host port codices corpus]
-  ;  (comment (let [paths (:paths proj-payload)]
-   ;          (map #(analyse-> project % host port) paths)))
-  (let [p (paths codices (get corpus :locs))]
-    (println "paths : " p)
-    (println "type of paths : " (type p))
-    (println "count of paths : " (count p))
-    )
-
-  "sample"
-  )
+  (let [p (paths codices (get corpus "locs"))]
+    (map #(analyse-> % host port) p)))

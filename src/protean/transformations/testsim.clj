@@ -71,12 +71,12 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn testsim-analysis->
-  [host port codices corpus]
-  (comment (let [analysed (txan/analysis-> project proj-payload host port)
-                  tests (map #(testy-> %) analysed)
-                  res (map #(test! %) tests)]
-             {:results res}))
+(defn testsim-analysis-> [host port codices corpus]
   (println "testing the SIM")
-  (println (txan/analysis-> host port codices corpus))
-  {:status []})
+  (let [analysed (txan/analysis-> host port codices corpus)
+        tests (map #(testy-> %) analysed)
+        ;res (map #(test! %) tests)
+        ]
+    (println "analysed : " analysed)
+    (println "tests : " tests)
+    {:status []}))
