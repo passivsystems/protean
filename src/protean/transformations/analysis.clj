@@ -44,20 +44,28 @@
 
 (defn- encode [svc path spec] {:svc svc :path path :spec spec})
 
-(defn- svc-paths [codices combi]
+(defn- combi-paths [codices combi]
   (let [svc (keyword (first combi)) paths (rest combi)]
     (map #(encode svc % (get-in codices [svc :paths %])) paths)))
 
+(defn- svc-paths [codices svc]
+  (let [kv (get-in codices [(keyword svc) :paths])]
+    (map #(encode svc (key %) (val %)) kv)))
+
+; replace my empty list guards conditional with nil and empty collection functoinality in my auxilliary functions
 (defn- paths-range [codices locs]
   (let [groups ((juxt filter remove) #(= (count (stg/split % #" ")) 1) locs)
         combi (map #(stg/split (apply str %) #" ") (second groups))
-        paths (flatten (reduce conj (map #(svc-paths codices %) combi)))]
-    paths))
+        combi-paths (if (empty? (second groups))
+                      '()
+                      (flatten
+                        (reduce conj (map #(combi-paths codices %) combi))))
+        svc-paths (reduce conj (map #(svc-paths codices %) (first groups)))]
+    (concat combi-paths svc-paths)))
 
 (defn- paths
   "Get all service paths or specified combinations of service/path | service."
   [codices locs]
-  (println "locs : " locs)
   (if locs
     (paths-range codices locs)
     (reduce conj (map #(:paths (second %)) codices))))

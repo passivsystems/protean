@@ -8,8 +8,7 @@
             [cheshire.core :as jsn]
             [protean.transformations.analysis :as txan]
             [clj-http.client :as client])
-  (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
-  (:import java.net.InetAddress))
+  (:use [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -75,8 +74,5 @@
   (println "testing the SIM")
   (let [analysed (txan/analysis-> host port codices corpus)
         tests (map #(testy-> %) analysed)
-        ;res (map #(test! %) tests)
-        ]
-    (println "analysed : " analysed)
-    (println "tests : " tests)
-    {:status []}))
+        res (map #(test! %) tests)]
+    {:status res}))

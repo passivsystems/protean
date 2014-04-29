@@ -103,8 +103,7 @@
 (defn project [id] (assoc json :body (txco/js-> ((keyword id) @state))))
 
 (defn project-usage [id host port]
-  (assoc json :body
-         (txco/js-> (txc/curly-analysis-> id ((keyword id) @state) host port))))
+  (assoc json :body (txco/js-> (txc/curly-analysis-> host port @state id))))
 
 (defn del-proj [id]
   (reset! state (dissoc @state (keyword id)))
@@ -144,7 +143,7 @@
 
 (defn project-docs [id host port]
   (txdocs/project-template id
-    (txan/analysis-> id ((keyword id) @state) host port)))
+    (txan/analysis-> host port @state {"locs" [id]})))
 
 (l/defdocument project-index (file "public/html/index.html") []
   (l/id="project-version") (<- (txdocs/get-version)))
