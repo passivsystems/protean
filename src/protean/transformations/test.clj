@@ -18,7 +18,7 @@
     (conj payload method)))
 
 (defn- testy-uri-> [entry payload]
-  (conj payload (stg/replace (:uri entry) "*" "1")))
+  (conj payload (stg/replace (:uri entry) "*" "psv+")))
 
 (defn- assoc-tx->
   "Extracts out-k out of entry and assocs to payload as in-k."
