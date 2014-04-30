@@ -24,7 +24,7 @@
   "Extracts out-k out of entry and assocs to payload as in-k."
   [entry out-k in-k payload]
   (if-let [v (out-k entry)]
-    (assoc payload in-k v)
+    (if (empty? v) payload (assoc payload in-k v))
     payload))
 
 (defn- body-> [entry payload]
@@ -46,6 +46,16 @@
        (testy-map-> entry)
        seq))
 
+(defn- res-location-> [res payload]
+  (if-let [loc (get-in res [:headers "Location"])]
+    (assoc payload :location loc)
+    payload))
+
+(defn- result-> [res]
+  (->> {:status (:status res)}
+       (assoc-tx-> res :body :body)
+       (res-location-> res)))
+
 
 ;; =============================================================================
 ;; Transformation functions
@@ -53,7 +63,6 @@
 
 (defn test-> [host port codices corpus]
   (let [analysed (txan/analysis-> host port codices corpus)]
-    ;(map #(test! %) tests)
     (map #(testy-> %) analysed)))
 
 
@@ -64,4 +73,4 @@
 (defn test! [t]
   (info "executing test : " t)
   (require '[clj-http.client :as client])
-  [(second t) (:status (eval t))])
+  (let [res (eval t)] [(second t) (result-> res)]))
