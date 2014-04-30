@@ -16,5 +16,4 @@
 (defn testsim-analysis-> [host port codices corpus]
   (info "testing the SIM")
   (let [tests (tst/test-> host port codices corpus)]
-    (map #(tst/test! %) tests))
-)
+    (map #(tst/test! %) tests)))
