@@ -18,13 +18,17 @@
 (defonce PSV-EXP "psv\\+")
 (defonce AZN "Authorization")
 
+(defn- token [seed strat]
+  (let [tokens (get-in seed [AZN])]
+    (first (filter #(substring? strat %) tokens))))
+
 ; TODO: needs refactoring, trying to get a prototype out
 ; strat is either Basic or Bearer
 (defn- header-authzn-> [strat seed payload]
   (let [m (last payload)]
     (if-let [auth (get-in m [:headers AZN])]
       (if (and (substring? PSV auth) (substring? strat auth))
-        (if-let [sauth (first (get-in seed [AZN]))] ; TODO: note first is temporary here
+        (if-let [sauth (token seed strat)]
           (let [n (assoc-in m [:headers AZN]
                             (str strat " " (last (split sauth #" "))))]
             (list (first payload) (second payload) n))
