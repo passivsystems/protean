@@ -80,6 +80,23 @@
 
 (defn- seeds [tests seed] (if seed (map #(seed-> % seed) tests) tests))
 
+(defn- untestable-payload? [body k]
+  (if-let [qp (if (= k :body) (txco/clj-> (k body)) (k body))]
+    (if (first (filter #(substring? PSV %) (vals qp)))
+      true
+      false)
+    false))
+
+; does this test have any unseeded items ?
+(defn- untestable? [test]
+  (or
+   (substring? (str "/" PSV) (second test))
+   (if-let [auth (get-in (last test) [:headers AZN])]
+     (if (substring? PSV auth) true false)
+     false)
+   (untestable-payload? (last test) :query-params)
+   (untestable-payload? (last test) :body)))
+
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
@@ -97,8 +114,10 @@
     (println "***********************************************************")
     (prn "!!!!! ***** tests : " tests)
     (prn "!!!!! ***** seed : " seeded)
-
+    (let [testable (remove #(untestable? %) seeded)]
+      (println "!!!! testable : " testable))
     (println "***********************************************************")
+
 
 
     (map #(tst/test! %) tests)))

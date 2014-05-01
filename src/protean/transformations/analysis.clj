@@ -33,6 +33,11 @@
   (let [uri (str "http://" host ":" port "/" (name svc) "/" path)]
     (assoc payload :uri uri)))
 
+(defn codex-rsp-> [resource payload]
+  (assoc payload :codex
+    {:body-res (get-in resource [:spec :rsp :body-res])
+     :success-codes (get-in resource [:spec :rsp :success-codes])}))
+
 (defn analyse-> [resource host port]
   (->> (method-> resource)
        (assoc-tx-> resource :headers :headers)
@@ -40,7 +45,8 @@
        (assoc-tx-> resource :body :body-keys)
        (uri-> resource host port)
        (assoc-tx-> resource :req-params :req-params)
-       (doc-> resource)))
+       (doc-> resource)
+       (codex-rsp-> resource)))
 
 (defn- encode [svc path spec] {:svc svc :path path :spec spec})
 

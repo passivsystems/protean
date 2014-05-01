@@ -32,12 +32,16 @@
     (assoc payload :body (jsn/generate-string (:body-keys entry)))
     payload))
 
+(defn- codex-rsp-> [entry payload]
+  (assoc payload :codex (:codex entry)))
+
 (defn- testy-map-> [entry payload]
   (conj payload (->> {:throw-exceptions false}
                      (assoc-tx-> entry :headers :headers)
                      (assoc-tx-> entry :req-params :query-params)
                      (assoc-tx-> entry :form-keys :form-params)
-                     (body-> entry))))
+                     (body-> entry)
+                     (codex-rsp-> entry))))
 
 (defn- testy-> [entry]
   (->> []
@@ -63,6 +67,7 @@
 
 (defn test-> [host port codices corpus]
   (let [analysed (txan/analysis-> host port codices corpus)]
+    (prn "!!!! analysed : " analysed)
     (map #(testy-> %) analysed)))
 
 
