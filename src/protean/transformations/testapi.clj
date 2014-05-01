@@ -3,7 +3,7 @@
    datastructure which can drive automated testing.  This variant
    tests the live API surface area."
   (:require [protean.transformations.test :as tst])
-  (:use [clojure.string :only [split]]
+  (:use [clojure.string :only [replace split]]
         [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 
 ;; =============================================================================
@@ -45,15 +45,28 @@
         (assoc m :query-params (into {} (for [[k v] qp] [k (v-swap v seed)]))))
       payload)))
 
-;(defn- uri-> [seed payload])
+(defn- uri-namespace [uri]
+  (-> uri (.split "/psv\\+") first (.split "/") last))
+
+; TODO: weak, only handles 1 instance of uri placeholder
+(defn- uri-> [seed payload]
+  (let [uri (second payload)]
+    (if (substring? (str "/" PSV) uri)
+      (let [ns (str (uri-namespace uri) "/")
+            v (first (filter #(substring? ns %) (vals seed)))]
+        (if v
+          (list (first payload)
+                (replace uri #"psv\+" (last (.split v "/")))
+                (last payload))
+          payload))
+      payload)))
 
 (defn- seed-> [test seed]
   (->> test
        (header-authzn-> "Basic" seed)
        (header-authzn-> "Bearer" seed)
        (query-params-> seed)
-       ;uri
-       ))
+       (uri-> seed)))
 
 (defn- seeds [tests seed] (if seed (map #(seed-> % seed) tests) tests))
 
