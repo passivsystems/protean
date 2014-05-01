@@ -52,7 +52,7 @@
   (let [kv (get-in codices [(keyword svc) :paths])]
     (map #(encode svc (key %) (val %)) kv)))
 
-; replace my empty list guards conditional with nil and empty collection functoinality in my auxilliary functions
+; TODO: replace my empty list guards conditional with nil and empty collection functoinality in my auxilliary functions
 (defn- paths-range [codices locs]
   (let [groups ((juxt filter remove) #(= (count (stg/split % #" ")) 1) locs)
         combi (map #(stg/split (apply str %) #" ") (second groups))

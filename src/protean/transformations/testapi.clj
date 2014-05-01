@@ -10,25 +10,40 @@
 ;; Helper functions
 ;; =============================================================================
 
-; refactor put in a common place
+; TODO: refactor put in a common place
 (defn substring? [sub st] (not= (.indexOf st sub) -1))
 
-(defonce azn "Authorization")
+(defonce PSV "psv+")
+(defonce PSV-EXP "psv\\+")
+(defonce AZN "Authorization")
 
-; needs refactoring, trying to get a prototype out
+; TODO: needs refactoring, trying to get a prototype out
 ; strat is either Basic or Bearer
 (defn- header-authzn-> [strat seed payload]
   (let [m (last payload)]
-    (if-let [auth (get-in m [:headers azn])]
-      (if (and (substring? "psv+" auth) (substring? strat auth))
-        (if-let [sauth (first (get-in seed [azn]))] ; note first is temporary here
-          (let [n (assoc-in m [:headers azn] (str strat " " (last (split sauth #" "))))]
+    (if-let [auth (get-in m [:headers AZN])]
+      (if (and (substring? PSV auth) (substring? strat auth))
+        (if-let [sauth (first (get-in seed [AZN]))] ; TODO: note first is temporary here
+          (let [n (assoc-in m [:headers AZN]
+                            (str strat " " (last (split sauth #" "))))]
             (list (first payload) (second payload) n))
           payload)
         payload)
       payload)))
 
-;(defn- query-params-> [seed payload])
+(defn- v-swap [v seed]
+  (if (substring? PSV v)
+    (if-let [sv (get-in seed [(last (.split v PSV-EXP))])] sv v)
+    v))
+
+(defn- query-params-> [seed payload]
+  (let [m (last payload)]
+    (if-let [qp (:query-params m)]
+      (list
+        (first payload)
+        (second payload)
+        (assoc m :query-params (into {} (for [[k v] qp] [k (v-swap v seed)]))))
+      payload)))
 
 ;(defn- uri-> [seed payload])
 
@@ -36,7 +51,7 @@
   (->> test
        (header-authzn-> "Basic" seed)
        (header-authzn-> "Bearer" seed)
-       ;query-params
+       (query-params-> seed)
        ;uri
        ))
 
