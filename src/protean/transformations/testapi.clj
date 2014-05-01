@@ -97,27 +97,61 @@
    (untestable-payload? (last test) :query-params)
    (untestable-payload? (last test) :body)))
 
+(defn- result [result test]
+  (-> result
+      (conj (get-in (last test) [:codex :success-codes]))
+      (conj (get-in (last test) [:codex :body-res]))))
+
+(defn- test-results! [tests] (map #(result (tst/test! %) %) tests))
+
+; TODO: basic - does not handle multiple body types, just json payload
+; TODO: feed result items into bag as per before otherwise yet more mapping is needed
+(defn- seed-stitch [seed res]
+  (let [res-map (second res)]
+    ; TODO: do this if we have successful test result - may have failed
+    (cond
+     (get-in res-map [:body])
+     (let [b (txco/clj-> (get-in res-map [:body]))
+           extraction-key (last res)
+           extraction (get-in b [extraction-key])]
+       (if (= extraction-key "access_token")
+         (update-in seed ["Authorization"] conj (str "Bearer " extraction))
+         (update-in seed ["bag"] conj extraction)))
+     ;()
+     :else seed)))
+
+; get any results for testable tests
+; then stitch results into seed
+; then sow new items from seed into tests
+; then run testables again as per step 1
+(defn- incremental-test! [tests seed]
+  (let [res (test-results! (remove #(untestable? %) tests))]
+    (prn "!!!! res : " res)
+    ; stitch test results into seed
+    (let [new-seed (reduce seed-stitch seed res)
+          new-seeded (seeds tests new-seed)
+          new-res (test-results! (remove #(untestable? %) new-seeded))]
+      (prn "!!!! new-seed : " new-seed)
+      (prn "!!!! new-seeded : " new-seeded)
+      (prn "!!!! new-res : " new-res)
+      )
+    ))
+
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-;; First sow all seed items
-
-    ;; Loop
-      ; Call whatever we can and grow seed from result if applicable
-      ; Track what we have called
 (defn testapi-analysis-> [host port codices corpus]
   (info "testing the API")
   (prn "seed is : " (corpus "seed"))
-  (let [tests (tst/test-> host port codices corpus)
-        seeded (seeds tests (corpus "seed"))]
+  (let [seed (corpus "seed")
+        tests (tst/test-> host port codices corpus)
+        seeded (seeds tests seed)]
     (println "***********************************************************")
     (prn "!!!!! ***** tests : " tests)
     (prn "!!!!! ***** seed : " seeded)
-    (let [testable (remove #(untestable? %) seeded)]
-      (println "!!!! testable : " testable))
+    (incremental-test! seeded seed)
     (println "***********************************************************")
 
-
-
-    (map #(tst/test! %) tests)))
+    ;(map #(tst/test! %) tests)
+    ))
