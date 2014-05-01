@@ -2,7 +2,8 @@
   "Uses output from the analysis transformations to generate a
    datastructure which can drive automated testing.  This variant
    tests the live API surface area."
-  (:require [protean.transformations.test :as tst])
+  (:require [protean.transformations.coerce :as txco]
+            [protean.transformations.test :as tst])
   (:use [clojure.string :only [replace split]]
         [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 
@@ -36,13 +37,17 @@
     (if-let [sv (get-in seed [(last (.split v PSV-EXP))])] sv v)
     v))
 
-(defn- query-params-> [seed payload]
+(defn- body-> [k seed payload]
   (let [m (last payload)]
-    (if-let [qp (:query-params m)]
+    (if-let [qp (if (= k :body) (txco/clj-> (k m)) (k m))]
       (list
         (first payload)
         (second payload)
-        (assoc m :query-params (into {} (for [[k v] qp] [k (v-swap v seed)]))))
+        (assoc m k
+          (let [res (into {} (for [[k v] qp] [k (v-swap v seed)]))]
+            (if (= k :body)
+              (txco/js-> res)
+              res))))
       payload)))
 
 (defn- uri-namespace [uri]
@@ -65,7 +70,8 @@
   (->> test
        (header-authzn-> "Basic" seed)
        (header-authzn-> "Bearer" seed)
-       (query-params-> seed)
+       (body-> :query-params seed)
+       (body-> :body seed)
        (uri-> seed)))
 
 (defn- seeds [tests seed] (if seed (map #(seed-> % seed) tests) tests))
