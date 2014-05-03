@@ -67,7 +67,6 @@
 
 (defn test-> [host port codices corpus]
   (let [analysed (txan/analysis-> host port codices corpus)]
-    (prn "!!!! analysed : " analysed)
     (map #(testy-> %) analysed)))
 
 

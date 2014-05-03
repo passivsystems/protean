@@ -2,10 +2,10 @@
   "Uses output from the analysis transformations to generate a
    datastructure which can drive automated testing.  This variant
    tests the live API surface area."
-  (:require [protean.transformations.coerce :as txco]
+  (:require [clojure.string :as stg]
+            [protean.transformations.coerce :as txco]
             [protean.transformations.test :as tst])
-  (:use [clojure.string :only [replace split]]
-        [taoensso.timbre :as timbre :only (trace debug info warn error)]))
+  (:use [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -30,7 +30,7 @@
       (if (and (substring? PSV auth) (substring? strat auth))
         (if-let [sauth (token seed strat)]
           (let [n (assoc-in m [:headers AZN]
-                            (str strat " " (last (split sauth #" "))))]
+                            (str strat " " (last (stg/split sauth #" "))))]
             (list (first payload) (second payload) n))
           payload)
         payload)
@@ -65,7 +65,7 @@
             v (first (filter #(substring? ns %) (vals seed)))]
         (if v
           (list (first payload)
-                (replace uri #"psv\+" (last (.split v "/")))
+                (stg/replace uri #"psv\+" (last (.split v "/")))
                 (last payload))
           payload))
       payload)))
@@ -120,22 +120,36 @@
      ;()
      :else seed)))
 
-; get any results for testable tests
-; then stitch results into seed
-; then sow new items from seed into tests
-; then run testables again as per step 1
-(defn- incremental-test! [tests seed]
-  (let [res (test-results! (remove #(untestable? %) tests))]
-    (prn "!!!! res : " res)
-    ; stitch test results into seed
-    (let [new-seed (reduce seed-stitch seed res)
-          new-seeded (seeds tests new-seed)
-          new-res (test-results! (remove #(untestable? %) new-seeded))]
-      (prn "!!!! new-seed : " new-seed)
-      (prn "!!!! new-seeded : " new-seeded)
-      (prn "!!!! new-res : " new-res)
-      )
-    ))
+(defn- update-tested [testable payload]
+  (update-in payload [:tested] concat (map #(second %) testable)))
+
+(defn- update-seed [seed payload] (assoc payload :seed seed))
+
+(defn- update-results [res payload] (update-in payload [:results] concat res))
+
+(defn- update-tests [new-tests payload] (assoc payload :tests new-tests))
+
+(defn- update-state [state testable new-seed res new-tests]
+  (->> state
+       (update-seed new-seed)
+       (update-results res)
+       (update-tests new-tests)
+       (update-tested testable)))
+
+(defn- testable [{:keys [tests tested]}]
+  (let [testable (remove #(untestable? %) tests)]
+    (remove #(some #{(second %)} tested) testable)))
+
+(defn- test! [state]
+  (let [testable-tests (testable state)]
+    (if (empty? testable-tests)
+      state
+      (test!
+       (let [res (test-results! testable-tests)
+             new-seed (reduce seed-stitch (:seed state) res)
+             new-tests (seeds (:tests state) new-seed)]
+         (update-state state testable-tests new-seed res new-tests))))))
+
 
 ;; =============================================================================
 ;; Transformation functions
@@ -143,15 +157,8 @@
 
 (defn testapi-analysis-> [host port codices corpus]
   (info "testing the API")
-  (prn "seed is : " (corpus "seed"))
   (let [seed (corpus "seed")
         tests (tst/test-> host port codices corpus)
         seeded (seeds tests seed)]
-    (println "***********************************************************")
-    (prn "!!!!! ***** tests : " tests)
-    (prn "!!!!! ***** seed : " seeded)
-    (incremental-test! seeded seed)
-    (println "***********************************************************")
-
-    ;(map #(tst/test! %) tests)
-    ))
+    (let [res (test! {:tests seeded :seed seed :tested #{} :results []})]
+      res)))
