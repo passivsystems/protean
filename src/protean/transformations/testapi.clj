@@ -120,9 +120,6 @@
      ;()
      :else seed)))
 
-(defn- update-tested [testable payload]
-  (update-in payload [:tested] concat (map #(second %) testable)))
-
 (defn- update-seed [seed payload] (assoc payload :seed seed))
 
 (defn- update-results [res payload] (update-in payload [:results] concat res))
@@ -133,11 +130,11 @@
   (->> state
        (update-seed new-seed)
        (update-results res)
-       (update-tests new-tests)
-       (update-tested testable)))
+       (update-tests new-tests)))
 
-(defn- testable [{:keys [tests tested]}]
-  (let [testable (remove #(untestable? %) tests)]
+(defn- testable [{:keys [tests results]}]
+  (let [testable (remove #(untestable? %) tests)
+        tested (map #(first %) results)]
     (remove #(some #{(second %)} tested) testable)))
 
 (defn- test! [state]
@@ -160,5 +157,5 @@
   (let [seed (corpus "seed")
         tests (tst/test-> host port codices corpus)
         seeded (seeds tests seed)]
-    (let [res (test! {:tests seeded :seed seed :tested #{} :results []})]
+    (let [res (test! {:tests seeded :seed seed :results []})]
       res)))
