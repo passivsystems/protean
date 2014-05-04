@@ -12,7 +12,7 @@
 ;; =============================================================================
 
 ; TODO: refactor put in a common place
-(defn substring? [sub st] (not= (.indexOf st sub) -1))
+(defn substring? [sub st] (not= (.indexOf (str st) sub) -1))
 
 (defonce PSV "psv+")
 (defonce PSV-EXP "psv\\+")
@@ -36,9 +36,16 @@
         payload)
       payload)))
 
+(defn- bag-item [v seed]
+  (let [ns (first (.split v "/psv\\+"))]
+    (first (filter #(substring? (str ns "/") %) (get-in seed ["bag"])))))
+
+; first search in first class seed items, then in the bag
 (defn- v-swap [v seed]
   (if (substring? PSV v)
-    (if-let [sv (get-in seed [(last (.split v PSV-EXP))])] sv v)
+    (if-let [sv (get-in seed [(last (.split v PSV-EXP))])]
+      sv
+      (if-let [sv (bag-item v seed)] sv v))
     v))
 
 (defn- body-> [k seed payload]
@@ -105,7 +112,7 @@
 (defn- test-results! [tests] (map #(result (tst/test! %) %) tests))
 
 ; TODO: basic - does not handle multiple body types, just json payload
-; TODO: feed result items into bag as per before otherwise yet more mapping is needed
+; TODO: feed auth header items into bag as per other results (consistent)
 (defn- seed-stitch [seed res]
   (let [res-map (second res)]
     ; TODO: do this if we have successful test result - may have failed
@@ -117,7 +124,8 @@
        (if (= extraction-key "access_token")
          (update-in seed ["Authorization"] conj (str "Bearer " extraction))
          (update-in seed ["bag"] conj extraction)))
-     ;()
+     (get-in res-map [:location])
+     (update-in seed ["bag"] conj (get-in res-map [:location]))
      :else seed)))
 
 (defn- update-seed [seed payload] (assoc payload :seed seed))
