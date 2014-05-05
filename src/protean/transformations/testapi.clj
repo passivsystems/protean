@@ -62,17 +62,17 @@
       payload)))
 
 (defn- uri-namespace [uri]
-  (-> uri (.split "/psv\\+") first (.split "/") last))
+  (-> uri (.split "/psv\\+") first (.split "/") last (str "/psv+")))
 
 ; TODO: weak, only handles 1 instance of uri placeholder
 (defn- uri-> [seed payload]
   (let [uri (second payload)]
     (if (substring? (str "/" PSV) uri)
-      (let [ns (str (uri-namespace uri) "/")
-            v (first (filter #(substring? ns %) (vals seed)))]
-        (if v
+      (let [v (uri-namespace uri)
+            sv (bag-item v seed)]
+        (if sv
           (list (first payload)
-                (stg/replace uri #"psv\+" (last (.split v "/")))
+                (stg/replace uri #"psv\+" (last (.split sv "/")))
                 (last payload))
           payload))
       payload)))
