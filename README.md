@@ -31,7 +31,7 @@ Create a file with a .edn extension. An example is shown below. Once you are fin
 * pushing your project with Protean CLI
     - protean-cli add-projects -f /path/to/project.edn
 * pushing your project with Curl
-    - curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.end"
+    - curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.edn"
 * drop the .edn file in the root of your Protean directory and restart it
 
 An example RESTful API project configuration is listed below.
