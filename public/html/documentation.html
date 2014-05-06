@@ -31,29 +31,44 @@
       <div class="page-header">
         <h1>Documentation</h1>
       </div>
-      <p class="lead">Getting started information.</p>
 
       <section id="getting-started">
         <div class="page-header">
           <h2>Getting Started</h2>
         </div>
 
+        <h3>Configuring the Protean port</h3>
+
         <p>
-          Grab the latest runnable jar and run <code>java -jar protean.jar 3000 3001</code>.  This will launch the app with the admin port set to 3001 and the main projects API port set to 3000.
+          Protean uses two ports - an <strong>admin</strong> port and an <strong>API</strong> port. The API port is used for simulating your RESTful services.  The admin port is used to manage your service definitions.  You can override the default API and admin ports with <code>java -jar protean.jar 4000 4001</code>.  This will launch the app with the admin port set to 4001 and the main projects API port set to 4000.
+        </p>
+
+        <h3>Setting up your services/projects</h3>
+
+        <p>
+          Protean works with the concepts of <strong>services</strong> and <strong>resources</strong>.  Services are your RESTful projects, comprised of one or more RESTful resources.  We configure one or more services in a Protean <strong>codex</strong>.  A codex is written in a JSON like format called <strong>EDN</strong> (Extensible Data Notation) which uses a <code>.edn</code> extension.
         </p>
 
         <p>
-        Any project configuration files (see below) in the same directory as the runnable jar will be loaded on app startup.  Project config files must have an <strong>edn</strong> extension.  If there are no project configuration files available a defaut <strong>sample</strong> project is made available.
+          Protean has a defaut <strong>sample</strong> service codex out of the box.  Any codices in the same directory as the runnable jar will be loaded on app startup.  Alternatively you can add new services to Protean with
         </p>
+
+        <code>curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.edn"</code>
+
+        <p>or</p>
+
+        <code>protean-cli add-projects -f /path/to/project.edn</code>
+
+        <h4>
       </section>
 
-      <section id="changatron">
+      <section id="codices">
         <div class="page-header">
-          <h2>Project API configuration</h2>
+          <h2>Sample codices (project configurations)</h2>
         </div>
 
         <p>
-          Project API's are configured in simple text files which are a lot like JSON, the simplest possible example of which is listed below:
+          The simplest possible example of a codex is listed below:
         </p>
 
         <pre>
