@@ -13,7 +13,7 @@
                  [compojure "1.1.6"]
                  [cheshire "5.3.1"]
                  [org.clojure/data.xml "0.0.7"]
-                 [com.taoensso/timbre "3.1.1"]
+                 [com.taoensso/timbre "3.1.6"]
                  [clj-http "0.9.1"]
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
