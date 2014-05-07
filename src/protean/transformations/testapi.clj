@@ -106,26 +106,30 @@
 
 (defn- result [result test]
   (-> result
-      (conj (get-in (last test) [:codex :success-codes]))
+      (conj (get-in (last test) [:codex :success-code]))
       (conj (get-in (last test) [:codex :body-res]))))
 
 (defn- test-results! [tests] (map #(result (tst/test! %) %) tests))
+
+(defn- body->seed [seed res res-map]
+  (if (= (:status res-map) (nth res 2))
+    (let [b (txco/clj-> (get-in res-map [:body]))
+          extraction-key (last res)
+          extraction (get-in b [extraction-key])]
+      (if (= extraction-key "access_token")
+        (update-in seed ["Authorization"] conj (str "Bearer " extraction))
+        (update-in seed ["bag"] conj extraction)))
+    seed))
 
 ; TODO: basic - does not handle multiple body types, just json payload
 ; TODO: feed auth header items into bag as per other results (consistent)
 (defn- seed-stitch [seed res]
   (let [res-map (second res)]
-    ; TODO: do this if we have successful test result - may have failed
     (cond
      (get-in res-map [:body])
-     (let [b (txco/clj-> (get-in res-map [:body]))
-           extraction-key (last res)
-           extraction (get-in b [extraction-key])]
-       (if (= extraction-key "access_token")
-         (update-in seed ["Authorization"] conj (str "Bearer " extraction))
-         (update-in seed ["bag"] conj extraction)))
+       (body->seed seed res res-map)
      (get-in res-map [:location])
-     (update-in seed ["bag"] conj (get-in res-map [:location]))
+       (update-in seed ["bag"] conj (get-in res-map [:location]))
      :else seed)))
 
 (defn- update-seed [seed payload] (assoc payload :seed seed))
@@ -165,5 +169,7 @@
   (let [seed (corpus "seed")
         tests (tst/test-> host port codices corpus)
         seeded (seeds tests seed)]
-    (let [res (test! {:tests seeded :seed seed :results []})]
-      res)))
+    (let [state (test! {:tests seeded :seed seed :results []})
+          res (:results state)
+          part ((juxt filter remove) #(= (:status (second %)) (nth % 2)) res)]
+      {:passed (first part) :failed (last part)})))

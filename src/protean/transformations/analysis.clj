@@ -36,7 +36,7 @@
 (defn codex-rsp-> [resource payload]
   (assoc payload :codex
     {:body-res (get-in resource [:spec :rsp :body-res])
-     :success-codes (get-in resource [:spec :rsp :success-codes])}))
+     :success-code (get-in resource [:spec :rsp :success-code])}))
 
 (defn analyse-> [resource host port]
   (->> (method-> resource)
