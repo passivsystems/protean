@@ -59,7 +59,25 @@
 
         <code>protean-cli add-projects -f /path/to/project.edn</code>
 
-        <h4>
+        <h3>Querying your services/projects</h3>
+
+        <p>List all services:</p>
+
+        <code>curl -v http://localhost:3001/projects</code>
+
+        <h3>Testing your services/projects</h3>
+
+        <p>
+          Protean can automatically generate integration tests for simulations or real API's.  It can test across every service defined within the system or a specified range.  When testing real API's it is possible to pass in seed data for auth tokens and other pieces of information needed to represent the initial state of the system.  Protean will figure out the order to incrementally test endpoints, just supply a sequence of services or service/resource combinations.
+        </p>
+
+        <p>Integration testing the sample <strong>simulation</strong>:</p>
+        <code>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</code>
+        <br />
+
+        <p>Integration testing a <strong>real</strong> API:</p>
+        <code>curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice"]}}' 'http://localhost:3001/test'</code>
+        <br />
       </section>
 
       <section id="codices">
