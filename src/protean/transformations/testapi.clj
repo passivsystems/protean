@@ -171,5 +171,8 @@
         seeded (seeds tests seed)]
     (let [state (test! {:tests seeded :seed seed :results []})
           res (:results state)
-          part ((juxt filter remove) #(= (:status (second %)) (nth % 2)) res)]
-      {:passed (first part) :failed (last part)})))
+          part ((juxt filter remove) #(= (:status (second %)) (nth % 2)) res)
+          test-uris (map #(second %) (:tests state))
+          res-uris (map #(first %) (:results state))
+          untested (clojure.set/difference (set test-uris) (set res-uris))]
+      {:passed (first part) :failed (last part) :untested untested})))
