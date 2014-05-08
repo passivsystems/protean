@@ -67,7 +67,7 @@
           or
           <kbd>protean-cli projects</kbd>
         </pre>
-        <br /><br />
+        <br />
 
         <p>Show a service configuration:</p>
         <pre>
@@ -75,7 +75,7 @@
           or
           <kbd>protean-cli project -n sample</kbd>
         </pre>
-        <br /><br />
+        <br />
 
         <p>List curl commands for service resrouces:</p>
         <pre>
@@ -83,6 +83,11 @@
           or
           <kbd>protean-cli project-usage</kbd>
         </pre>
+        <br />
+
+        <p>
+        See the API documentation, or explore the CLI for other commands.
+        </p>
 
 
         <h3>Testing your services/projects</h3>
@@ -91,13 +96,29 @@
           Protean can automatically generate integration tests for simulations or real API's.  It can test across every service defined within the system or a specified range.  When testing real API's it is possible to pass in seed data for auth tokens and other pieces of information needed to represent the initial state of the system.  Protean will figure out the order to incrementally test endpoints, just supply a sequence of services or service/resource combinations.
         </p>
 
-        <p>Integration testing the sample <strong>simulation</strong>:</p>
+        <p>Integration testing all resources in the sample <strong>simulation</strong>:</p>
         <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</kbd></code>
         <br /><br />
 
-        <p>Integration testing a <strong>real</strong> API:</p>
+        <p>Integration testing all resources in a <strong>real</strong> API.</p>
+
+        <p>
+          To integration test a real API provide a host and port and optional seed data.
+        </p>
+
         <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice"]}}' 'http://localhost:3001/test'</kbd></code>
         <br /><br />
+
+        <p>Integration testing a range of resources for a given service, passing in some seed data.</p>
+
+        <p>
+        See <a href="#test-codex">test codex</a> for a sample of a codex which could enable this kind of auto integration test generation.
+        </p>
+        <code>
+          <kbd>
+          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice token" myservice create/user],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
+          </kbd>
+        </code>
       </section>
 
       <section id="codices">
@@ -109,7 +130,9 @@
           The simplest possible example of a codex is listed below:
         </p>
 
-        <pre>
+        <h3>Simple service codex</h3>
+
+        <pre id="simple-codex">
 {:simple {:paths {"path/data" {}}}}
         </pre>
 
@@ -117,11 +140,13 @@
           This creates a single resource which can be accessed with <code><kbd>curl -v http://localhost:3000/simple/path/data</kbd></code>.  This will return a 200 response with no body.
         </p>
 
+        <h3>Sample featureful simulation service codex</h3>
+
         <p>
-        It is possible to define more complex simulated project API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> project API.
+        It is possible to define more complex simulated project API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> project API.  This demonstrates a range of simulation features such as error codes, probability of error and slow response times.
         </p>
 
-        <pre>
+        <pre id="simulation-codex">
 {
   :sample {
     :paths {
@@ -179,6 +204,16 @@
   }
 }
         </pre>
+
+        <h3>Sample test enabled simulation codex</h3>
+
+        <p>
+          With a little more metadata added (one or two fields for each resource) it is possible for Protean to automatically generate integration tests for either a simluation, or the real API behind it.
+
+          We need to know what the status code is for a successful operation, and optionally how to dig a specific result out of a composite datastructure in the result.
+        </p>
+
+        <pre id="test-codex">TBD</pre>
 
       </section>
 
