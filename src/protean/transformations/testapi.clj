@@ -83,6 +83,7 @@
        (header-authzn-> "Bearer" seed)
        (body-> :query-params seed)
        (body-> :body seed)
+       (body-> :form-params seed)
        (uri-> seed)))
 
 (defn- seeds [tests seed] (if seed (map #(seed-> % seed) tests) tests))
@@ -102,20 +103,24 @@
      (if (substring? PSV auth) true false)
      false)
    (untestable-payload? (last test) :query-params)
-   (untestable-payload? (last test) :body)))
+   (untestable-payload? (last test) :body)
+   (untestable-payload? (last test) :form-params)))
 
 (defn- result [result test]
   (-> result
       (conj (get-in (last test) [:codex :success-code]))
+      (conj (get-in (last test) [:codex :content-type]))
       (conj (get-in (last test) [:codex :body-res]))))
 
 (defn- test-results! [tests] (map #(result (tst/test! %) %) tests))
 
 (defn- body->seed [seed res res-map]
   (if (= (:status res-map) (nth res 2))
-    (let [b (txco/clj-> (get-in res-map [:body]))
+    (let [b (if (= (nth res 3) "text/plain")
+              (get-in res-map [:body])
+              (txco/clj-> (get-in res-map [:body])))
           extraction-key (last res)
-          extraction (get-in b [extraction-key])]
+          extraction (if (= (nth res 3)) b (get-in b [extraction-key]))]
       (if (= extraction-key "access_token")
         (update-in seed ["Authorization"] conj (str "Bearer " extraction))
         (update-in seed ["bag"] conj extraction)))
