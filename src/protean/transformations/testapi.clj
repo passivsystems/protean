@@ -122,7 +122,7 @@
     seed))
 
 ; TODO: basic - does not handle multiple body types, just json payload
-; TODO: feed auth header items into bag as per other results (consistent)
+; TODO: feed auth header items into bag as per other results (consistent) ?
 (defn- seed-stitch [seed res]
   (let [res-map (second res)]
     (cond
