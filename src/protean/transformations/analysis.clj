@@ -5,8 +5,7 @@
   (:require [clojure.string :as stg]
             [clojure.set :as st]
             [clojure.data.xml :as xml]
-            [ring.util.codec :as cod])
-  (:import java.net.InetAddress))
+            [ring.util.codec :as cod]))
 
 ;; =============================================================================
 ;; Helper functions

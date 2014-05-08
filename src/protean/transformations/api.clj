@@ -115,11 +115,15 @@
     (if-let [body (:body (:rsp proj-payload))]
       (if-let [ctype (:content-type (:rsp proj-payload))]
         (cond
-          (= ctype "text/xml") (assoc payload :content-type "text/xml"
-                                      :body (txco/indent-> (txco/xml-> body)))
-          (= ctype "text/plain") (assoc payload :content-type "text/plain"
-                                      :body body)
-          :else (assoc payload :body (txco/js-> body)))
+          (= ctype "text/xml") (assoc payload
+                                 :headers {"Content-Type" ctype}
+                                 :body (txco/indent-> (txco/xml-> body)))
+          (= ctype "text/plain") (assoc payload
+                                   :headers {"Content-Type" ctype}
+                                   :body body)
+          :else (assoc payload
+                  :headers {"Content-Type" "application/json; charset=utf-8"}
+                  :body (txco/js-> body)))
         (assoc payload :body (txco/js-> body)))
       payload)))
 
