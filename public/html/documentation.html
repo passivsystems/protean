@@ -40,30 +40,50 @@
         <h3>Configuring the Protean port</h3>
 
         <p>
-          Protean uses two ports - an <strong>admin</strong> port and an <strong>API</strong> port. The API port is used for simulating your RESTful services.  The admin port is used to manage your service definitions.  You can override the default API and admin ports with <code>java -jar protean.jar 4000 4001</code>.  This will launch the app with the admin port set to 4001 and the main projects API port set to 4000.
+          Protean uses two ports - an <strong>admin</strong> port and an <strong>API</strong> port. The API port is used for simulating your RESTful services.  The admin port is used to manage your service definitions.  You can override the default API and admin ports with <code><kbd>java -jar protean.jar 4000 4001</kbd></code>.  This will launch the app with the admin port set to 4001 and the main projects API port set to 4000.
         </p>
 
         <h3>Setting up your services/projects</h3>
 
         <p>
-          Protean works with the concepts of <strong>services</strong> and <strong>resources</strong>.  Services are your RESTful projects, comprised of one or more RESTful resources.  We configure one or more services in a Protean <strong>codex</strong>.  A codex is written in a JSON like format called <strong>EDN</strong> (Extensible Data Notation) which uses a <code>.edn</code> extension.
+          Protean works with the concepts of <strong>services</strong> and <strong>resources</strong>.  Services are your RESTful projects, comprised of one or more RESTful resources.  We configure one or more services in a Protean <strong>codex</strong>.  A codex is written in a JSON like format called <strong>EDN</strong> (Extensible Data Notation) which uses a <strong>.edn</strong> extension.
         </p>
 
         <p>
           Protean has a defaut <strong>sample</strong> service codex out of the box.  Any codices in the same directory as the runnable jar will be loaded on app startup.  Alternatively you can add new services to Protean with
         </p>
 
-        <code>curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.edn"</code>
-
-        <p>or</p>
-
-        <code>protean-cli add-projects -f /path/to/project.edn</code>
+        <pre>
+          <kbd>curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.edn"</kbd>
+          or
+          <kbd>protean-cli add-projects -f /path/to/project.edn</kbd>
+        </pre>
 
         <h3>Querying your services/projects</h3>
 
         <p>List all services:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/projects</kbd>
+          or
+          <kbd>protean-cli projects</kbd>
+        </pre>
+        <br /><br />
 
-        <code>curl -v http://localhost:3001/projects</code>
+        <p>Show a service configuration:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/projects/sample</kbd>
+          or
+          <kbd>protean-cli project -n sample</kbd>
+        </pre>
+        <br /><br />
+
+        <p>List curl commands for service resrouces:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/projects/sample/usage</kbd>
+          or
+          <kbd>protean-cli project-usage</kbd>
+        </pre>
+
 
         <h3>Testing your services/projects</h3>
 
@@ -72,12 +92,12 @@
         </p>
 
         <p>Integration testing the sample <strong>simulation</strong>:</p>
-        <code>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</code>
-        <br />
+        <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</kbd></code>
+        <br /><br />
 
         <p>Integration testing a <strong>real</strong> API:</p>
-        <code>curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice"]}}' 'http://localhost:3001/test'</code>
-        <br />
+        <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice"]}}' 'http://localhost:3001/test'</kbd></code>
+        <br /><br />
       </section>
 
       <section id="codices">
@@ -94,7 +114,7 @@
         </pre>
 
         <p>
-          This creates a single resource which can be accessed with <code>curl -v http://localhost:3000/simple/path/data</code>.  This will return a 200 response with no body.
+          This creates a single resource which can be accessed with <code><kbd>curl -v http://localhost:3000/simple/path/data</kbd></code>.  This will return a 200 response with no body.
         </p>
 
         <p>
