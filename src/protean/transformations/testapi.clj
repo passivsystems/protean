@@ -120,7 +120,7 @@
               (get-in res-map [:body])
               (txco/clj-> (get-in res-map [:body])))
           extraction-key (last res)
-          extraction (if (= (nth res 3)) b (get-in b [extraction-key]))]
+          extraction (if (= (nth res 3) "text/plain") b (get-in b [extraction-key]))]
       (if (= extraction-key "access_token")
         (update-in seed ["Authorization"] conj (str "Bearer " extraction))
         (update-in seed ["bag"] conj extraction)))
