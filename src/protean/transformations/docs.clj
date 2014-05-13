@@ -38,11 +38,11 @@
   [{:keys [method doc headers req-params body-keys form-keys uri] :as payload}]
   (vec [(td
           (ul-unstyled
-            (vec [(li (upper-case (name method)))
+           (vec [(li (strong (upper-case (name method))))
                   (li (->> (span) (clazz glyph-info) (title (or doc ""))))])))
         (->> (td
                (ul-unstyled
-                (vec [(li uri)
+                (vec [(li (strong uri))
                       (li (->> (div (small (txc/curly-> payload)))
                                (clazz pnl-info)))])))
              (width "500px"))
