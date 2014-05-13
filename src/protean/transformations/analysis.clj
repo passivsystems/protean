@@ -66,7 +66,7 @@
                       '()
                       (flatten
                         (reduce conj (map #(combi-paths codices %) combi))))
-        svc-paths (reduce conj (map #(svc-paths codices %) (first groups)))]
+        svc-paths (flatten (reduce conj (map #(svc-paths codices %) (first groups))))]
     (concat combi-paths svc-paths)))
 
 (defn- paths
