@@ -139,7 +139,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn projects-docs [] (txdocs/projects-template (keys @state)))
+(defn projects-docs [] (txdocs/projects-template (sort (keys @state))))
 
 (defn project-docs [id host port]
   (txdocs/project-template id
