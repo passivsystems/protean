@@ -8,6 +8,7 @@
   :sample {
     :paths {
       "get/simple" {:doc "Simplest example of a resource - doc is optional"}
+
       "get/test/*" {
         :doc "Get with path parameter wildcard and configurable
               error and probability"
@@ -16,6 +17,7 @@
           :errors {:status [504] :probability 50}
         }
       }
+
       "random/test2" {
         :doc "Get with mandatory request headers/query str params"
         :req {
@@ -24,6 +26,7 @@
         }
         :rsp {:body {"t2key" "t2val"}}
       }
+
       "get/xml" {
         :doc "Get with XML content type/response"
         :rsp {
@@ -31,6 +34,7 @@
           :body [:parent [:child {:type "xml"}]]
         }
       }
+
       "post/test" {
         :doc "Post with mandatory request url encoded form"
         :req {
@@ -39,6 +43,7 @@
         }
         :rsp {:headers {"Location" "7"}}
       }
+
       "put/test1" {
         :doc "Put with mandatory body payload - defaults to JSON,
               demonstrates overriding response status code"
@@ -48,10 +53,12 @@
         }
         :rsp {:status 200}
       }
+
       "delete/test" {
         :doc "Delete sample"
         :req {:method :delete}
       }
+
       "get/slow" {
         :doc "Get with slow response (secs) - useful for testing timeouts"
         :rsp {:time 2}
