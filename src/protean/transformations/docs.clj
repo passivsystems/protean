@@ -1,6 +1,7 @@
 (ns protean.transformations.docs
 	"Uses output from the analysis transformations to generate usage docs."
-  (:require [clojure.edn :as edn]
+  (:require [clojure.string :as stg]
+            [clojure.edn :as edn]
             [clojure.core.incubator :as ib]
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
@@ -8,9 +9,7 @@
             [protean.transformations.api :as txapi]
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc])
-  (:use [clojure.string :only [join split upper-case]]
-        [clojure.set :only [intersection]]
-        [clojure.java.io :refer [file]]
+  (:use [clojure.java.io :refer [file]]
         [taoensso.timbre :as timbre :only (trace debug info warn error)]
         [me.rossputin.pew])
   (:import java.io.IOException))
@@ -20,6 +19,10 @@
 ;; =============================================================================
 
 (defmacro get-version [] (System/getProperty "protean.version"))
+
+(defn- doc-li [c s] (for [[k v] c] (li (str k s (stg/replace v "psv+" "XYZ")))))
+
+(defn- cell [c s] (td (ul-unstyled (doc-li c s))))
 
 
 ;; =============================================================================
@@ -38,7 +41,7 @@
   [{:keys [method doc headers req-params body-keys form-keys uri] :as payload}]
   (vec [(td
           (ul-unstyled
-           (vec [(li (strong (upper-case (name method))))
+           (vec [(li (strong (stg/upper-case (name method))))
                   (li (->> (span) (clazz glyph-info) (title (or doc ""))))])))
         (->> (td
                (ul-unstyled
@@ -46,10 +49,10 @@
                       (li (->> (div (small (txc/curly-> payload)))
                                (clazz pnl-info)))])))
              (width "500px"))
-        (td (ul-unstyled (for [[k v] headers] (li (str k ":" v)))))
-        (td (ul-unstyled (for [[k v] req-params] (li (str k "=" v)))))
-        (td (ul-unstyled (for [[k v] form-keys] (li (str k "=" v)))))
-        (td (ul-unstyled (for [[k v] body-keys] (li (str k ":" v)))))]))
+        (cell headers ":")
+        (cell req-params "=")
+        (cell form-keys "=")
+        (cell body-keys ":")]))
 
 (defn project-tr [payload] (map #(tr (project-td %)) payload))
 
