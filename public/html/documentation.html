@@ -116,7 +116,7 @@
         </p>
         <code>
           <kbd>
-          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice token" myservice create/user],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
+          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice token myservice create/user"],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
           </kbd>
         </code>
       </section>
@@ -211,9 +211,62 @@
           With a little more metadata added (one or two fields for each resource) it is possible for Protean to automatically generate integration tests for either a simluation, or the real API behind it.
 
           We need to know what the status code is for a successful operation, and optionally how to dig a specific result out of a composite datastructure in the result.
+
+          Below is a sample of a codex from the <a href="https://github.com/rossputin/protean-beers" target="_blank">Protean Beers sample API project</a>.
         </p>
 
-        <pre id="test-codex">TBD</pre>
+        <pre id="test-codex">
+{
+  :beers {
+    :paths {
+      "token" {
+        :doc "Get an auth token"
+        :rsp {
+          :success-code 200
+          :body-res "access_token"
+          :body {"access_token" "mytoken" "token_type" "bearer"}
+        }
+      }
+
+      ...
+
+      "starches/pick" {
+        :doc "Get a starch source suitable for a specific drink type"
+        :req {
+          :headers {"Authorization" "psv+Bearer token"}
+          :req-params {"drink" "psv+drink"}
+        }
+        :rsp {:success-code 200 :content-type "text/plain" :body "/starches/wheat"}
+      }
+
+      ...
+
+      "flavourings/pick" {
+        :doc "Get a flavouring suitable for a specific drink type"
+        :req {
+          :headers {"Authorization" "psv+Bearer token"}
+          :req-params {"drink" "psv+drink"}
+        }
+        :rsp {:success-code 200 :content-type "text/plain" :body "/flavourings/golding-hops"}
+      }
+
+      "brew" {
+        :doc "Brew a drink given a bag of ingredients"
+        :req {
+          :method :post
+          :headers {"Authorization" "psv+Bearer token" "Content-Type" "application/json"}
+          :body {
+            "starch"     "/starches/psv+"
+            "yeast"      "/yeasts/psv+"
+            "flavouring" "/flavourings/psv+"
+          }
+        }
+        :rsp {:success-code 200 :body "/drinks/ale"}
+      }
+    }
+  }
+}
+        </pre>
 
       </section>
 
