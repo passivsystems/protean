@@ -41,7 +41,7 @@ Create a file with a .edn extension. See *sample-codex.edn* at the root of this 
 * uploading with the basic Protean CLI
     - protean-cli add-services -f /path/to/service.edn
 * uploading with curl
-    - curl -v -X PUT http://locahost:3001/services --data-binary "@/path/to/service.edn"
+    - curl -v -X PUT --data-binary "@/path/to/service.edn" http://localhost:3001/services
 * drop the .edn file in the root of your Protean directory and restart it
 
 
