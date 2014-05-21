@@ -39,9 +39,9 @@ Documentation is available on http://localhost:3001 when you run Protean locally
 
 Create a file with a .edn extension. See *sample-codex.edn* at the root of this repository. Once you are finished your can add your service *codex* by;
 * uploading with the basic Protean CLI
-    - protean-cli add-projects -f /path/to/project.edn
+    - protean-cli add-services -f /path/to/service.edn
 * uploading with curl
-    - curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.edn"
+    - curl -v -X PUT http://locahost:3001/services --data-binary "@/path/to/service.edn"
 * drop the .edn file in the root of your Protean directory and restart it
 
 
