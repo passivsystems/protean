@@ -98,7 +98,7 @@
 ;; projects
 ;;;;;;;;;;;
 
-(defn projects []  (assoc json :body (txco/js-> (keys @state))))
+(defn projects []  (assoc json :body (txco/js-> (sort (keys @state)))))
 
 (defn project [id] (assoc json :body (txco/js-> ((keyword id) @state))))
 
