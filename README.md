@@ -49,15 +49,15 @@ Create a file with a .edn extension. See *sample-codex.edn* at the root of this 
 
 Lists all services:
 
-    protean-cli projects 
+    protean-cli services 
     
-Shows the service configuration for myproject.
+Shows the service configuration for myservice.
 
-    protean-cli project -n myproject 
+    protean-cli service -n myservice 
 
-Shows the curl commands that can be used for myproject.
+Shows the curl commands that can be used for myservice.
 
-    protean-cli project-usage -n myproject 
+    protean-cli service-usage -n myservice 
 
 Please explore the CLI or documentation to learn more.
 
