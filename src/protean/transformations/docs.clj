@@ -30,7 +30,7 @@
 ;; =============================================================================
 
 (defn projects-tr [payload]
-  (map #(li (a (str "/documentation/projects/" (name %)) (name %))) payload))
+  (map #(li (a (str "/documentation/services/" (name %)) (name %))) payload))
 
 (l/defdocument projects-template (file "public/html/projects.html")
   [payload]

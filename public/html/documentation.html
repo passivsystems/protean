@@ -18,7 +18,7 @@
             <li><a href="/documentation/api">API</a></li>
             <li class="active"><a href="/documentation">Documentation</a></li>
             <li><a href="/roadmap">Roadmap</a></li>
-            <li><a href="/documentation/projects">Projects</a></li>
+            <li><a href="/documentation/services">Services</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="#">v<span id="project-version">0.5.0</span></a></li>
@@ -40,13 +40,13 @@
         <h3>Configuring the Protean port</h3>
 
         <p>
-          Protean uses two ports - an <strong>admin</strong> port and an <strong>API</strong> port. The API port is used for simulating your RESTful services.  The admin port is used to manage your service definitions.  You can override the default API and admin ports with <code><kbd>java -jar protean.jar 4000 4001</kbd></code>.  This will launch the app with the admin port set to 4001 and the main projects API port set to 4000.
+          Protean uses two ports - an <strong>admin</strong> port and an <strong>API</strong> port. The API port is used for simulating your RESTful services.  The admin port is used to manage your service definitions.  You can override the default API and admin ports with <code><kbd>java -jar protean.jar 4000 4001</kbd></code>.  This will launch the app with the admin port set to 4001 and the API port set to 4000.
         </p>
 
-        <h3>Setting up your services/projects</h3>
+        <h3>Setting up your services</h3>
 
         <p>
-          Protean works with the concepts of <strong>services</strong> and <strong>resources</strong>.  Services are your RESTful projects, comprised of one or more RESTful resources.  We configure one or more services in a Protean <strong>codex</strong>.  A codex is written in a JSON like format called <strong>EDN</strong> (Extensible Data Notation) which uses a <strong>.edn</strong> extension.
+          Protean works with the concepts of <strong>services</strong> and <strong>resources</strong>.  Services are your RESTful API's, comprised of one or more RESTful resources.  We configure one or more services in a Protean <strong>codex</strong>.  A codex is written in a JSON like format called <strong>EDN</strong> (Extensible Data Notation) which uses a <strong>.edn</strong> extension.
         </p>
 
         <p>
@@ -54,43 +54,43 @@
         </p>
 
         <pre>
-          <kbd>curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.edn"</kbd>
+          <kbd>curl -v -X PUT http://locahost:3001/services --data-binary "@/path/to/service.edn"</kbd>
           or
-          <kbd>protean-cli add-projects -f /path/to/project.edn</kbd>
+          <kbd>protean-cli add-services -f /path/to/service.edn</kbd>
         </pre>
 
-        <h3>Querying your services/projects</h3>
+        <h3>Querying your services</h3>
 
         <p>List all services:</p>
         <pre>
-          <kbd>curl -v http://localhost:3001/projects</kbd>
+          <kbd>curl -v http://localhost:3001/services</kbd>
           or
-          <kbd>protean-cli projects</kbd>
+          <kbd>protean-cli services</kbd>
         </pre>
         <br />
 
         <p>Show a service configuration:</p>
         <pre>
-          <kbd>curl -v http://localhost:3001/projects/sample</kbd>
+          <kbd>curl -v http://localhost:3001/services/sample</kbd>
           or
-          <kbd>protean-cli project -n sample</kbd>
+          <kbd>protean-cli service -n sample</kbd>
         </pre>
         <br />
 
-        <p>List curl commands for service resrouces:</p>
+        <p>List curl commands for service resources:</p>
         <pre>
-          <kbd>curl -v http://localhost:3001/projects/sample/usage</kbd>
+          <kbd>curl -v http://localhost:3001/services/sample/usage</kbd>
           or
-          <kbd>protean-cli project-usage</kbd>
+          <kbd>protean-cli service-usage</kbd>
         </pre>
         <br />
 
         <p>
-        See the API documentation, or explore the CLI for other commands.
+        See the API documentation, or explore the CLI or documentation for other commands.
         </p>
 
 
-        <h3>Testing your services/projects</h3>
+        <h3>Testing your services</h3>
 
         <p>
           Protean can automatically generate integration tests for simulations or real API's.  It can test across every service defined within the system or a specified range.  When testing real API's it is possible to pass in seed data for auth tokens and other pieces of information needed to represent the initial state of the system.  Protean will figure out the order to incrementally test endpoints, just supply a sequence of services or service/resource combinations.
@@ -123,7 +123,7 @@
 
       <section id="codices">
         <div class="page-header">
-          <h2>Sample codices (project configurations)</h2>
+          <h2>Sample codices (service definitions)</h2>
         </div>
 
         <p>
@@ -143,7 +143,7 @@
         <h3>Sample featureful simulation service codex</h3>
 
         <p>
-        It is possible to define more complex simulated project API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> project API.  This demonstrates a range of simulation features such as error codes, probability of error and slow response times.
+        It is possible to define more complex simulated API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> service API.  This demonstrates a range of simulation features such as error codes, probability of error and slow response times.
         </p>
 
         <pre id="simulation-codex">

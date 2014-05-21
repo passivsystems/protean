@@ -43,46 +43,46 @@
         </thead>
         <tbody>
           <tr>
-            <td>curl -v <a href="http://localhost:3001/projects" target="_blank">http://localhost:3001/projects</a></td>
-            <td>Get a list of projects</td>
+            <td>curl -v <a href="http://localhost:3001/services" target="_blank">http://localhost:3001/services</a></td>
+            <td>Get a list of services</td>
           </tr>
           <tr>
-            <td>curl -v <a href="http://localhost:3001/projects/sample" target="_blank">http://localhost:3001/projects/sample</a></td>
-            <td>Get the sample codex (project configuration)</td>
+            <td>curl -v <a href="http://localhost:3001/services/sample" target="_blank">http://localhost:3001/services/sample</a></td>
+            <td>Get the sample codex (service definitions)</td>
           </tr>
           <tr>
-            <td>curl -v <a href="http://localhost:3001/projects/sample/usage" target="_blank">http://localhost:3001/projects/sample/usage</a></td>
+            <td>curl -v <a href="http://localhost:3001/services/sample/usage" target="_blank">http://localhost:3001/services/sample/usage</a></td>
             <td>Get the sample usage (curl command form)</td>
           </tr>
           <tr>
             <td>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</td>
-            <td>Integration test the project simulation</td>
+            <td>Integration test the service simulation</td>
           </tr>
           <tr>
-            <td>curl -v -X PUT http://localhost:3001/projects --data-binary "@/path/sample.edn"</td>
-            <td>Put one or more projects into the service</td>
+            <td>curl -v -X PUT http://localhost:3001/services --data-binary "@/path/sample.edn"</td>
+            <td>Put one or more codices (service definitions) into Protean</td>
           </tr>
           <tr>
-            <td>curl -v -X DELETE http://localhost:3001/projects/sample</td>
-            <td>Delete a project from the service</td>
+            <td>curl -v -X DELETE http://localhost:3001/services/sample</td>
+            <td>Delete a service from Protean</td>
           </tr>
           <tr>
-            <td>curl -v -X DELETE http://localhost:3001/projects/sample/errors</td>
-            <td>Turn off simulated response errors for this project</td>
+            <td>curl -v -X DELETE http://localhost:3001/services/sample/errors</td>
+            <td>Turn off simulated response errors for this service</td>
           </tr>
           <tr>
-            <td>curl -v -X PUT http://localhost:3001/projects/sample/errors/status/500</td>
-            <td>Add a simulated 500 error response for this project</td>
+            <td>curl -v -X PUT http://localhost:3001/services/sample/errors/status/500</td>
+            <td>Add a simulated 500 error response for this service</td>
           </tr>
           <tr>
-            <td>curl -v -X PUT http://localhost:3001/projects/sample/errors/probability/20</td>
-            <td>Set the probability of a simulated error to 20% for this project</td>
+            <td>curl -v -X PUT http://localhost:3001/services/sample/errors/probability/20</td>
+            <td>Set the probability of a simulated error to 20% for this service</td>
           </tr>
         </tbody>
       </table>
 
       <br />
-      <a class="btn btn-primary btn-lg" role="button" href="/documentation/projects/sample">Learn how to use the sample API</a>
+      <a class="btn btn-primary btn-lg" role="button" href="/documentation/services/sample">Learn how to use the sample API</a>
     </div>
   </body>
 </html>

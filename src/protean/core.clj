@@ -34,7 +34,7 @@
       (do/filter-exts ["edn"])))
 
 (defn- build-projects []
-  "Load projects from disk."
+  "Load services from disk."
   (let [files (proj-files)]
     (doseq [f files]
       (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
@@ -50,20 +50,20 @@
 
   (GET    "/" [] (pipe/project-index))
   (GET    "/documentation/api" [] (pipe/project-api))
-  (GET    "/documentation/projects/:id" [id] (pipe/project-docs id host @port))
-  (GET    "/documentation/projects" [] (pipe/projects-docs))
+  (GET    "/documentation/services/:id" [id] (pipe/project-docs id host @port))
+  (GET    "/documentation/services" [] (pipe/projects-docs))
   (GET    "/documentation" [] (pipe/project-documentation))
   (GET    "/roadmap" [] (pipe/project-road))
-  (DELETE "/projects/:id/errors" [id] (pipe/delete-proj-errors id))
-  (PUT    "/projects/:id/errors/status/:err" [id err]
+  (DELETE "/services/:id/errors" [id] (pipe/delete-proj-errors id))
+  (PUT    "/services/:id/errors/status/:err" [id err]
     (pipe/put-proj-error id err))
-  (PUT    "/projects/:id/errors/probability/:prob" [id prob]
+  (PUT    "/services/:id/errors/probability/:prob" [id prob]
     (pipe/put-proj-error-prob id prob))
-  (GET    "/projects" [] (pipe/projects))
-  (GET    "/projects/:id" [id] (pipe/project id))
-  (GET    "/projects/:id/usage" [id] (pipe/project-usage id host @port))
-  (wrap-multipart-params (PUT    "/projects" req (pipe/put-projects req)))
-  (DELETE "/projects/:id" [id] (pipe/del-proj-handled id))
+  (GET    "/services" [] (pipe/projects))
+  (GET    "/services/:id" [id] (pipe/project id))
+  (GET    "/services/:id/usage" [id] (pipe/project-usage id host @port))
+  (wrap-multipart-params (PUT    "/services" req (pipe/put-projects req)))
+  (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
   (POST   "/test" req (pipe/test! req host @port))
   (GET    "/status" [] (pipe/status)))
 
@@ -90,6 +90,6 @@
         projects (build-projects)]
     (info "Starting protean")
     (reset! port api-port)
-    (info (str "Projects loaded : " projects))
+    (info (str "Services loaded : " projects))
     (server (txco/int-> api-port) (txco/int-> admin-port))
     (info (str "Protean has started"))))
