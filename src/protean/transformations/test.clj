@@ -1,15 +1,9 @@
-(ns protean.transformations.testable
-  "Uses output from the analysis transformations to generate a
-   datastructure which can drive automated testing."
+(ns protean.transformations.test
+  "Generic machinery for testing."
   (:require [clojure.string :as stg]
-            [clojure.set :as st]
-            [clojure.data.xml :as xml]
-            [ring.util.codec :as cod]
             [cheshire.core :as jsn]
-            [protean.transformations.analysis :as txan]
-            [clj-http.client :as client])
-  (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
-  (:import java.net.InetAddress))
+            [protean.transformations.analysis :as txan])
+  (:use [taoensso.timbre :as timbre :only [trace debug info warn error]]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -24,13 +18,13 @@
     (conj payload method)))
 
 (defn- testy-uri-> [entry payload]
-  (conj payload (stg/replace (:uri entry) "*" "1")))
+  (conj payload (stg/replace (:uri entry) "*" "psv+")))
 
 (defn- assoc-tx->
   "Extracts out-k out of entry and assocs to payload as in-k."
   [entry out-k in-k payload]
   (if-let [v (out-k entry)]
-    (assoc payload in-k v)
+    (if (empty? v) payload (assoc payload in-k v))
     payload))
 
 (defn- body-> [entry payload]
@@ -38,32 +32,49 @@
     (assoc payload :body (jsn/generate-string (:body-keys entry)))
     payload))
 
+(defn- codex-rsp-> [entry payload]
+  (assoc payload :codex (:codex entry)))
+
 (defn- testy-map-> [entry payload]
   (conj payload (->> {:throw-exceptions false}
                      (assoc-tx-> entry :headers :headers)
                      (assoc-tx-> entry :req-params :query-params)
                      (assoc-tx-> entry :form-keys :form-params)
-                     (body-> entry))))
+                     (body-> entry)
+                     (codex-rsp-> entry))))
 
-(defn testy-> [entry]
+(defn- testy-> [entry]
   (->> []
        (testy-method-> entry)
        (testy-uri-> entry)
        (testy-map-> entry)
        seq))
 
+(defn- res-location-> [res payload]
+  (if-let [loc (get-in res [:headers "Location"])]
+    (assoc payload :location loc)
+    payload))
+
+(defn- result-> [res]
+  (->> {:status (:status res)}
+       (assoc-tx-> res :body :body)
+       (res-location-> res)))
+
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn- test-result [t]
+(defn test-> [host port codices corpus]
+  (let [analysed (txan/analysis-> host port codices corpus)]
+    (map #(testy-> %) analysed)))
+
+
+;; =============================================================================
+;; Test functions
+;; =============================================================================
+
+(defn test! [t]
   (info "executing test : " t)
   (require '[clj-http.client :as client])
-  [(second t) (:status (eval t))])
-
-(defn testy-analysis-> [project proj-payload host port]
-  (let [paths (:paths proj-payload)]
-    (let [analysed (txan/analysis-> project proj-payload host port)]
-      (let [testy (map #(testy-> %) analysed)]
-        {:results (map #(test-result %) testy)}))))
+  (let [res (eval t)] [(second t) (result-> res)]))

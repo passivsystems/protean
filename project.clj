@@ -1,4 +1,4 @@
-(defproject protean "0.7.0"
+(defproject protean "0.8.0-pre.1"
   :description "Simulate RESTful API's, easily"
   :url "http://github.com/passivsystems/protean"
   :license {:name "Apache License v2.0"
@@ -13,11 +13,12 @@
                  [compojure "1.1.6"]
                  [cheshire "5.3.1"]
                  [org.clojure/data.xml "0.0.7"]
-                 [com.taoensso/timbre "3.1.1"]
+                 [com.taoensso/timbre "3.1.6"]
                  [clj-http "0.9.1"]
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
-                 [me.rossputin/diskops "0.1.1"]]
+                 [me.rossputin/diskops "0.1.1"]
+                 [me.rossputin/pew "0.1.0"]]
   :plugins [[lein-ring "0.8.7"]]
   :aot :all
   :main protean.core)

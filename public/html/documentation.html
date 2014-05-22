@@ -18,7 +18,7 @@
             <li><a href="/documentation/api">API</a></li>
             <li class="active"><a href="/documentation">Documentation</a></li>
             <li><a href="/roadmap">Roadmap</a></li>
-            <li><a href="/documentation/projects">Projects</a></li>
+            <li><a href="/documentation/services">Services</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="#">v<span id="project-version">0.5.0</span></a></li>
@@ -31,44 +31,126 @@
       <div class="page-header">
         <h1>Documentation</h1>
       </div>
-      <p class="lead">Getting started information.</p>
 
       <section id="getting-started">
         <div class="page-header">
           <h2>Getting Started</h2>
         </div>
 
+        <h3>Configuring the Protean port</h3>
+
         <p>
-          Grab the latest runnable jar and run <code>java -jar protean.jar 3000 3001</code>.  This will launch the app with the admin port set to 3001 and the main projects API port set to 3000.
+          Protean uses two ports - an <strong>admin</strong> port and an <strong>API</strong> port. The API port is used for simulating your RESTful services.  The admin port is used to manage your service definitions.  You can override the default API and admin ports with <code><kbd>java -jar protean.jar 4000 4001</kbd></code>.  This will launch the app with the admin port set to 4001 and the API port set to 4000.
+        </p>
+
+        <h3>Setting up your services</h3>
+
+        <p>
+          Protean works with the concepts of <strong>services</strong> and <strong>resources</strong>.  Services are your RESTful API's, comprised of one or more RESTful resources.  We configure one or more services in a Protean <strong>codex</strong>.  A codex is written in a JSON like format called <strong>EDN</strong> (Extensible Data Notation) which uses a <strong>.edn</strong> extension.
         </p>
 
         <p>
-        Any project configuration files (see below) in the same directory as the runnable jar will be loaded on app startup.  Project config files must have an <strong>edn</strong> extension.  If there are no project configuration files available a defaut <strong>sample</strong> project is made available.
-        </p>
-      </section>
-
-      <section id="changatron">
-        <div class="page-header">
-          <h2>Project API configuration</h2>
-        </div>
-
-        <p>
-          Project API's are configured in simple text files which are a lot like JSON, the simplest possible example of which is listed below:
+          Protean has a defaut <strong>sample</strong> service codex out of the box.  Any codices in the same directory as the runnable jar will be loaded on app startup.  Alternatively you can add new services to Protean with
         </p>
 
         <pre>
+          <kbd>curl -v -X PUT http://locahost:3001/services --data-binary "@/path/to/service.edn"</kbd>
+          or
+          <kbd>protean-cli add-services -f /path/to/service.edn</kbd>
+        </pre>
+
+        <h3>Querying your services</h3>
+
+        <p>List all services:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/services</kbd>
+          or
+          <kbd>protean-cli services</kbd>
+        </pre>
+        <br />
+
+        <p>Show a service configuration:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/services/sample</kbd>
+          or
+          <kbd>protean-cli service -n sample</kbd>
+        </pre>
+        <br />
+
+        <p>List curl commands for service resources:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/services/sample/usage</kbd>
+          or
+          <kbd>protean-cli service-usage</kbd>
+        </pre>
+        <br />
+
+        <p>
+        See the <a href="documentation/api">API documentation</a>, or explore the CLI or documentation for other commands.
+        </p>
+
+
+        <h3>Testing your services</h3>
+
+        <p>
+          Protean can automatically generate integration tests for simulations or real API's.  It can test across every service defined within the system or a specified range.  When testing real API's it is possible to pass in seed data for auth tokens and other pieces of information needed to represent the initial state of the system.  Protean will figure out the order to incrementally test endpoints, just supply a sequence of services or service/resource combinations.
+        </p>
+
+        <p>Integration testing all resources in the sample <strong>simulation</strong>:</p>
+        <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</kbd></code>
+        <br /><br />
+
+        <p>Integration testing all resources in a <strong>real</strong> API (provide a host and port pointing to your API).</p>
+
+        <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice"]}}' 'http://localhost:3001/test'</kbd></code>
+        <br /><br />
+
+        <p>Integration testing a range of resources for a given service, passing in some seed data.</p>
+
+        <p>
+        See <a href="#test-codex">test codex</a> for a sample of a codex which could enable this kind of auto integration test generation.
+        </p>
+        <code>
+          <kbd>
+          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice token myservice create/user"],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
+          </kbd>
+        </code>
+        <br /><br />
+
+        <p>Finally testing all of multiple services.</p>
+        <code>
+          <kbd>
+          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["svc1","svc2"],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
+          </kbd>
+        </code>
+      </section>
+
+      <section id="codices">
+        <div class="page-header">
+          <h2>Sample codices (service definitions)</h2>
+        </div>
+
+        <p>
+          The simplest possible example of a codex is listed below:
+        </p>
+
+        <h3>Simple service codex</h3>
+
+        <pre id="simple-codex">
 {:simple {:paths {"path/data" {}}}}
         </pre>
 
         <p>
-          This creates a single resource which can be accessed with <code>curl -v http://localhost:3000/simple/path/data</code>.  This will return a 200 response with no body.
+          This creates a single resource which can be accessed with <code><kbd>curl -v http://localhost:3000/simple/path/data</kbd></code>.  This will return a 200 response with no body.  Protean makes use where appropriate of sensible defaults for HTTP/REST.  Here as we do not specify a request method a <strong>GET</strong> is inferred, and as we do not specify a response status code we assume the default for a GET - 200.
         </p>
+
+        <h3>Sample featureful simulation service codex</h3>
 
         <p>
-        It is possible to define more complex simulated project API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> project API.
+        It is possible to define more complex simulated API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> service API.  This demonstrates a range of simulation features such as error codes, probability of error and slow response times.
         </p>
 
-        <pre>
+        <pre id="simulation-codex">
 {
   :sample {
     :paths {
@@ -123,6 +205,69 @@
       }
     }
     :errors {:status [500 503] :probability 25}
+  }
+}
+        </pre>
+
+        <h3>Sample test enabled simulation codex</h3>
+
+        <p>
+          With a little more metadata added (one or two fields for each resource) it is possible for Protean to automatically generate integration tests for either a simluation, or the real API behind it.
+
+          We need to know what the status code is for a successful operation, and optionally how to dig a specific result out of a composite datastructure in the result.  For this we use the <strong>:success-code</strong> and <strong>:body-res</strong> directives respectively.
+
+          Below is a sample of a codex from the <a href="https://github.com/rossputin/protean-beers" target="_blank">Protean Beers sample API project</a>.
+        </p>
+
+        <pre id="test-codex">
+{
+  :beers {
+    :paths {
+      "token" {
+        :doc "Get an auth token"
+        :rsp {
+          :success-code 200
+          :body-res "access_token"
+          :body {"access_token" "mytoken" "token_type" "bearer"}
+        }
+      }
+
+      ...
+
+      "starches/pick" {
+        :doc "Get a starch source suitable for a specific drink type"
+        :req {
+          :headers {"Authorization" "psv+Bearer token"}
+          :req-params {"drink" "psv+drink"}
+        }
+        :rsp {:success-code 200 :content-type "text/plain" :body "/starches/wheat"}
+      }
+
+      ...
+
+      "flavourings/pick" {
+        :doc "Get a flavouring suitable for a specific drink type"
+        :req {
+          :headers {"Authorization" "psv+Bearer token"}
+          :req-params {"drink" "psv+drink"}
+        }
+        :rsp {:success-code 200 :content-type "text/plain" :body "/flavourings/golding-hops"}
+      }
+
+      "brew" {
+        :doc "Brew a drink given a bag of ingredients"
+        :req {
+          :method :post
+          :headers {"Authorization" "psv+Bearer token" "Content-Type" "application/json"}
+          :body {
+            "starch"     "/starches/psv+"
+            "yeast"      "/yeasts/psv+"
+            "flavouring" "/flavourings/psv+"
+          }
+        }
+        :rsp {:success-code 200 :body "/drinks/ale"}
+      }
+    }
   }
 }
         </pre>

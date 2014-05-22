@@ -34,8 +34,7 @@
       (jsn/generate-string b) "'")
     payload))
 
-(defn curly-uri-> [entry payload]
-  (str payload " '" (:uri entry)))
+(defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
 (defn curly-req-params-> [entry payload]
   (if-let [rp (:req-params entry)]
@@ -43,8 +42,7 @@
       (cod/form-encode (val %))) rp)) "'")
     (str payload "'")))
 
-(defn curly-postprocess-> [entry payload]
-  (stg/replace payload "*" "1"))
+(defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
 
 (defn curly-> [entry]
   (->> "curl -v"
@@ -54,14 +52,15 @@
        (curly-body-> entry)
        (curly-uri-> entry)
        (curly-req-params-> entry)
-       (curly-postprocess-> entry)))
+       (curly-postprocess-> "*" "1")
+       (curly-postprocess-> "psv+" "XYZ")))
 
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn curly-analysis-> [project proj-payload host port]
-  (let [paths (:paths proj-payload)]
-    (let [analysed (txan/analysis-> project proj-payload host port)]
-      (map #(curly-> %) analysed))))
+(defn curly-analysis-> [host port codices project]
+  (let [corpus {"locs" [project]}
+        analysed (txan/analysis-> host port codices corpus)]
+    (map #(curly-> %) analysed)))
