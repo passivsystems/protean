@@ -15,6 +15,21 @@ Take control of your RESTful API's. Test them, simulate them, document how to us
 This is a Clojure project which uses edn to simulate, integration test and document RESTful API's. Protean is used commerically to help speed development and test complex distributed systems.
 
 
+## Release information
+
+* Latest development release is 0.8.0-pre.1
+    * [Code](https://github.com/passivsystems/protean/tree/0.8.0-pre.1)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.8.0-pre.1/protean-0.8.0-pre.1.tgz)
+* Latest stable release is 0.7.0
+    * [Code](https://github.com/passivsystems/protean/tree/0.7.0)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.7.0/protean-0.7.0.tgz)
+
+
+## API stability
+
+Protean is still new and will be subject to some change until it hits the 1.0.0 release.  All efforts will be made to minimise change to the API (which is represented in the form of the *codex* - service definitions in EDN).  We expect to change the codex schema only to align it more closely to the datastructures used in Clojure Ring to represent requests and responses (so we share a common well understood language).  There are still a few minor discrepancies.
+
+
 ## Usage
 
     lein deps
