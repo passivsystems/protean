@@ -46,6 +46,11 @@ Build a distributable with lein uberjar, then run with:
     java -jar protean.jar 4000 4001
 
 
+Or just download a release and unpack it into a location of your choice, then run with:
+
+    java -jar protean.jar
+    
+
 ## Documentation
 
 Documentation is available on http://localhost:3001 when you run Protean locally.  Below is a quickstart guide.
