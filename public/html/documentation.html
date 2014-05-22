@@ -86,7 +86,7 @@
         <br />
 
         <p>
-        See the API documentation, or explore the CLI or documentation for other commands.
+        See the <a href="documentation/api">API documentation</a>, or explore the CLI or documentation for other commands.
         </p>
 
 
@@ -100,11 +100,7 @@
         <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</kbd></code>
         <br /><br />
 
-        <p>Integration testing all resources in a <strong>real</strong> API.</p>
-
-        <p>
-          To integration test a real API provide a host and port and optional seed data.
-        </p>
+        <p>Integration testing all resources in a <strong>real</strong> API (provide a host and port pointing to your API).</p>
 
         <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice"]}}' 'http://localhost:3001/test'</kbd></code>
         <br /><br />
@@ -117,6 +113,14 @@
         <code>
           <kbd>
           curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice token myservice create/user"],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
+          </kbd>
+        </code>
+        <br /><br />
+
+        <p>Finally testing all of multiple services.</p>
+        <code>
+          <kbd>
+          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["svc1","svc2"],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
           </kbd>
         </code>
       </section>
@@ -137,7 +141,7 @@
         </pre>
 
         <p>
-          This creates a single resource which can be accessed with <code><kbd>curl -v http://localhost:3000/simple/path/data</kbd></code>.  This will return a 200 response with no body.
+          This creates a single resource which can be accessed with <code><kbd>curl -v http://localhost:3000/simple/path/data</kbd></code>.  This will return a 200 response with no body.  Protean makes use where appropriate of sensible defaults for HTTP/REST.  Here as we do not specify a request method a <strong>GET</strong> is inferred, and as we do not specify a response status code we assume the default for a GET - 200.
         </p>
 
         <h3>Sample featureful simulation service codex</h3>
@@ -210,7 +214,7 @@
         <p>
           With a little more metadata added (one or two fields for each resource) it is possible for Protean to automatically generate integration tests for either a simluation, or the real API behind it.
 
-          We need to know what the status code is for a successful operation, and optionally how to dig a specific result out of a composite datastructure in the result.
+          We need to know what the status code is for a successful operation, and optionally how to dig a specific result out of a composite datastructure in the result.  For this we use the <strong>:success-code</strong> and <strong>:body-res</strong> directives respectively.
 
           Below is a sample of a codex from the <a href="https://github.com/rossputin/protean-beers" target="_blank">Protean Beers sample API project</a>.
         </p>
