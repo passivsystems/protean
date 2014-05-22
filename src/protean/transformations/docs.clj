@@ -10,7 +10,6 @@
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc])
   (:use [clojure.java.io :refer [file]]
-        [taoensso.timbre :as timbre :only (trace debug info warn error)]
         [me.rossputin.pew])
   (:import java.io.IOException))
 

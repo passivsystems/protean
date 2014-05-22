@@ -2,15 +2,15 @@
   "Entry point into the app.  Config, server and routes."
   (:require [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
+            [ring.adapter.jetty :as jetty]
+            [ring.middleware.multipart-params :as mp]
             [compojure.core :refer [defroutes ANY DELETE GET POST PUT]]
             [compojure.handler :as handler]
             [compojure.route :as route]
             [me.rossputin.diskops :as do]
             [protean.pipeline :as pipe]
             [protean.transformations.coerce :as txco])
-  (:use ring.adapter.jetty
-        [ring.middleware.multipart-params]
-        [taoensso.timbre :as timbre :only (trace debug info warn error)])
+  (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File java.net.InetAddress)
   (:gen-class))
 
@@ -33,8 +33,9 @@
   (-> (remove #(.isDirectory %) (file-seq (file pwd)))
       (do/filter-exts ["edn"])))
 
-(defn- build-projects []
+(defn- build-projects
   "Load services from disk."
+  []
   (let [files (proj-files)]
     (doseq [f files]
       (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
@@ -62,7 +63,7 @@
   (GET    "/services" [] (pipe/projects))
   (GET    "/services/:id" [id] (pipe/project id))
   (GET    "/services/:id/usage" [id] (pipe/project-usage id host @port))
-  (wrap-multipart-params (PUT    "/services" req (pipe/put-projects req)))
+  (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-projects req)))
   (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
   (POST   "/test" req (pipe/test! req host @port))
   (GET    "/status" [] (pipe/status)))
@@ -76,8 +77,8 @@
 ;; =============================================================================
 
 (defn server [api-port admin-port]
-  (run-jetty admin-routes {:port admin-port :join? false})
-  (run-jetty (-> api-routes handler/api) {:port api-port :join? false}))
+  (jetty/run-jetty admin-routes {:port admin-port :join? false})
+  (jetty/run-jetty (-> api-routes handler/api) {:port api-port :join? false}))
 
 
 ;; =============================================================================
