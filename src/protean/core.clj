@@ -25,12 +25,8 @@
 
 (def port (atom 3000))
 
-(defonce pwd (. (file ".") getCanonicalPath))
-
-(defonce fs (File/separator))
-
 (defn proj-files []
-  (-> (remove #(.isDirectory %) (file-seq (file pwd)))
+  (-> (remove #(.isDirectory %) (file-seq (file (do/pwd))))
       (do/filter-exts ["edn"])))
 
 (defn- build-projects

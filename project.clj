@@ -17,7 +17,7 @@
                  [clj-http "0.9.2"]
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
-                 [me.rossputin/diskops "0.1.1"]
+                 [me.rossputin/diskops "0.2.0"]
                  [me.rossputin/pew "0.1.0"]]
   :plugins [[lein-ring "0.8.10"]]
   :aot :all
