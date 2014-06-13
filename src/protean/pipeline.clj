@@ -36,7 +36,7 @@
 (defn- wild-path? [k paths]
   (if-let [x (first (filter #(partial-path? k %) paths))] x nil))
 
-(defn- project-path? [proj k]
+(defn- service-path? [proj k]
   (or (get-in @state [proj :paths k])
       (get-in @state [proj :paths (wild-path? k
         (filter #(substring? "*" %) (keys (get-in @state [proj :paths]))))])))
@@ -64,7 +64,7 @@
 
 
 ;; =============================================================================
-;; Project pipelines
+;; Service pipelines
 ;; =============================================================================
 
 (defn api [{:keys [uri request-method headers query-params form-params body]
@@ -76,7 +76,7 @@
         probability (get (get-in @state [proj :errors]) :probability)
         req {:method request-method :hdrs headers :q-params query-params
              :form-params form-params :body (slurp body)}]
-    (if-let [proj-payload (project-path? proj k)]
+    (if-let [proj-payload (service-path? proj k)]
       (let [rsp (txapi/api-resp-> req proj-payload errors probability)]
         (info "response : " rsp)
         rsp)
@@ -95,14 +95,14 @@
 ;; Admin pipelines
 ;; =============================================================================
 
-;; projects
+;; services
 ;;;;;;;;;;;
 
-(defn projects []  (assoc json :body (txco/js-> (sort (keys @state)))))
+(defn services []  (assoc json :body (txco/js-> (sort (keys @state)))))
 
-(defn project [id] (assoc json :body (txco/js-> ((keyword id) @state))))
+(defn service [id] (assoc json :body (txco/js-> ((keyword id) @state))))
 
-(defn project-usage [id host port]
+(defn service-usage [id host port]
   (assoc json :body (txco/js-> (txc/curly-analysis-> host port @state id))))
 
 (defn del-proj [id]
@@ -112,16 +112,16 @@
 
 (def del-proj-handled (handler del-proj handle-proj-del-error))
 
-(defn put-projects [req]
+(defn put-services [req]
   (let [file ((:params req) "file")
         data (edn/read-string (slurp (:tempfile file)))]
     (reset! state (merge @state data))
     (doseq [d data]
       (spit (str (name (key d)) ".edn") (pr-str {(key d) (val d)})))
-    (projects)))
+    (services)))
 
-(defn delete-proj-errors [project]
-  (reset! state (ib/dissoc-in @state [(keyword project) :errors :status]))
+(defn delete-proj-errors [service]
+  (reset! state (ib/dissoc-in @state [(keyword service) :errors :status]))
   {:status 204})
 
 (defn put-proj-error [proj err]
@@ -135,26 +135,26 @@
   {:status 204})
 
 
-;; projects documentation
+;; services documentation
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn projects-docs [] (txdocs/projects-template (sort (keys @state))))
+(defn services-docs [] (txdocs/services-template (sort (keys @state))))
 
-(defn project-docs [id host port]
-  (txdocs/project-template id
+(defn service-docs [id host port]
+  (txdocs/service-template id
     (txan/analysis-> host port @state {"locs" [id]})))
 
-(l/defdocument project-index (file "public/html/index.html") []
+(l/defdocument service-index (file "public/html/index.html") []
   (l/id="project-version") (<- (txdocs/get-version)))
 
-(l/defdocument project-api (file "public/html/api.html") []
+(l/defdocument service-api (file "public/html/api.html") []
   (l/id="project-version") (<- (txdocs/get-version)))
 
-(l/defdocument project-documentation (file "public/html/documentation.html") []
+(l/defdocument service-documentation (file "public/html/documentation.html") []
   (l/id="project-version") (<- (txdocs/get-version)))
 
-(l/defdocument project-road (file "public/html/roadmap.html") []
+(l/defdocument service-road (file "public/html/roadmap.html") []
   (l/id="project-version") (<- (txdocs/get-version)))
 
 

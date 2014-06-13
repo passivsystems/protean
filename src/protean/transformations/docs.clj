@@ -28,15 +28,15 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn projects-tr [payload]
+(defn services-tr [payload]
   (map #(li (a (str "/documentation/services/" (name %)) (name %))) payload))
 
-(l/defdocument projects-template (file "public/html/projects.html")
+(l/defdocument services-template (file "public/html/projects.html")
   [payload]
   (l/id="project-version") (<- (get-version))
-  (l/id="projects-list") (<- (projects-tr payload)))
+  (l/id="projects-list") (<- (services-tr payload)))
 
-(defn project-td
+(defn service-td
   [{:keys [method doc headers req-params body-keys form-keys uri] :as payload}]
   (vec [(td
           (ul-unstyled
@@ -53,10 +53,10 @@
         (cell form-keys "=")
         (cell body-keys ":")]))
 
-(defn project-tr [payload] (map #(tr (project-td %)) payload))
+(defn service-tr [payload] (map #(tr (service-td %)) payload))
 
-(l/defdocument project-template (file "public/html/project.html")
+(l/defdocument service-template (file "public/html/project.html")
   [id payload]
   (l/id="project-version") (<- (get-version))
   (l/id="project-name") (<- (name id))
-  (l/element= :tbody) (<- (project-tr payload)))
+  (l/element= :tbody) (<- (service-tr payload)))
