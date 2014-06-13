@@ -4,8 +4,7 @@
    request/response."
   (:require [clojure.string :as stg]
             [clojure.set :as st]
-            [clojure.data.xml :as xml]
-            [ring.util.codec :as cod]))
+            [clojure.data.xml :as xml]))
 
 ;; =============================================================================
 ;; Helper functions
