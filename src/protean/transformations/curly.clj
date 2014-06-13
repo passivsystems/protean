@@ -3,7 +3,6 @@
    command structure."
   (:require [clojure.string :as stg]
             [clojure.set :as st]
-            [clojure.data.xml :as xml]
             [ring.util.codec :as cod]
             [cheshire.core :as jsn]
             [protean.transformations.analysis :as txan])
