@@ -44,7 +44,8 @@
         (->> (td
                (ul-unstyled
                 (vec [(li (strong uri))
-                      (li (->> (div (small (txc/curly-> payload)))
+                      (li (->> (div
+											           (small (cod/url-decode (txc/curly-> payload))))
                                (clazz pnl-info)))])))
              (width "500px"))
         (cell headers ":")
