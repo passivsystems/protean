@@ -6,7 +6,6 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
-            [protean.transformations.api :as txapi]
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc])
   (:use [clojure.java.io :refer [file]]

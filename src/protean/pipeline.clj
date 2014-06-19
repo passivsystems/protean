@@ -4,8 +4,8 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
+            [protean.transformations.sim :as txsim]
             [protean.transformations.coerce :as txco]
-            [protean.transformations.api :as txapi]
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc]
             [protean.transformations.docs :as txdocs]
@@ -77,7 +77,7 @@
         req {:method request-method :hdrs headers :q-params query-params
              :form-params form-params :body (slurp body)}]
     (if-let [proj-payload (service-path? proj k)]
-      (let [rsp (txapi/api-resp-> req proj-payload errors probability)]
+      (let [rsp (txsim/sim-rsp-> req proj-payload errors probability)]
         (info "response : " rsp)
         rsp)
       {:status 404})))
