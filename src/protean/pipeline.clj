@@ -26,21 +26,6 @@
 
 (def state (atom {}))
 
-(defn substring? [sub st] (not= (.indexOf st sub) -1))
-
-(defn- partial-path? [key path]
-  (let [split-path (set (split path #"/"))]
-    (>= (count (intersection (set (split key #"/")) split-path))
-       (dec (count split-path)))))
-
-(defn- wild-path? [k paths]
-  (if-let [x (first (filter #(partial-path? k %) paths))] x nil))
-
-(defn- service-path? [proj k]
-  (or (get-in @state [proj :paths k])
-      (get-in @state [proj :paths (wild-path? k
-        (filter #(substring? "*" %) (keys (get-in @state [proj :paths]))))])))
-
 (defn- log-request [req]
   (info "request is : " req)
   (info "request method : " (:request-method req))
@@ -67,20 +52,9 @@
 ;; Service pipelines
 ;; =============================================================================
 
-(defn api [{:keys [uri request-method headers query-params form-params body]
-            :as req}]
+(defn api [req]
   (log-request req)
-  (let [proj (keyword (second (split uri #"/")))
-        k (second (split uri (re-pattern (str "/" (name proj) "/"))))
-        errors (get (get-in @state [proj :errors]) :status)
-        probability (get (get-in @state [proj :errors]) :probability)
-        req {:method request-method :hdrs headers :q-params query-params
-             :form-params form-params :body (slurp body)}]
-    (if-let [proj-payload (service-path? proj k)]
-      (let [rsp (txsim/sim-rsp-> req proj-payload errors probability)]
-        (info "response : " rsp)
-        rsp)
-      {:status 404})))
+  (txsim/sim-rsp-> req @state))
 
 (defn test! [{:keys [params] :as req} host port]
   (let [body (body (:body req)) h (get body "host") p (get body "port")]
