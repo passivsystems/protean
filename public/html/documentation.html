@@ -137,7 +137,7 @@
         <h3>Simple service codex</h3>
 
         <pre id="simple-codex">
-{:simple {:paths {"path/data" {}}}}
+{:simple {:paths {"path/data" {:get {}}}}}
         </pre>
 
         <p>
@@ -154,54 +154,67 @@
 {
   :sample {
     :paths {
-      "get/simple" {:doc "Simplest example of a resource - doc is optional"}
-      "get/test/*" {
-        :doc "Get with path parameter wildcard and configurable
-              error and probability"
-        :rsp {
-          :body {"t1key" "t1val"}
-          :errors {:status [504] :probability 50}
+      "simple" {
+        :get { :doc "A get on sample/simple - doc is optional" }
+      }
+
+      "multimethod" {
+        :get { :doc "A get on sample/multimethod" }
+        :put { :doc "A put on sample/multimethod" }
+      }
+
+      "test/*" {
+        :get {
+          :doc "Get with path parameter wildcard and configurable
+                error and probability"
+          :rsp {
+            :body {"t1key" "t1val"}
+            :errors {:status [504] :probability 50}
+          }
         }
       }
-      "random/test2" {
-        :doc "Get with mandatory request headers/query str params"
-        :req {
-          :headers {"X-Auth" "XYZ"}
-          :req-params {"blurb" "flibble"}
-        }
-        :rsp {:body {"t2key" "t2val"}}
-      }
-      "get/xml" {
-        :doc "Get with XML content type/response"
-        :rsp {
-          :content-type "text/xml"
-          :body [:parent [:child {:type "xml"}]]
+
+      "xml" {
+        :get {
+          :doc "Get with XML content type/response"
+          :rsp {
+            :content-type "text/xml"
+            :body [:parent [:child {:type "xml"}]]
+          }
         }
       }
-      "post/test" {
-        :doc "Post with mandatory request url encoded form"
-        :req {
-          :method :post
-          :form {"k1" "v1"}
+
+      "test" {
+        :get {
+          :doc "Get with mandatory request headers/query str params"
+          :req {
+            :headers {"X-Auth" "XYZ"}
+            :req-params {"blurb" "flibble"}
+          }
+          :rsp {:body {"t2key" "t2val"}}
         }
-        :rsp {:headers {"Location" "7"}}
-      }
-      "put/test1" {
-        :doc "Put with mandatory body payload - defaults to JSON,
-              demonstrates overriding response status code"
-        :req {
-          :method :put
-          :body {"k1" "v1" "k2" "v2"}
+
+        :post {
+          :doc "Post with mandatory request url encoded form"
+          :req {:form {"k1" "v1"}}
+          :rsp {:headers {"Location" "7"}}
         }
-        :rsp {:status 200}
+
+        :put {
+          :doc "Put with mandatory body payload - defaults to JSON,
+                demonstrates overriding response status code"
+          :req {:body {"k1" "v1" "k2" "v2"}}
+          :rsp {:status 200}
+        }
+
+        :delete {:doc "Delete sample"}
       }
-      "delete/test" {
-        :doc "Delete sample"
-        :req {:method :delete}
-      }
-      "get/slow" {
-        :doc "Get with slow response (secs) - useful for testing timeouts"
-        :rsp {:time 2}
+
+      "slow" {
+        :get {
+          :doc "Get with slow response (secs) - useful for testing timeouts"
+          :rsp {:time 2}
+        }
       }
     }
     :errors {:status [500 503] :probability 25}
@@ -224,48 +237,55 @@
   :beers {
     :paths {
       "token" {
-        :doc "Get an auth token"
-        :rsp {
-          :success-code 200
-          :body-res "access_token"
-          :body {"access_token" "mytoken" "token_type" "bearer"}
+        :get {
+          :doc "Get an auth token"
+          :rsp {
+            :success-code 200
+            :body-res "access_token"
+            :body {"access_token" "mytoken" "token_type" "bearer"}
+          }
         }
       }
 
       ...
 
       "starches/pick" {
-        :doc "Get a starch source suitable for a specific drink type"
-        :req {
-          :headers {"Authorization" "psv+Bearer token"}
-          :req-params {"drink" "psv+drink"}
+        :get {
+          :doc "Get a starch source suitable for a specific drink type"
+          :req {
+            :headers {"Authorization" "psv+Bearer token"}
+            :req-params {"drink" "psv+drink"}
+          }
+          :rsp {:success-code 200 :content-type "text/plain" :body "/starches/malted-grain"}
         }
-        :rsp {:success-code 200 :content-type "text/plain" :body "/starches/wheat"}
       }
 
       ...
 
       "flavourings/pick" {
-        :doc "Get a flavouring suitable for a specific drink type"
-        :req {
-          :headers {"Authorization" "psv+Bearer token"}
-          :req-params {"drink" "psv+drink"}
+        :get {
+          :doc "Get a flavouring suitable for a specific drink type"
+          :req {
+            :headers {"Authorization" "psv+Bearer token"}
+            :req-params {"drink" "psv+drink"}
+          }
+          :rsp {:success-code 200 :content-type "text/plain" :body "/flavourings/golding-hops"}
         }
-        :rsp {:success-code 200 :content-type "text/plain" :body "/flavourings/golding-hops"}
       }
 
       "brew" {
-        :doc "Brew a drink given a bag of ingredients"
-        :req {
-          :method :post
-          :headers {"Authorization" "psv+Bearer token" "Content-Type" "application/json"}
-          :body {
-            "starch"     "/starches/psv+"
-            "yeast"      "/yeasts/psv+"
-            "flavouring" "/flavourings/psv+"
+        :post {
+          :doc "Brew a drink given a bag of ingredients"
+          :req {
+            :headers {"Authorization" "psv+Bearer token" "Content-Type" "application/json"}
+            :body {
+              "starch"     "/starches/psv+"
+              "yeast"      "/yeasts/psv+"
+              "flavouring" "/flavourings/psv+"
+            }
           }
+          :rsp {:success-code 200 :body "/drinks/ale"}
         }
-        :rsp {:success-code 200 :body "/drinks/ale"}
       }
     }
   }
