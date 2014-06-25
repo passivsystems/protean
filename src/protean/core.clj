@@ -9,7 +9,8 @@
             [compojure.route :as route]
             [me.rossputin.diskops :as do]
             [protean.pipeline :as pipe]
-            [protean.transformations.coerce :as txco])
+            [protean.transformations.coerce :as txco]
+            [protean.transformations.docs :as pdoc])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File java.net.InetAddress)
   (:gen-class))
@@ -85,7 +86,7 @@
   (let [api-port (or (first args) "3000")
         admin-port (or (second args) "3001")
         services (build-services)]
-    (info "Starting protean")
+    (info "Starting protean - v" (pdoc/get-version))
     (reset! port api-port)
     (info (str "Services loaded : " services))
     (server (txco/int-> api-port) (txco/int-> admin-port))
