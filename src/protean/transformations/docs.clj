@@ -16,7 +16,7 @@
 ;; Helper functions and data
 ;; =============================================================================
 
-(defmacro get-version [] (System/getProperty "protean.version"))
+(defmacro version [] (System/getProperty "protean.version"))
 
 (defn- doc-li [c s] (for [[k v] c] (li (str k s (stg/replace v "psv+" "XYZ")))))
 
@@ -32,7 +32,7 @@
 
 (l/defdocument services-template (file "public/html/projects.html")
   [payload]
-  (l/id="project-version") (<- (get-version))
+  (l/id="project-version") (<- (version))
   (l/id="projects-list") (<- (services-tr payload)))
 
 (defn service-td
@@ -57,6 +57,6 @@
 
 (l/defdocument service-template (file "public/html/project.html")
   [id payload]
-  (l/id="project-version") (<- (get-version))
+  (l/id="project-version") (<- (version))
   (l/id="project-name") (<- (name id))
   (l/element= :tbody) (<- (service-tr payload)))

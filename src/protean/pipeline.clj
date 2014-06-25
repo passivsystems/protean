@@ -120,16 +120,16 @@
     (txan/analysis-> host port @state {"locs" [id]})))
 
 (l/defdocument service-index (file "public/html/index.html") []
-  (l/id="project-version") (<- (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/version)))
 
 (l/defdocument service-api (file "public/html/api.html") []
-  (l/id="project-version") (<- (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/version)))
 
 (l/defdocument service-documentation (file "public/html/documentation.html") []
-  (l/id="project-version") (<- (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/version)))
 
 (l/defdocument service-road (file "public/html/roadmap.html") []
-  (l/id="project-version") (<- (txdocs/get-version)))
+  (l/id="project-version") (<- (txdocs/version)))
 
 
 ;; service status

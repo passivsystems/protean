@@ -86,7 +86,7 @@
   (let [api-port (or (first args) "3000")
         admin-port (or (second args) "3001")
         services (build-services)]
-    (info "Starting protean - v" (pdoc/get-version))
+    (info "Starting protean - v" (pdoc/version))
     (reset! port api-port)
     (info (str "Services loaded : " services))
     (server (txco/int-> api-port) (txco/int-> admin-port))
