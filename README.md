@@ -17,12 +17,9 @@ This is a Clojure project which uses edn to simulate, integration test and docum
 
 ## Release information
 
-* Latest development release is 0.8.0-pre.3
-    * [Code](https://github.com/passivsystems/protean/tree/0.8.0-pre.3)
-    * [Download](https://github.com/passivsystems/protean/releases/download/0.8.0-pre.3/protean-0.8.0-pre.3.tgz)
-* Latest stable release is 0.7.0
-    * [Code](https://github.com/passivsystems/protean/tree/0.7.0)
-    * [Download](https://github.com/passivsystems/protean/releases/download/0.7.0/protean-0.7.0.tgz)
+* Latest stable release is 0.8.0
+    * [Code](https://github.com/passivsystems/protean/tree/0.8.0)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.8.0/protean-0.8.0.tgz)
 
 
 ## API stability
