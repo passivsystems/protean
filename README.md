@@ -1,6 +1,6 @@
 # Protean
 
-Take control of your RESTful API's. Test them, simulate them, document how to use them and figure out how failure affects your architecture. No invasive changes to your code base. Swap API behaviour out real time over the network. 
+Take control of your RESTful API's. Test them, simulate them, document how to use them and figure out how failure affects your architecture. No invasive changes to your code base. Swap API behaviour out real time over the network.
 
 * Simulate API's with a portable concise JSON like language
 * Hotswap API behaviour on the fly over the network
@@ -17,9 +17,9 @@ This is a Clojure project which uses edn to simulate, integration test and docum
 
 ## Release information
 
-* Latest development release is 0.8.0-pre.1
-    * [Code](https://github.com/passivsystems/protean/tree/0.8.0-pre.1)
-    * [Download](https://github.com/passivsystems/protean/releases/download/0.8.0-pre.1/protean-0.8.0-pre.1.tgz)
+* Latest development release is 0.8.0-pre.3
+    * [Code](https://github.com/passivsystems/protean/tree/0.8.0-pre.3)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.8.0-pre.3/protean-0.8.0-pre.3.tgz)
 * Latest stable release is 0.7.0
     * [Code](https://github.com/passivsystems/protean/tree/0.7.0)
     * [Download](https://github.com/passivsystems/protean/releases/download/0.7.0/protean-0.7.0.tgz)
@@ -49,7 +49,7 @@ Build a distributable with lein uberjar, then run with:
 Or just download a release and unpack it into a location of your choice, then run with:
 
     java -jar protean.jar
-    
+
 
 ## Documentation
 
@@ -69,22 +69,22 @@ Create a file with a .edn extension. See *sample-codex.edn* at the root of this 
 
 Lists all services:
 
-    protean-cli services 
-    
+    protean-cli services
+
 Shows the service configuration for myservice.
 
-    protean-cli service -n myservice 
+    protean-cli service -n myservice
 
 Shows the curl commands that can be used for myservice.
 
-    protean-cli service-usage -n myservice 
+    protean-cli service-usage -n myservice
 
 Please explore the CLI or documentation to learn more.
 
 
 ## Contributing
 
-All contributions ideas/pull requests/bug reports are welcome, we hope you find it useful. 
+All contributions ideas/pull requests/bug reports are welcome, we hope you find it useful.
 
 
 

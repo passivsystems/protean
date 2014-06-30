@@ -6,7 +6,6 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
-            [protean.transformations.api :as txapi]
             [protean.transformations.analysis :as txan]
             [protean.transformations.curly :as txc])
   (:use [clojure.java.io :refer [file]]
@@ -17,7 +16,7 @@
 ;; Helper functions and data
 ;; =============================================================================
 
-(defmacro get-version [] (System/getProperty "protean.version"))
+(defmacro version [] (System/getProperty "protean.version"))
 
 (defn- doc-li [c s] (for [[k v] c] (li (str k s (stg/replace v "psv+" "XYZ")))))
 
@@ -28,15 +27,15 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn projects-tr [payload]
+(defn services-tr [payload]
   (map #(li (a (str "/documentation/services/" (name %)) (name %))) payload))
 
-(l/defdocument projects-template (file "public/html/projects.html")
+(l/defdocument services-template (file "public/html/projects.html")
   [payload]
-  (l/id="project-version") (<- (get-version))
-  (l/id="projects-list") (<- (projects-tr payload)))
+  (l/id="project-version") (<- (version))
+  (l/id="projects-list") (<- (services-tr payload)))
 
-(defn project-td
+(defn service-td
   [{:keys [method doc headers req-params body-keys form-keys uri] :as payload}]
   (vec [(td
           (ul-unstyled
@@ -45,7 +44,8 @@
         (->> (td
                (ul-unstyled
                 (vec [(li (strong uri))
-                      (li (->> (div (small (txc/curly-> payload)))
+                      (li (->> (div
+											           (small (cod/url-decode (txc/curly-> payload))))
                                (clazz pnl-info)))])))
              (width "500px"))
         (cell headers ":")
@@ -53,10 +53,10 @@
         (cell form-keys "=")
         (cell body-keys ":")]))
 
-(defn project-tr [payload] (map #(tr (project-td %)) payload))
+(defn service-tr [payload] (map #(tr (service-td %)) payload))
 
-(l/defdocument project-template (file "public/html/project.html")
+(l/defdocument service-template (file "public/html/project.html")
   [id payload]
-  (l/id="project-version") (<- (get-version))
+  (l/id="project-version") (<- (version))
   (l/id="project-name") (<- (name id))
-  (l/element= :tbody) (<- (project-tr payload)))
+  (l/element= :tbody) (<- (service-tr payload)))

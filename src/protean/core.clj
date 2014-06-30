@@ -9,7 +9,8 @@
             [compojure.route :as route]
             [me.rossputin.diskops :as do]
             [protean.pipeline :as pipe]
-            [protean.transformations.coerce :as txco])
+            [protean.transformations.coerce :as txco]
+            [protean.transformations.docs :as pdoc])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File java.net.InetAddress)
   (:gen-class))
@@ -25,18 +26,14 @@
 
 (def port (atom 3000))
 
-(defonce pwd (. (file ".") getCanonicalPath))
-
-(defonce fs (File/separator))
-
-(defn proj-files []
-  (-> (remove #(.isDirectory %) (file-seq (file pwd)))
+(defn svc-files []
+  (-> (remove #(.isDirectory %) (file-seq (file (do/pwd))))
       (do/filter-exts ["edn"])))
 
-(defn- build-projects
+(defn- build-services
   "Load services from disk."
   []
-  (let [files (proj-files)]
+  (let [files (svc-files)]
     (doseq [f files]
       (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
   (keys @pipe/state))
@@ -49,21 +46,21 @@
 (defroutes admin-routes
   (route/files "/resource" {:root "public/resource"})
 
-  (GET    "/" [] (pipe/project-index))
-  (GET    "/documentation/api" [] (pipe/project-api))
-  (GET    "/documentation/services/:id" [id] (pipe/project-docs id host @port))
-  (GET    "/documentation/services" [] (pipe/projects-docs))
-  (GET    "/documentation" [] (pipe/project-documentation))
-  (GET    "/roadmap" [] (pipe/project-road))
+  (GET    "/" [] (pipe/service-index))
+  (GET    "/documentation/api" [] (pipe/service-api))
+  (GET    "/documentation/services/:id" [id] (pipe/service-docs id host @port))
+  (GET    "/documentation/services" [] (pipe/services-docs))
+  (GET    "/documentation" [] (pipe/service-documentation))
+  (GET    "/roadmap" [] (pipe/service-road))
   (DELETE "/services/:id/errors" [id] (pipe/delete-proj-errors id))
   (PUT    "/services/:id/errors/status/:err" [id err]
     (pipe/put-proj-error id err))
   (PUT    "/services/:id/errors/probability/:prob" [id prob]
     (pipe/put-proj-error-prob id prob))
-  (GET    "/services" [] (pipe/projects))
-  (GET    "/services/:id" [id] (pipe/project id))
-  (GET    "/services/:id/usage" [id] (pipe/project-usage id host @port))
-  (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-projects req)))
+  (GET    "/services" [] (pipe/services))
+  (GET    "/services/:id" [id] (pipe/service id))
+  (GET    "/services/:id/usage" [id] (pipe/service-usage id host @port))
+  (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
   (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
   (POST   "/test" req (pipe/test! req host @port))
   (GET    "/status" [] (pipe/status)))
@@ -88,9 +85,9 @@
 (defn -main [& args]
   (let [api-port (or (first args) "3000")
         admin-port (or (second args) "3001")
-        projects (build-projects)]
-    (info "Starting protean")
+        services (build-services)]
+    (info "Starting protean - v" (pdoc/version))
     (reset! port api-port)
-    (info (str "Services loaded : " projects))
+    (info (str "Services loaded : " services))
     (server (txco/int-> api-port) (txco/int-> admin-port))
     (info (str "Protean has started"))))
