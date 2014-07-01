@@ -119,12 +119,11 @@
     (let [b (if (= (nth res 3) "text/plain")
               (get-in res-map [:body])
               (txco/clj-> (get-in res-map [:body])))
-          extraction-key (last res)
-          extraction (if (= (nth res 3) "text/plain")
-                       (txco/clj-> b) (get-in b [extraction-key]))]
-      (if (= extraction-key "access_token")
-        (update-in seed ["Authorization"] conj (str "Bearer " extraction))
-        (update-in seed ["bag"] conj extraction)))
+          extract-key (last res)
+          extract (if (= (nth res 3) "text/plain") b (get-in b [extract-key]))]
+      (if (= extract-key "access_token")
+        (update-in seed ["Authorization"] conj (str "Bearer " extract))
+        (update-in seed ["bag"] conj extract)))
     seed))
 
 ; TODO: basic - does not handle multiple body types, just json payload
