@@ -1,4 +1,4 @@
-(defproject protean "0.8.0"
+(defproject protean "0.8.1"
   :description "Take control of your RESTful API's, simulate, doc, test easily."
   :url "http://github.com/passivsystems/protean"
   :license {:name "Apache License v2.0"
