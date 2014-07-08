@@ -11,6 +11,13 @@
         :get { :doc "A get on sample/simple - doc is optional" }
       }
 
+      "header" {
+        :get {
+          :doc "A get with response header"
+          :rsp {:headers {"Flibble" "Blurb"} :errors {:probability 0}}
+        }
+      }
+
       "multimethod" {
         :get { :doc "A get on sample/multimethod" }
         :put { :doc "A put on sample/multimethod" }
