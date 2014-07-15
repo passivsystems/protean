@@ -12,7 +12,6 @@
                  [ring/ring-codec "1.0.0"]
                  [compojure "1.1.8"]
                  [cheshire "5.3.1"]
-                 [org.clojure/data.xml "0.0.7"]
                  [com.taoensso/timbre "3.2.1"]
                  [clj-http "0.9.2"]
                  [me.raynes/laser "1.1.1"]
