@@ -2,7 +2,8 @@
   "Generic machinery for testing."
   (:require [clojure.string :as stg]
             [cheshire.core :as jsn]
-            [protean.transformations.analysis :as txan])
+            [protean.transformations.analysis :as txan]
+            [protean.transformations.coerce :as ptc])
   (:use [taoensso.timbre :as timbre :only [trace debug info warn error]]))
 
 ;; =============================================================================
@@ -29,7 +30,7 @@
 
 (defn- body-> [entry payload]
   (if (:body-keys entry)
-    (assoc payload :body (jsn/generate-string (:body-keys entry)))
+    (assoc payload :body (ptc/js-> (:body-keys entry)))
     payload))
 
 (defn- codex-rsp-> [entry payload]
