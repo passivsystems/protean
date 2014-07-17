@@ -113,13 +113,16 @@
 
 (defn- test-results! [tests] (map #(result (tst/test! %) %) tests))
 
+; N.B. text/plain responses are filtered to ensure string results are simple
 (defn- body->seed [seed res res-map]
   (if (= (:status res-map) (nth res 2))
     (let [b (if (= (nth res 3) "text/plain")
               (get-in res-map [:body])
               (txco/clj-> (get-in res-map [:body])))
           extract-key (last res)
-          extract (if (= (nth res 3) "text/plain") b (get-in b [extract-key]))]
+          extract (if (= (nth res 3) "text/plain")
+                    (apply str (remove #((set "\"") %) b))
+                    (get-in b [extract-key]))]
       (if (= extract-key "access_token")
         (update-in seed ["Authorization"] conj (str "Bearer " extract))
         (update-in seed ["bag"] conj extract)))
