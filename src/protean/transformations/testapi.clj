@@ -11,23 +11,20 @@
 ;; Helper functions
 ;; =============================================================================
 
-; TODO: refactor put in a common place
-(defn substring? [sub st] (not= (.indexOf (str st) sub) -1))
-
 (defonce PSV "psv+")
 (defonce PSV-EXP "psv\\+")
 (defonce AZN "Authorization")
 
 (defn- token [seed strat]
   (let [tokens (get-in seed [AZN])]
-    (first (filter #(substring? strat %) tokens))))
+    (first (filter #(.contains % strat) tokens))))
 
 ; TODO: needs refactoring, trying to get a prototype out
 ; strat is either Basic or Bearer
 (defn- header-authzn-> [strat seed payload]
   (let [m (last payload)]
     (if-let [auth (get-in m [:headers AZN])]
-      (if (and (substring? PSV auth) (substring? strat auth))
+      (if (and (.contains auth PSV) (.contains auth strat))
         (if-let [sauth (token seed strat)]
           (let [n (assoc-in m [:headers AZN]
                             (str strat " " (last (stg/split sauth #" "))))]
@@ -36,13 +33,15 @@
         payload)
       payload)))
 
+(defn- substr? [s sub] (if s (.contains s sub) false))
+
 (defn- bag-item [v seed]
   (let [ns (first (.split v "/psv\\+"))]
-    (first (filter #(substring? (str ns "/") %) (get-in seed ["bag"])))))
+    (first (filter #(substr? % (str ns "/")) (get-in seed ["bag"])))))
 
 ; first search in first class seed items, then in the bag
 (defn- v-swap [v seed]
-  (if (substring? PSV v)
+  (if (.contains v PSV)
     (if-let [sv (get-in seed [(last (.split v PSV-EXP))])]
       sv
       (if-let [sv (bag-item v seed)] sv v))
@@ -67,7 +66,7 @@
 ; TODO: weak, only handles 1 instance of uri placeholder
 (defn- uri-> [seed payload]
   (let [uri (second payload)]
-    (if (substring? (str "/" PSV) uri)
+    (if (.contains uri (str "/" PSV))
       (let [v (uri-namespace uri)
             sv (bag-item v seed)]
         (if sv
@@ -90,7 +89,7 @@
 
 (defn- untestable-payload? [body k]
   (if-let [qp (if (= k :body) (txco/clj-> (k body)) (k body))]
-    (if (first (filter #(substring? PSV %) (vals qp)))
+    (if (first (filter #(.contains % PSV) (vals qp)))
       true
       false)
     false))
@@ -98,9 +97,9 @@
 ; does this test have any unseeded items ?
 (defn- untestable? [test]
   (or
-   (substring? (str "/" PSV) (second test))
+   (.contains (second test) (str "/" PSV))
    (if-let [auth (get-in (last test) [:headers AZN])]
-     (if (substring? PSV auth) true false)
+     (if (.contains auth PSV) true false)
      false)
    (untestable-payload? (last test) :query-params)
    (untestable-payload? (last test) :body)
