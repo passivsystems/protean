@@ -3,7 +3,7 @@
    datastructure which can drive automated testing.  This variant
    tests the live API surface area."
   (:require [clojure.string :as stg]
-            [protean.transformations.coerce :as txco]
+            [protean.transformation.coerce :as txco]
             [protean.transformations.test :as tst])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 

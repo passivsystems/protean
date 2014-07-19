@@ -2,8 +2,8 @@
   "Generic machinery for testing."
   (:require [clojure.string :as stg]
             [cheshire.core :as jsn]
-            [protean.transformations.analysis :as txan]
-            [protean.transformations.coerce :as ptc])
+            [protean.transformation.analysis :as txan]
+            [protean.transformation.coerce :as ptc])
   (:use [taoensso.timbre :as timbre :only [trace debug info warn error]]))
 
 ;; =============================================================================
