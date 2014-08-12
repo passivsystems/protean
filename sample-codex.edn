@@ -49,7 +49,7 @@
           :doc "Get with mandatory request headers/query str params"
           :req {
             :headers {"X-Auth" "XYZ"}
-            :req-params {"blurb" "flibble"}
+            :query-params {"blurb" "flibble"}
           }
           :rsp {:body {"t2key" "t2val"}}
         }

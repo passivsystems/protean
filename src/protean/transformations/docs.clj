@@ -36,7 +36,7 @@
   (l/id="projects-list") (<- (services-tr payload)))
 
 (defn service-td
-  [{:keys [method doc headers req-params body-keys form-keys uri] :as payload}]
+  [{:keys [method doc headers query-params body-keys form-keys uri] :as payload}]
   (vec [(td
           (ul-unstyled
            (vec [(li (strong (stg/upper-case (name method))))
@@ -49,7 +49,7 @@
                                (clazz pnl-info)))])))
              (width "500px"))
         (cell headers ":")
-        (cell req-params "=")
+        (cell query-params "=")
         (cell form-keys "=")
         (cell body-keys ":")]))
 
