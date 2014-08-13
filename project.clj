@@ -18,7 +18,7 @@
                  [me.raynes/hickory "0.4.2"]
                  [me.rossputin/diskops "0.2.0"]
                  [me.rossputin/pew "0.1.0"]
-                 [com.passivsystems/protean-core "0.1.1"]]
+                 [com.passivsystems/protean-core "0.3.0-SNAPSHOT"]]
   :plugins [[lein-ring "0.8.10"]]
   :aot :all
   :main protean.core)

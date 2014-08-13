@@ -3,7 +3,8 @@
    datastructure which can drive automated testing.  This variant
    tests the live API surface area."
   (:require [clojure.string :as stg]
-            [protean.transformations.coerce :as txco]
+            [protean.transformation.coerce :as txco]
+            [protean.transformation.testy-cljhttp :as t]
             [protean.transformations.test :as tst])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 
@@ -174,7 +175,7 @@
 (defn testapi-analysis-> [host port codices corpus]
   (info "testing the API")
   (let [seed (corpus "seed")
-        tests (tst/test-> host port codices corpus)
+        tests (t/clj-httpify host port codices corpus)
         seeded (seeds tests seed)]
     (let [state (test! {:tests seeded :seed seed :results []})
           res (:results state)

@@ -49,14 +49,14 @@
           :doc "Get with mandatory request headers/query str params"
           :req {
             :headers {"X-Auth" "XYZ"}
-            :req-params {"blurb" "flibble"}
+            :query-params {"blurb" "flibble"}
           }
           :rsp {:body {"t2key" "t2val"}}
         }
 
         :post {
           :doc "Post with mandatory request url encoded form"
-          :req {:form {"k1" "v1"}}
+          :req {:form-params {"k1" "v1"}}
           :rsp {:headers {"Location" "7"}}
         }
 

@@ -6,8 +6,8 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
-            [protean.transformations.analysis :as txan]
-            [protean.transformations.curly :as txc])
+            [protean.transformation.analysis :as txan]
+            [protean.transformation.curly :as txc])
   (:use [clojure.java.io :refer [file]]
         [me.rossputin.pew])
   (:import java.io.IOException))
@@ -36,7 +36,7 @@
   (l/id="projects-list") (<- (services-tr payload)))
 
 (defn service-td
-  [{:keys [method doc headers req-params body-keys form-keys uri] :as payload}]
+  [{:keys [method doc headers query-params body-keys form-params uri] :as payload}]
   (vec [(td
           (ul-unstyled
            (vec [(li (strong (stg/upper-case (name method))))
@@ -49,8 +49,8 @@
                                (clazz pnl-info)))])))
              (width "500px"))
         (cell headers ":")
-        (cell req-params "=")
-        (cell form-keys "=")
+        (cell query-params "=")
+        (cell form-params "=")
         (cell body-keys ":")]))
 
 (defn service-tr [payload] (map #(tr (service-td %)) payload))

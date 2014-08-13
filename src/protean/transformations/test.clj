@@ -2,54 +2,14 @@
   "Generic machinery for testing."
   (:require [clojure.string :as stg]
             [cheshire.core :as jsn]
-            [protean.transformations.analysis :as txan]
-            [protean.transformations.coerce :as ptc])
+            [protean.transformation.analysis :as txan]
+            [protean.transformation.coerce :as ptc]
+            [protean.transformation.payload :as p])
   (:use [taoensso.timbre :as timbre :only [trace debug info warn error]]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
-
-(defn- testy-method-> [entry payload]
-  (let [method
-         (cond
-           (= (:method entry) :post) 'client/post
-           (= (:method entry) :put) 'client/put
-           :else 'client/get)]
-    (conj payload method)))
-
-(defn- testy-uri-> [entry payload]
-  (conj payload (stg/replace (:uri entry) "*" "psv+")))
-
-(defn- assoc-tx->
-  "Extracts out-k out of entry and assocs to payload as in-k."
-  [entry out-k in-k payload]
-  (if-let [v (out-k entry)]
-    (if (empty? v) payload (assoc payload in-k v))
-    payload))
-
-(defn- body-> [entry payload]
-  (if (:body-keys entry)
-    (assoc payload :body (ptc/js-> (:body-keys entry)))
-    payload))
-
-(defn- codex-rsp-> [entry payload]
-  (assoc payload :codex (:codex entry)))
-
-(defn- testy-map-> [entry payload]
-  (conj payload (->> {:throw-exceptions false}
-                     (assoc-tx-> entry :headers :headers)
-                     (assoc-tx-> entry :req-params :query-params)
-                     (assoc-tx-> entry :form-keys :form-params)
-                     (body-> entry)
-                     (codex-rsp-> entry))))
-
-(defn- testy-> [entry]
-  (->> []
-       (testy-method-> entry)
-       (testy-uri-> entry)
-       (testy-map-> entry)
-       seq))
 
 (defn- res-location-> [res payload]
   (if-let [loc (get-in res [:headers "Location"])]
@@ -58,17 +18,8 @@
 
 (defn- result-> [res]
   (->> {:status (:status res)}
-       (assoc-tx-> res :body :body)
+       (p/assoc-item res :body :body)
        (res-location-> res)))
-
-
-;; =============================================================================
-;; Transformation functions
-;; =============================================================================
-
-(defn test-> [host port codices corpus]
-  (let [analysed (txan/analysis-> host port codices corpus)]
-    (map #(testy-> %) analysed)))
 
 
 ;; =============================================================================
