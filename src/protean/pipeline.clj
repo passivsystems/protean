@@ -9,7 +9,6 @@
             [protean.transformation.analysis :as txan]
             [protean.transformation.curly :as txc]
             [protean.transformations.docs :as txdocs]
-            [protean.transformations.testsim :as txts]
             [protean.transformations.testapi :as txta])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
@@ -59,9 +58,7 @@
 (defn test! [{:keys [params] :as req} host port]
   (let [body (body (:body req)) h (get body "host") p (get body "port")]
     (let [host (or h host) port (or p port)
-          res (if (or h p)
-                (txta/testapi-analysis-> host port @state body)
-                (txts/testsim-analysis-> host port @state body))]
+          res (txta/testapi-analysis-> host port @state body)]
       (assoc json :body (txco/js-> res)))))
 
 
