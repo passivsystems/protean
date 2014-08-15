@@ -29,8 +29,10 @@ Protean is still new and will be subject to some change until it hits the 1.0.0 
 
 ## Usage
 
+### Server
+
     lein deps
-    lein run
+    lein run -m protean.server.core
 
 by default the admin area runs on 3001 and the main app area on 3000.
 
@@ -46,6 +48,46 @@ Build a distributable with lein uberjar, then run with:
 Or just download a release and unpack it into a location of your choice, then run with:
 
     java -jar protean.jar
+
+### Command line interface
+
+## Without building
+
+    lein deps
+
+    lein run
+
+will show usage instructions.
+
+    lein run services
+
+will list configured services.
+
+## Building
+
+    lein uberjar
+
+will produce a jar file in target 'xyz-standalone.jar'
+
+rename this, move it to where you want and then use
+
+    java -jar protean.jar
+
+or
+
+    protean
+
+will show usage instructions.
+
+    protean services
+
+or
+
+    java -jar protean.jar services
+
+will list configured services.
+
+We recommend 'drip' (github.com/flatland/drip) to speed things up with the command line.  The sample script uses drip.
 
 
 ## Documentation
@@ -82,7 +124,6 @@ Please explore the CLI or documentation to learn more.
 ## Contributing
 
 All contributions ideas/pull requests/bug reports are welcome, we hope you find it useful.
-
 
 
 ## License

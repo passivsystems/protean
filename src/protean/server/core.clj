@@ -9,7 +9,7 @@
             [compojure.route :as route]
             [me.rossputin.diskops :as do]
             [protean.server.pipeline :as pipe]
-            [protean.transformation.coerce :as txco]
+            [protean.core.transformation.coerce :as txco]
             [protean.server.docs :as pdoc])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File java.net.InetAddress)
