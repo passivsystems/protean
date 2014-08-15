@@ -50,8 +50,6 @@
 
 (defn- test-sim [h p f b]
   (println (aa/bold-green "Testing simulation..."))
-  (println "b : " b)
-  (println "locs : " (:locs b))
   (let [codices (edn/read-string (slurp f))
         br (b/visit b codices)
         tests (tc/clj-httpify h p codices b)
