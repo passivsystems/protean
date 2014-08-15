@@ -1,4 +1,4 @@
-(ns protean.transformations.docs
+(ns protean.server.docs
 	"Uses output from the analysis transformations to generate usage docs."
   (:require [clojure.string :as stg]
             [clojure.edn :as edn]
@@ -6,8 +6,8 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
-            [protean.transformation.analysis :as txan]
-            [protean.transformation.curly :as txc])
+            [protean.core.transformation.analysis :as txan]
+            [protean.core.transformation.curly :as txc])
   (:use [clojure.java.io :refer [file]]
         [me.rossputin.pew])
   (:import java.io.IOException))

@@ -1,4 +1,4 @@
-(ns protean.core
+(ns protean.server.core
   "Entry point into the app.  Config, server and routes."
   (:require [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
@@ -8,9 +8,9 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [me.rossputin.diskops :as do]
-            [protean.pipeline :as pipe]
-            [protean.transformation.coerce :as txco]
-            [protean.transformations.docs :as pdoc])
+            [protean.server.pipeline :as pipe]
+            [protean.core.transformation.coerce :as txco]
+            [protean.server.docs :as pdoc])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File java.net.InetAddress)
   (:gen-class))
@@ -62,7 +62,6 @@
   (GET    "/services/:id/usage" [id] (pipe/service-usage id host @port))
   (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
   (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
-  (POST   "/test" req (pipe/test! req host @port))
   (GET    "/status" [] (pipe/status)))
 
 (defroutes api-routes
