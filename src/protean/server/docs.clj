@@ -1,4 +1,4 @@
-(ns protean.transformations.docs
+(ns protean.server.docs
 	"Uses output from the analysis transformations to generate usage docs."
   (:require [clojure.string :as stg]
             [clojure.edn :as edn]

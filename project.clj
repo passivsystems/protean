@@ -21,4 +21,4 @@
                  [com.passivsystems/protean-core "0.3.0-SNAPSHOT"]]
   :plugins [[lein-ring "0.8.10"]]
   :aot :all
-  :main protean.core)
+  :main protean.server.core)

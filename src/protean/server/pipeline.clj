@@ -1,4 +1,4 @@
-(ns protean.pipeline
+(ns protean.server.pipeline
   (:require [clojure.edn :as edn]
             [clojure.core.incubator :as ib]
             [clojure.java.io :refer [delete-file]]
@@ -8,8 +8,7 @@
             [protean.transformation.coerce :as txco]
             [protean.transformation.analysis :as txan]
             [protean.transformation.curly :as txc]
-            [protean.transformations.docs :as txdocs]
-            [protean.transformations.testapi :as txta])
+            [protean.server.docs :as txdocs])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
@@ -54,12 +53,6 @@
 (defn api [req]
   (log-request req)
   (txsim/sim-rsp-> req @state))
-
-(defn test! [{:keys [params] :as req} host port]
-  (let [body (body (:body req)) h (get body "host") p (get body "port")]
-    (let [host (or h host) port (or p port)
-          res (txta/testapi-analysis-> host port @state body)]
-      (assoc json :body (txco/js-> res)))))
 
 
 ;; =============================================================================
