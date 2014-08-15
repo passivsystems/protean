@@ -36,6 +36,7 @@
     "N/A"))
 
 (defn- codices->silk [f n d]
+  (println (aa/bold-green "Generating documentation..."))
   (let [codices (edn/read-string (slurp f))
         locs {"locs" (if n (vector n) n)}
         an (pta/analysis-> "host" 1234 codices locs)]
