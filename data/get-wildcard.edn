@@ -1,5 +1,0 @@
-;; A sample GET with wildcard path codex
-;;
-;; Test more complex path structures
-
-{:sample {:paths {"simple/*" {:get {}}}}}

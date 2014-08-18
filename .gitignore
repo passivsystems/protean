@@ -9,5 +9,5 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 *.log
-/*.edn
+*.edn
 !sample-codex.edn
