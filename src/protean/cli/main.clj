@@ -96,7 +96,7 @@
 
 (defn- usage-hud [options-summary]
   (->> [""
-        "Usage: program-name [options] action"
+        "Usage: protean [options] action"
         ""
         "Options:"
         options-summary
