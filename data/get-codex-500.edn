@@ -1,0 +1,18 @@
+;; A sample GET codex returns 500
+;;
+;; Demonstrates a guaranteed 500 response
+
+{
+  :sample {
+    :paths {
+      "simple" {
+        :get {
+          :rsp {
+            :body {"t1key" "t1val"}
+            :errors {:status [500] :probability 100}
+          }
+        }
+      }
+    }
+  }
+}

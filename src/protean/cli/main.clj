@@ -36,6 +36,7 @@
     "N/A"))
 
 (defn- codices->silk [f n d]
+  (println (aa/bold-green "Generating documentation..."))
   (let [codices (edn/read-string (slurp f))
         locs {"locs" (if n (vector n) n)}
         an (pta/analysis-> "host" 1234 codices locs)]
@@ -49,8 +50,6 @@
 
 (defn- test-sim [h p f b]
   (println (aa/bold-green "Testing simulation..."))
-  (println "b : " b)
-  (println "locs : " (:locs b))
   (let [codices (edn/read-string (slurp f))
         br (b/visit b codices)
         tests (tc/clj-httpify h p codices b)
