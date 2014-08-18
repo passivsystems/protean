@@ -91,7 +91,7 @@
    ["-d" "--directory DIRECTORY" "Documentation site"]
    ["-b" "--body BODY" "JSON body"]
    ["-s" "--status-err STATUS-ERROR" "Error status code"]
-   ["-l"  "--level LEVEL" "Error level (probability)"]
+   ["-l" "--level LEVEL" "Error level (probability)"]
    ["-h" "--help"]])
 
 (defn- usage-hud [options-summary]
