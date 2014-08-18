@@ -1,4 +1,4 @@
-(ns protean.cli.test
+(ns protean.core.command.test
   (:require [protean.core.transformation.payload :as p]))
 
 (defn- res-location [res payload]

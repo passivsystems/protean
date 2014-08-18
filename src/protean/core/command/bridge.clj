@@ -17,12 +17,22 @@
 
    Reconciles the results certain probes record across time.
 
-   Links expectations to probe results where outcome is a concern.")
+   Links expectations to probe results where outcome is a concern."
+  (:require [protean.core.transformation.paths :as p]
+            [protean.core.command.probe :as pr])
+  (:use [protean.core.command.probe :only [res-stdout! res-simple!]]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
+;; TODO extend to work with a sequence of paths
+(defn- path2loc [paths]
+  (let [p (first paths)] (str (name (:svc p)) " " (:path p))))
+
+;; TODO extend to work with a sequence of paths
+(defn- interpret [locs corpus codices]
+  (assoc-in corpus [:locs] [(path2loc (p/paths-> codices locs))]))
 
 
 ;; =============================================================================
@@ -45,10 +55,11 @@
    [:doc :test].
 
    Uses node data encoded in 'codices' to optionally calculate generative input
-   values."
+   values, or document or sim."
   [{:keys [host port locs commands seed] :as corpus} codices]
-  (println "dispatching probe(s) to visit nodes")
-  (println "host : " host)
-  (println "port : " port)
-  (println "locs : " locs)
-  (println "commands : " commands))
+  (println "exploring nodes")
+  (let [cmd (first commands)
+        probe-corpus (interpret locs corpus codices)
+        probe (pr/build cmd probe-corpus codices)]
+    (println "dispatching probe")
+    (probe probe-corpus codices res-stdout!)))

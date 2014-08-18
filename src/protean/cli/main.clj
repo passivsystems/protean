@@ -3,9 +3,9 @@
   (:require [clojure.string :as stg]
             [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
-  	        [clojure.tools.cli :refer [parse-opts]]
+  	    [clojure.tools.cli :refer [parse-opts]]
             [ring.util.codec :as cod]
-  	        [clj-http.client :as clt]
+  	    [clj-http.client :as clt]
             [io.aviso.ansi :as aa]
             [protean.core.protocol.http :as pth]
             [protean.core.transformation.coerce :as ptc]
@@ -13,7 +13,8 @@
             [protean.core.transformation.curly :as txc]
             [protean.core.transformation.testy-cljhttp :as tc]
             [protean.core.command.bridge :as b]
-            [protean.cli.test :as t])
+            [protean.core.command.test :as t])
+  (:use protean.cli.simadmin)
   (:import java.net.URI)
   (:gen-class))
 
@@ -52,13 +53,18 @@
   (println "b : " b)
   (println "locs : " (:locs b))
   (let [codices (edn/read-string (slurp f))
-        br (b/visit b codices)
         tests (tc/clj-httpify h p codices b)
         results (map #(t/test! %) tests)]
     (doseq [r results]
       (let [t (first r)
             s (:status (last r))]
         (println "Test : " t ", status : " s)))))
+
+(defn- visit-sim [h p f b]
+  (println (aa/bold-green "Testing simulation..."))
+  (let [codices (edn/read-string (slurp f))
+        br (b/visit b codices)]
+    (println "finished visiting sim")))
 
 (defn- test-service [h p f b]
   (println (aa/bold-red "Testing service...")))
@@ -96,7 +102,7 @@
         "  set-service-error-prob -n myservice -l 10 (Set error probability)"
         "  del-service-errors     -n myservice (Delete error response codes)"
         "  doc                    -f codex -n name -d doc-site (Build API docs)"
-        "  test                   -f codex -b body (Test simulation or service)"
+        "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc, test etc"
         ""
         "Please refer to the manual page for more information."]
        (stg/join \newline)))
@@ -106,45 +112,6 @@
        (stg/join \newline errors)))
 
 (defn exit [status msg] (println msg) (System/exit status))
-
-(defn projects [{:keys [host port]}]
-	(let [rsp (clt/get (str "http://" host ":" port "/services"))]
-    (ptc/pretty-clj-> (:body rsp))))
-
-(defn project [{:keys [host port name]}]
-  (let [rsp (clt/get (str "http://" host ":" port "/services/" name))]
-    (ptc/pretty-clj-> (:body rsp))))
-
-(defn project-usage [{:keys [host port name]}]
-  (let [rsp (clt/get (str "http://" host ":" port "/services/" name "/usage"))]
-    (doseq [j (ptc/clj-> (:body rsp))] (println j))))
-
-(defn add-projects [{:keys [file host port]}]
-  (let [rsp (clt/put (str "http://" host ":" port "/services")
-              {:multipart [{:name "file"
-                            :content (clojure.java.io/file file)}]})]
-    (println (:body rsp))))
-
-(defn delete-project [{:keys [host port name] :as options}]
-  (let [rsp (clt/delete (str "http://" host ":" port "/services/" name)
-                        {:throw-exceptions false})]
-   (projects options)))
-
-(defn add-project-error [{:keys [host port name status-err] :as options}]
-  (let [rsp
-    (clt/put (str "http://" host ":" port
-                  "/services/" name "/errors/status/" status-err))]
-    (project options)))
-
-(defn set-project-error-prob [{:keys [host port name level] :as options}]
-  (let [rsp
-    (clt/put (str "http://" host ":" port
-                  "/services/" name "/errors/probability/" level))]
-    (project options)))
-
-(defn del-project-errors [{:keys [host port name] :as options}]
-  (let [rsp (clt/delete (str "http://" host ":" port "/services/" name "/errors"))]
-    (project options)))
 
 (defn doc [{:keys [host port file name directory] :as options}]
   (codices->silk file name directory))
@@ -159,6 +126,11 @@
   (let [b (sane-corpus (ptc/clj-> body)) tp (b "port") th (b "host")
         p (or tp 3000) h (or th host)]
     (if (or tp th) (test-service h p file b) (test-sim h p file b))))
+
+(defn visit [{:keys [host port file body] :as options}]
+  (let [b (sane-corpus (ptc/clj-> body)) tp (b "port") th (b "host")
+        p (or tp 3000) h (or th host)]
+    (if (or tp th) (test-service h p file b) (visit-sim h p file b))))
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
@@ -185,9 +157,12 @@
                 (or (not (:name options))
                     (not (:file options))
                     (not (:directory options)))) (exit 0 (usage summary))
-      (and (= (first arguments) "test")
+      (and (= (first arguments) "test"
                 (or (not (:file options))
-                    (not (:body options)))) (exit 0 (usage summary)))
+                    (not (:body options))))) (exit 0 (usage summary))
+      (and (= (first arguments) "visit"
+                (or (not (:file options))
+                    (not (:body options))))) (exit 0 (usage summary)))
     ;; Execute program with options
     (cli-banner)
     (println "\n")
@@ -202,4 +177,5 @@
       "del-service-errors" (del-project-errors options)
       "doc" (doc options)
       "test" (test-locs options)
+      "visit" (visit options)
       (exit 1 (usage summary)))))
