@@ -15,13 +15,13 @@
 
 (defmethod build :test [_ corpus codices]
   (println "building a test probe")
-  (fn engage [corpus codices res-fn]
-    (println "engage corpus : " corpus)
-    (let [h (:host corpus "localhost")
-          p (:port corpus 3000)
-          tests (tc/clj-httpify h p codices corpus)
-          results (map #(t/test! %) tests)]
-      (res-fn results))))
+  [corpus
+   (fn engage [corpus codices res-fn]
+     (let [h (:host corpus "localhost")
+           p (:port corpus 3000)
+           tests (tc/clj-httpify h p codices corpus)
+           results (map #(t/test! %) tests)]
+       (res-fn results)))])
 
 
 ;; =============================================================================

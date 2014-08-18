@@ -26,13 +26,8 @@
 ;; Helper functions
 ;; =============================================================================
 
-;; TODO extend to work with a sequence of paths
-(defn- path2loc [paths]
-  (let [p (first paths)] (str (name (:svc p)) " " (:path p))))
-
-;; TODO extend to work with a sequence of paths
-(defn- interpret [locs corpus codices]
-  (assoc-in corpus [:locs] [(path2loc (p/paths-> codices locs))]))
+(defn- paths2locs [locs corpus codices]
+  (map #(str (name (:svc %)) " " (:path %)) (p/paths-> codices locs)))
 
 
 ;; =============================================================================
@@ -59,7 +54,9 @@
   [{:keys [host port locs commands seed] :as corpus} codices]
   (println "exploring nodes")
   (let [cmd (first commands)
-        probe-corpus (interpret locs corpus codices)
-        probe (pr/build cmd probe-corpus codices)]
-    (println "dispatching probe")
-    (probe probe-corpus codices res-stdout!)))
+        paths (paths2locs locs corpus codices)
+        probes (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths)]
+    ;; temporary carpet bomb with probes - no thought for concurrency
+    (doseq [p probes]
+      (println "dispatching probe")
+      ((last p) (first p) codices res-stdout!))))
