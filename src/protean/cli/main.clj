@@ -18,6 +18,10 @@
   (:import java.net.URI)
   (:gen-class))
 
+;; =============================================================================
+;; Helper functions
+;; =============================================================================
+
 (defmacro get-version []
   (System/getProperty "protean.version"))
 
@@ -27,6 +31,12 @@
   (println "| '_ \\ '_/ _ \\  _/ -_) _` | ' \\")
   (println (str "| .__/_| \\___/\\__\\___\\__,_|_||_| " "v" (get-version)))
   (println "|_|                            "))
+
+(defn- nice-keys [m] (into {} (for [[k v] m] [(keyword k) v])))
+
+(defn- nice-vals [v] (into [] (map #(keyword %) v)))
+
+(defn- sane-corpus [m] (-> m nice-keys (update-in [:commands] nice-vals)))
 
 (defn- body [ctype body]
   (if-let [b body]
@@ -84,8 +94,7 @@
    ["-l"  "--level LEVEL" "Error level (probability)"]
    ["-h" "--help"]])
 
-(defn usage [options-summary]
-  (cli-banner)
+(defn- usage-hud [options-summary]
   (->> [""
         "Usage: program-name [options] action"
         ""
@@ -107,20 +116,23 @@
         "Please refer to the manual page for more information."]
        (stg/join \newline)))
 
-(defn error-msg [errors]
+(defn- usage [options-summary] (cli-banner) (usage-hud options-summary))
+
+(defn- usage-exit [options-summary] (usage-hud options-summary))
+
+(defn- error-msg [errors]
   (str "The following errors occurred while parsing your command:\n\n"
        (stg/join \newline errors)))
 
-(defn exit [status msg] (println msg) (System/exit status))
+(defn- exit [status msg] (println msg) (System/exit status))
+
+
+;; =============================================================================
+;; Domain functionality
+;; =============================================================================
 
 (defn doc [{:keys [host port file name directory] :as options}]
   (codices->silk file name directory))
-
-(defn- nice-keys [m] (into {} (for [[k v] m] [(keyword k) v])))
-
-(defn- nice-vals [v] (into [] (map #(keyword %) v)))
-
-(defn- sane-corpus [m] (-> m nice-keys (update-in [:commands] nice-vals)))
 
 (defn test-locs [{:keys [host port file body] :as options}]
   (let [b (sane-corpus (ptc/clj-> body)) tp (b "port") th (b "host")
@@ -131,6 +143,11 @@
   (let [b (sane-corpus (ptc/clj-> body)) tp (b "port") th (b "host")
         p (or tp 3000) h (or th host)]
     (if (or tp th) (test-service h p file b) (visit-sim h p file b))))
+
+
+;; =============================================================================
+;; Application entry point
+;; =============================================================================
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
@@ -178,4 +195,4 @@
       "doc" (doc options)
       "test" (test-locs options)
       "visit" (visit options)
-      (exit 1 (usage summary)))))
+      (exit 1 (usage-exit summary)))))
