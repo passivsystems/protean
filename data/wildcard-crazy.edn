@@ -1,0 +1,17 @@
+;; A sample GET with wildcard path codex
+;;
+;; Test more crazy deep path structures
+
+{
+  :sample {
+    :paths {
+      "v/1/users/*/items/*/assets/*/status" {
+        :put {:rsp {:status 200}}
+      }
+
+      "v/1/users/*/items/*/assets/*" {:get {}}
+
+      "v/1/users/*/items/*/assets" {:post {}}
+    }
+  }
+}
