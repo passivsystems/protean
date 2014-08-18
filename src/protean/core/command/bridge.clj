@@ -57,6 +57,7 @@
         paths (paths2locs locs corpus codices)
         probes (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths)]
     ;; temporary carpet bomb with probes - no thought for concurrency
+    ;; N.B. we are also late binding the result handling here with res-stdout!
     (doseq [p probes]
       (println "dispatching probe")
       ((last p) (first p) codices res-stdout!))))
