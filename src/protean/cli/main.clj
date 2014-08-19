@@ -58,26 +58,11 @@
             full (assoc e :id id :path (subs uri-path 1) :curl (cod/url-decode (txc/curly-> e)) :sample-response body)]
         (spit (str d "/" id ".edn") (pr-str (update-in full [:method] name)))))))
 
-(defn- test-sim [h p f b]
-  (println (aa/bold-green "Testing simulation..."))
-  (println "b : " b)
-  (println "locs : " (:locs b))
-  (let [codices (edn/read-string (slurp f))
-        tests (tc/clj-httpify h p codices b)
-        results (map #(t/test! %) tests)]
-    (doseq [r results]
-      (let [t (first r)
-            s (:status (last r))]
-        (println "Test : " t ", status : " s)))))
-
-(defn- visit-sim [h p f b]
-  (println (aa/bold-green "Testing simulation..."))
+(defn- visit [h p f b]
+  (println (aa/bold-green "Exploring quadrant..."))
   (let [codices (edn/read-string (slurp f))
         br (b/visit b codices)]
     (println "finished visiting sim")))
-
-(defn- test-service [h p f b]
-  (println (aa/bold-red "Testing service...")))
 
 (def cli-options
   [["-p" "--port PORT" "Port number"
@@ -134,15 +119,12 @@
 (defn doc [{:keys [host port file name directory] :as options}]
   (codices->silk file name directory))
 
-(defn test-locs [{:keys [host port file body] :as options}]
-  (let [b (sane-corpus (ptc/clj-> body)) tp (b "port") th (b "host")
-        p (or tp 3000) h (or th host)]
-    (if (or tp th) (test-service h p file b) (test-sim h p file b))))
-
 (defn visit [{:keys [host port file body] :as options}]
-  (let [b (sane-corpus (ptc/clj-> body)) tp (b "port") th (b "host")
-        p (or tp 3000) h (or th host)]
-    (if (or tp th) (test-service h p file b) (visit-sim h p file b))))
+  (let [b (sane-corpus (ptc/clj-> body))]
+    (println (aa/bold-green "Exploring quadrant..."))
+    (let [codices (edn/read-string (slurp file))
+          br (b/visit b codices)]
+      (println (aa/bold-green "...finished exploring quadrant")))))
 
 
 ;; =============================================================================
@@ -174,9 +156,6 @@
                 (or (not (:name options))
                     (not (:file options))
                     (not (:directory options)))) (exit 0 (usage summary))
-      (and (= (first arguments) "test"
-                (or (not (:file options))
-                    (not (:body options))))) (exit 0 (usage summary))
       (and (= (first arguments) "visit"
                 (or (not (:file options))
                     (not (:body options))))) (exit 0 (usage summary)))
@@ -193,6 +172,5 @@
       "set-service-error-prob" (set-project-error-prob options)
       "del-service-errors" (del-project-errors options)
       "doc" (doc options)
-      "test" (test-locs options)
       "visit" (visit options)
       (exit 1 (usage-exit summary)))))

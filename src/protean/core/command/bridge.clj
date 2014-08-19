@@ -49,7 +49,7 @@
    Uses node data encoded in 'codices' to optionally calculate generative input
    values, or document or sim."
   [{:keys [host port locs commands seed] :as corpus} codices]
-  (println "exploring nodes")
+  (println "building probes")
   (let [cmd (first commands)
         paths (paths2locs locs corpus codices)
         ;; TODO pretend everything is integ testing or documentation for now
@@ -57,5 +57,4 @@
     ;; temporary carpet bomb with probes - no thought for concurrency
     ;; N.B. we are also late binding the result handling here with res-stdout!
     (doseq [p probes]
-      (println "dispatching probe")
       ((last p) (first p) codices res-stdout!))))
