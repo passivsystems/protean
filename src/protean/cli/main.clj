@@ -123,7 +123,8 @@
   (let [b (sane-corpus (ptc/clj-> body))]
     (println (aa/bold-green "Exploring quadrant..."))
     (let [codices (edn/read-string (slurp file))
-          br (b/visit b codices)]
+          bres (b/visit b codices)]
+      (b/analyse b codices bres)
       (println (aa/bold-green "...finished exploring quadrant")))))
 
 

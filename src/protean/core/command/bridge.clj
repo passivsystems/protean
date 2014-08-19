@@ -17,7 +17,7 @@
    Links expectations to probe results where outcome is a concern."
   (:require [protean.core.transformation.paths :as p]
             [protean.core.command.probe :as pr])
-  (:use [protean.core.command.probe :only [res-stdout! res-simple!]]))
+  (:use [protean.core.command.probe :only [res-persist! res-simple!]]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -52,9 +52,12 @@
   (println "building probes")
   (let [cmd (first commands)
         paths (paths2locs locs corpus codices)
-        ;; TODO pretend everything is integ testing or documentation for now
-        probes (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths)]
-    ;; temporary carpet bomb with probes - no thought for concurrency
-    ;; N.B. we are also late binding the result handling here with res-stdout!
-    (doseq [p probes]
-      ((last p) (first p) codices res-stdout!))))
+        probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))]
+    (println "dispatchng probes")
+    (doall (map (fn [x] ((last x) (first x) codices res-persist!))  probes))))
+
+(defn analyse
+  "Analyse a probe data."
+  [{:keys [locs commands] :as corpus} codices results]
+  (println "analysing probe data")
+  (pr/analyse (first commands) corpus codices results))

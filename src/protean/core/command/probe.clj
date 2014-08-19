@@ -27,27 +27,44 @@
   (println "corpus : " corpus))
 
 (defmethod build :test [_ corpus codices]
+  (println "building a test probe to visit : " (:locs corpus))
   [corpus
    (fn engage [corpus codices res-fn]
+     (println "dispatching a test probe to visit : " (:locs corpus))
      (let [h (:host corpus "localhost")
            p (:port corpus 3000)
            tests (tc/clj-httpify h p codices corpus)
            seeded (translate tests corpus codices (or h p))
            results (map #(t/test! %) seeded)]
-       (res-fn results)))])
+       (res-fn results)
+       results))])
 
 
 ;; =============================================================================
 ;; Probe result handlers
 ;; =============================================================================
 
-(defn res-simple! [result] (println "I am handling result : " result))
+(defn res-simple! [result] (println "doing nothing"))
 
-(defn res-stdout!
-  "Take result data and process it for semi nice runtime CLI output.
-   In this first form for use when integration testing the sim."
+(defn res-persist!
+  "Persist result in its interim state to a store.
+   In this protoype the store is the disk."
   [result]
-  (doseq [r result]
-    (let [t (first r)
-          s (:status (last r))]
+  (println "persisting results"))
+
+
+;; =============================================================================
+;; Probe data analysis
+;; =============================================================================
+
+(defmulti analyse (fn [command & _] command))
+
+(defmethod analyse :doc [_ corpus codices result]
+  (println "analysing doc probe data"))
+
+(defmethod analyse :test [_ corpus codices results]
+  (doseq [r results]
+    (let [fr (first r)
+          t (first fr)
+          s (:status (last fr))]
       (println "Test : " t ", status : " s))))
