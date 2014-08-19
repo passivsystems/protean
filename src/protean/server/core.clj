@@ -33,7 +33,7 @@
 (defn- build-services
   "Load services from disk."
   []
-  (let [files (svc-files)]
+  (let [files (remove #(= (.getName (.getParentFile %)) "data") (svc-files))]
     (doseq [f files]
       (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
   (keys @pipe/state))

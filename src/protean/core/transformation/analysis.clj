@@ -72,5 +72,5 @@
 ;; =============================================================================
 
 (defn analysis-> [host port codices corpus]
-  (let [p (p/paths-> codices (get corpus "locs"))]
+  (let [p (p/paths-> codices (:locs corpus))]
     (map #(analyse-> % host port) p)))

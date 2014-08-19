@@ -12,17 +12,19 @@
    N.B. even when in integration test mode where probes generate input values
    we may need a seed value to get things started for authentication etc.
 
-   A sensible default is to rely on seed data where no generative information
-   is available in the codex for a given node.
-
    Reconciles the results certain probes record across time.
 
-   Links expectations to probe results where outcome is a concern.")
+   Links expectations to probe results where outcome is a concern."
+  (:require [protean.core.transformation.paths :as p]
+            [protean.core.command.probe :as pr])
+  (:use [protean.core.command.probe :only [res-persist! res-simple!]]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
+(defn- paths2locs [locs corpus codices]
+  (map #(str (name (:svc %)) " " (:path %)) (p/paths-> codices locs)))
 
 
 ;; =============================================================================
@@ -45,10 +47,17 @@
    [:doc :test].
 
    Uses node data encoded in 'codices' to optionally calculate generative input
-   values."
+   values, or document or sim."
   [{:keys [host port locs commands seed] :as corpus} codices]
-  (println "dispatching probe(s) to visit nodes")
-  (println "host : " host)
-  (println "port : " port)
-  (println "locs : " locs)
-  (println "commands : " commands))
+  (println "building probes")
+  (let [cmd (first commands)
+        paths (paths2locs locs corpus codices)
+        probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))]
+    (println "dispatchng probes")
+    (doall (map (fn [x] ((last x) (first x) codices res-persist!))  probes))))
+
+(defn analyse
+  "Analyse a probe data."
+  [{:keys [locs commands] :as corpus} codices results]
+  (println "analysing probe data")
+  (pr/analyse (first commands) corpus codices results))
