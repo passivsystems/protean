@@ -12,9 +12,6 @@
    N.B. even when in integration test mode where probes generate input values
    we may need a seed value to get things started for authentication etc.
 
-   A sensible default is to rely on seed data where no generative information
-   is available in the codex for a given node.
-
    Reconciles the results certain probes record across time.
 
    Links expectations to probe results where outcome is a concern."
@@ -55,6 +52,7 @@
   (println "exploring nodes")
   (let [cmd (first commands)
         paths (paths2locs locs corpus codices)
+        ;; TODO pretend everything is integ testing or documentation for now
         probes (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths)]
     ;; temporary carpet bomb with probes - no thought for concurrency
     ;; N.B. we are also late binding the result handling here with res-stdout!
