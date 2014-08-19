@@ -59,6 +59,6 @@
 ;; =============================================================================
 
 (defn curly-analysis-> [host port codices service]
-  (let [corpus {"locs" [service]}
+  (let [corpus {:locs [service]}
         analysed (txan/analysis-> host port codices corpus)]
     (map #(curly-> %) analysed)))
