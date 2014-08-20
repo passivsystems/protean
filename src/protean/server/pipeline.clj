@@ -107,7 +107,7 @@
 
 (defn service-docs [id host port]
   (txdocs/service-template id
-    (txan/analysis-> host port @state {"locs" [id]})))
+    (txan/analysis-> host port @state {:locs [id]})))
 
 (l/defdocument service-index (file "public/html/index.html") []
   (l/id="project-version") (<- (txdocs/version)))

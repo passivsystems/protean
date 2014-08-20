@@ -26,18 +26,21 @@
   (println "building a doc probe")
   (println "corpus : " corpus))
 
-(defmethod build :test [_ corpus codices]
-  (println "building a test probe to visit : " (:locs corpus))
+(defmethod build :test [_ {:keys [locs] :as corpus} codices]
+  (println "building a test probe to visit : " locs)
   [corpus
-   (fn engage [corpus codices res-fn]
-     (println "dispatching a test probe to visit : " (:locs corpus))
-     (let [h (:host corpus "localhost")
-           p (:port corpus 3000)
+   (fn engage [{:keys [locs host port] :as corpus} codices res-fn]
+     (println "dispatching a test probe to visit : " locs)
+     (let [h (or host "localhost")
+           p (or port 3000)
            tests (tc/clj-httpify h p codices corpus)
            seeded (translate tests corpus codices (or h p))
            results (map #(t/test! %) seeded)]
        (res-fn results)
        results))])
+
+(defmethod build :negotiate [_ {:keys [locs]} codices]
+  (println "building a negotiation probe to visit : " locs))
 
 
 ;; =============================================================================
