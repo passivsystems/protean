@@ -7,16 +7,22 @@
 
 (def psv "psv+")
 
-(defn- holder? [v] (.contains v psv))
-
-(defn v-swap [k v m]
-  (if (holder? v)
-    (if-let [ev (get-in m [:gen k :examples])] (first ev) v)
-    v))
-
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn holders-swap [qp m] (into {} (for [[k v] qp] [k (v-swap k v m)])))
+(defn holder?
+  "Does a simple value contain a placeholder ?"
+  [v]
+  (.contains v psv))
+
+(defn uri-ns-holder?
+  "Does a uri contain a ns prefixed wildcard placeholder ?"
+  [v]
+  (.contains v (str "/" psv)))
+
+(defn uri-ns-holder
+  "Get ns prefixed wildcard portion of uri, E.G. things/psv+."
+  [uri]
+  (-> uri (.split "/psv\\+") first (.split "/") last (str "/psv+")))

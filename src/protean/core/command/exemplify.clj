@@ -14,22 +14,29 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn body-encode
-  "Encode body items as clojure they are Json initially."
+(defn- holder-swap [k v m]
+  (if (p/holder? v)
+    (if-let [ev (get-in m [:gen k :examples])] (first ev) v)
+    v))
+
+(defn- holders-swap [qp m] (into {} (for [[k v] qp] [k (holder-swap k v m)])))
+
+(defn- encode-swapped-value
+  "Encode body items as clojure, they are Json initially."
   [k x]
   (if (= k :body) (c/clj-> x) x))
 
-(defn- body [k codices payload]
+(defn- swap-placeholders [k payload]
   (let [m (last payload)]
-    (if-let [qp (body-encode k (k m))]
+    (if-let [qp (encode-swapped-value k (k m))]
       (list
        (first payload)
        (second payload)
-       (assoc m k (body-encode k (p/holders-swap qp m))))
+       (assoc m k (encode-swapped-value k (holders-swap qp m))))
       payload)))
 
-(defn- example [test codices]
+(defn- example [test]
   (->> test
-       (body :query-params codices)))
+       (swap-placeholders :query-params)))
 
-(defn examples [codices tests] (map #(example % codices) tests))
+(defn examples [codices tests] (map #(example %) tests))

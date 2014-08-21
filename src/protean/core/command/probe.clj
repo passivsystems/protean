@@ -3,7 +3,8 @@
   (:require [protean.core.transformation.testy-cljhttp :as tc]
             [protean.core.command.test :as t]
             [protean.core.command.seed :as s]
-            [protean.core.command.exemplify :as e]))
+            [protean.core.command.exemplify :as e]
+            [protean.core.command.generate :as g]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -19,7 +20,8 @@
    generated values."
   [tests {:keys [seed] :as corpus} codices]
   (->> (s/seeds tests (:seed corpus))
-       (e/examples codices)))
+       (e/examples codices)
+       (g/generations codices)))
 
 (defn- translate
   "Translate placeholders when visiting real nodes."
