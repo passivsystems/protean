@@ -25,14 +25,11 @@
     "Int" (int+)
     "Long" (long+)))
 
-(defn- holder-swap [v payload]
-  (let [m (last payload)]
+(defn- holder-swap [v [p1 p2 p3 :as payload]]
+  (let [m p3]
     (if-let [sv (get-in m [:gen v :type])]
       (let [gv (g-val sv)]
-        (list
-         (first payload)
-         (stg/replace (second payload) "psv+" (str gv))
-         (last payload)))
+        (list p1 (stg/replace p2 "psv+" (str gv)) p3))
       payload)))
 
 (defn- uri [codices payload]
