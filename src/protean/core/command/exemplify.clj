@@ -26,12 +26,10 @@
   [k x]
   (if (= k :body) (c/clj-> x) x))
 
-(defn- swap-placeholders [k payload]
-  (let [m (last payload)]
+(defn- swap-placeholders [k [p1 p2 p3 :as payload]]
+  (let [m p3]
     (if-let [qp (encode-swapped-value k (k m))]
-      (list
-       (first payload)
-       (second payload)
+      (list p1 p2
        (assoc m k (encode-swapped-value k (holders-swap qp m))))
       payload)))
 
