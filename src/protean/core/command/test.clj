@@ -11,6 +11,6 @@
        (p/assoc-item res :body :body)
        (res-location res)))
 
-(defn test! [t]
+(defn test! [[t1 t2 :as t]]
   (require '[clj-http.client :as client])
-  (let [res (eval t)] [(second t) (result res)]))
+  (let [res (eval t)] [t1 t2 (result res)]))

@@ -82,7 +82,8 @@
 
 (defmethod analyse :test [_ corpus codices results]
   (doseq [r results]
-    (let [fr (first r)
-          t (first fr)
-          s (:status (last fr))]
-      (println "Test : " t ", status : " s))))
+    (doseq [ir r]
+      (let [t-method (first ir)
+            t-uri (second ir)
+            s (:status (last ir))]
+        (println "Test : " t-method " - " t-uri ", status : " s)))))

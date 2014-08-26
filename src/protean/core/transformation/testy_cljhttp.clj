@@ -14,6 +14,7 @@
          (cond
            (= (:method entry) :post) 'client/post
            (= (:method entry) :put) 'client/put
+           (= (:method entry) :delete) 'client/delete
            :else 'client/get)]
     (conj payload method)))
 

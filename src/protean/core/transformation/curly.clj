@@ -5,7 +5,7 @@
             [clojure.set :as st]
             [ring.util.codec :as cod]
             [cheshire.core :as jsn]
-            [protean.core.codex.placeholder :as p]
+            [protean.core.codex.examples :as e]
             [protean.core.transformation.analysis :as txan]))
 
 ;; =============================================================================
@@ -37,8 +37,8 @@
 
 (defn curly-query-params-> [{:keys [query-params] :as entry} payload]
   (println "query params in curly : " query-params)
-  (println "swapped qp : " (p/holders-swap query-params entry))
-  (if-let [rp (p/holders-swap query-params entry)]
+  (println "swapped qp : " (e/holders-swap query-params entry))
+  (if-let [rp (e/holders-swap query-params entry)]
     (if (empty? rp)
       (str payload "'")
       (str payload "?" (stg/join "&" (map #(str (key %) "="
