@@ -51,6 +51,7 @@
            tests (tc/clj-httpify h p codices corpus)
            seeded (translate tests :test corpus codices)
            results (map #(t/test! %) seeded)]
+       (println "seeded : " seeded)
        (res-fn results)
        results))])
 

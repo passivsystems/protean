@@ -14,23 +14,18 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- holder-swap [k v m]
+(defn- holder-swap [k v mp]
   (if (p/holder? v)
-    (if-let [ev (get-in m [:gen k :examples])] (first ev) v)
+    (if-let [x (get-in mp [:gen k :examples])] (first x) v)
     v))
 
 (defn- holders-swap [qp m] (into {} (for [[k v] qp] [k (holder-swap k v m)])))
 
-(defn- encode-swapped-value
-  "Encode body items as clojure, they are Json initially."
-  [k x]
-  (if (= k :body) (c/clj-> x) x))
-
 (defn- swap-placeholders [k [p1 p2 p3 :as payload]]
   (let [m p3]
-    (if-let [qp (encode-swapped-value k (k m))]
+    (if-let [qp (p/encode-swapped-value k (k m))]
       (list p1 p2
-       (assoc m k (encode-swapped-value k (holders-swap qp m))))
+       (assoc m k (p/encode-swapped-value k (holders-swap qp m))))
       payload)))
 
 (defn- example [test]

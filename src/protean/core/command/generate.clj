@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [long int])
   (:require [clojure.string :as stg]
             [clojure.data.generators :as gen]
+            [protean.core.transformation.coerce :as c]
             [protean.core.codex.placeholder :as p])
   (:import java.lang.Math))
 
@@ -23,24 +24,37 @@
 (defn- g-val [v]
   (case v
     "Int" (int+)
-    "Long" (long+)))
+    "Long" (long+)
+    "String" (gen/string)))
 
-(defn- holder-swap [v [p1 p2 p3 :as payload]]
-  (let [m p3]
-    (if-let [sv (get-in m [:gen v :type])]
-      (let [gv (g-val sv)]
-        (list p1 (stg/replace p2 "psv+" (str gv)) p3))
-      payload)))
+(defn- holder-swap [k v mp]
+  (if (p/holder? v)
+    (if-let [x (get-in mp [:gen k :type])] (g-val x) v)
+    v))
+
+(defn- holders-swap [ph m] (into {} (for [[k v] ph] [k (holder-swap k v m)])))
+
+(defn- uri-holder-swap [v [p1 p2 p3 :as payload]]
+  (if-let [sv (get-in p3 [:gen v :type])]
+    (let [gv (g-val sv)]
+      (list p1 (stg/replace p2 "psv+" (str gv)) p3))
+    payload))
+
+(defn- swap-placeholders [k [method uri mp :as payload]]
+  (if-let [ph (p/encode-swapped-value k (k mp))]
+    (list method uri (assoc mp k (c/js-> (holders-swap ph mp))))
+    payload))
 
 (defn- uri [codices payload]
   (let [uri (second payload)]
     (if (p/uri-ns-holder? uri)
       (let [v (p/uri-ns-holder uri)]
-        (holder-swap v payload))
+        (uri-holder-swap v payload))
       payload)))
 
 (defn- generate [test codices]
   (->> test
+       (swap-placeholders :body)
        (uri codices)))
 
 (defn generations [codices tests] (map #(generate % codices) tests))

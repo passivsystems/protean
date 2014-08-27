@@ -1,5 +1,6 @@
 (ns protean.core.codex.placeholder
-  "Placeholder functionality, swapping codex examples, generating")
+  "Placeholder functionality, swapping codex examples, generating."
+  (:require [protean.core.transformation.coerce :as c]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -26,3 +27,8 @@
   "Get ns prefixed wildcard portion of uri, E.G. things/psv+."
   [uri]
   (-> uri (.split "/psv\\+") first (.split "/") last (str "/psv+")))
+
+(defn encode-swapped-value
+  "Encode body items as clojure, they are Json initially."
+  [k x]
+  (if (= k :body) (c/clj-> x) x))
