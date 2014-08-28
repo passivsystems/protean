@@ -10,7 +10,7 @@
 
 
 ;; =============================================================================
-;; Transformation functions
+;; Truthiness functions
 ;; =============================================================================
 
 (defn holder?
@@ -23,12 +23,22 @@
   [v]
   (.contains v (str "/" psv)))
 
+
+;; =============================================================================
+;; Transformation functions
+;; =============================================================================
+
 (defn uri-ns-holder
   "Get ns prefixed wildcard portion of uri, E.G. things/psv+."
   [uri]
   (-> uri (.split "/psv\\+") first (.split "/") last (str "/psv+")))
 
-(defn encode-swapped-value
+(defn encode-value
   "Encode body items as clojure, they are Json initially."
   [k x]
   (if (= k :body) (c/clj-> x) x))
+
+(defn holders-swap
+  "Swap all placeholders with available seed, example or generated substitutes."
+  [ph swp-fn m]
+  (into {} (for [[k v] ph] [k (swp-fn k v m)])))

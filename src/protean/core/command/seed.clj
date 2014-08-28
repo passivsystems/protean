@@ -2,13 +2,13 @@
   "Replace placeholder values a client provided set of values, grow seed
    values when incrementally negotiating (workflows etc)."
   (:require [clojure.string :as stg]
-            [protean.core.transformation.coerce :as txco]))
+            [protean.core.transformation.coerce :as txco]
+            [protean.core.codex.placeholder :as p]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defonce PSV "psv+")
 (defonce PSV-EXP "psv\\+")
 (def azn "Authorization")
 
@@ -18,17 +18,16 @@
 
 ; TODO: needs refactoring, trying to get a prototype out
 ; strat is either Basic or Bearer
-(defn- header-authzn-> [strat seed payload]
-  (let [m (last payload)]
-    (if-let [auth (get-in m [:headers azn])]
-      (if (and (.contains auth PSV) (.contains auth strat))
-        (if-let [sauth (token seed strat)]
-          (let [n (assoc-in m [:headers azn]
-                            (str strat " " (last (stg/split sauth #" "))))]
-            (list (first payload) (second payload) n))
-          payload)
+(defn- header-authzn-> [strat seed [method uri mp :as payload]]
+  (if-let [auth (get-in mp [:headers azn])]
+    (if (and (.contains auth p/psv) (.contains auth strat))
+      (if-let [sauth (token seed strat)]
+        (let [n (assoc-in mp [:headers azn]
+                  (str strat " " (last (stg/split sauth #" "))))]
+          (list method uri n))
         payload)
-      payload)))
+      payload)
+    payload))
 
 (defn- substr? [s sub] (if s (.contains s sub) false))
 
@@ -37,49 +36,35 @@
     (first (filter #(substr? % (str ns "/")) (get-in seed ["bag"])))))
 
 ; first search in first class seed items, then in the bag
-(defn- v-swap [v seed]
-  (if (.contains v PSV)
+(defn- holder-swap [k v seed]
+  (if (p/holder? v)
     (if-let [sv (get-in seed [(last (.split v PSV-EXP))])]
       sv
       (if-let [sv (bag-item v seed)] sv v))
     v))
 
-(defn- body-> [k seed payload]
-  (let [m (last payload)]
-    (if-let [qp (if (= k :body) (txco/clj-> (k m)) (k m))]
-      (list
-        (first payload)
-        (second payload)
-        (assoc m k
-          (let [res (into {} (for [[k v] qp] [k (v-swap v seed)]))]
-            (if (= k :body)
-              (txco/js-> res)
-              res))))
-      payload)))
-
-(defn- uri-namespace [uri]
-  (-> uri (.split "/psv\\+") first (.split "/") last (str "/psv+")))
+(defn- swap-placeholders [k seed [method uri mp :as payload]]
+  (if-let [phs (p/encode-value k (k mp))]
+    (let [res (p/holders-swap phs holder-swap seed)]
+      (list method uri (assoc mp k (p/encode-value k res))))
+    payload))
 
 ; TODO: weak, only handles 1 instance of uri placeholder
-(defn- uri-> [seed payload]
-  (let [uri (second payload)]
-    (if (.contains uri (str "/" PSV))
-      (let [v (uri-namespace uri)
-            sv (bag-item v seed)]
-        (if sv
-          (list (first payload)
-                (stg/replace uri #"psv\+" (last (.split sv "/")))
-                (last payload))
-          payload))
-      payload)))
+(defn- uri-> [seed [method uri mp :as payload]]
+  (if (p/uri-ns-holder? uri)
+    (let [v (p/uri-ns-holder uri)
+          sv (bag-item v seed)
+          new-uri (stg/replace uri #"psv\+" (last (.split sv "/")))]
+      (if sv (list method new-uri mp) payload))
+    payload))
 
 (defn- seed-> [test seed]
   (->> test
        (header-authzn-> "Basic" seed)
        (header-authzn-> "Bearer" seed)
-       (body-> :query-params seed)
-       (body-> :body seed)
-       (body-> :form-params seed)
+       (swap-placeholders :query-params seed)
+       (swap-placeholders :body seed)
+       (swap-placeholders :form-params seed)
        (uri-> seed)))
 
 (defn seeds [tests seed] (if seed (map #(seed-> % seed) tests) tests))

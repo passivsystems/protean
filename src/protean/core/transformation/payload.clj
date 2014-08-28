@@ -31,7 +31,9 @@
 (defn assoc-item
   "Extracts out-k out of entry and assocs to payload as in-k."
   [entry out-k in-k payload]
-  (if-let [v (out-k entry)]
+  (if-let [v (if (= out-k :query-params)
+               (get-in entry [out-k :required])
+               (out-k entry))]
     (if (empty? v) payload (assoc payload in-k v))
     payload))
 

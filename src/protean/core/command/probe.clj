@@ -20,7 +20,7 @@
    generated values."
   [tests {:keys [seed] :as corpus} codices]
   (->> (s/seeds tests (:seed corpus))
-       (e/examples codices)
+       (e/examples codices :required)
        (g/generations codices)))
 
 (defn- translate

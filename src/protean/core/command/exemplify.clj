@@ -8,28 +8,22 @@
    This translation task occurs after seeding has completed
    (probably while some nodes are not visitable)."
   (:require [protean.core.transformation.coerce :as c]
-            [protean.core.codex.placeholder :as p]))
+            [protean.core.codex.placeholder :as p]
+            [protean.core.codex.examples :as e]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn- holder-swap [k v mp]
-  (if (p/holder? v)
-    (if-let [x (get-in mp [:gen k :examples])] (first x) v)
-    v))
-
-(defn- holders-swap [qp m] (into {} (for [[k v] qp] [k (holder-swap k v m)])))
-
-(defn- swap-placeholders [k [p1 p2 p3 :as payload]]
-  (let [m p3]
-    (if-let [qp (p/encode-swapped-value k (k m))]
-      (list p1 p2
-       (assoc m k (p/encode-swapped-value k (holders-swap qp m))))
+(defn- swap-placeholders [k p-type [method uri mp :as payload]]
+  (let [v (if (= k :query-params) (get-in mp [k p-type]) (k mp))]
+    (if-let [ph (p/encode-value k v)]
+      (list method uri
+        (assoc mp k (p/encode-value k (p/holders-swap ph e/holder-swap mp))))
       payload)))
 
-(defn- example [test]
+(defn- example [test p-type]
   (->> test
-       (swap-placeholders :query-params)))
+       (swap-placeholders :query-params p-type)))
 
-(defn examples [codices tests] (map #(example %) tests))
+(defn examples [codices p-type tests] (map #(example % p-type) tests))

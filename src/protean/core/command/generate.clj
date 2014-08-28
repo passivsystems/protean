@@ -32,17 +32,15 @@
     (if-let [x (get-in mp [:gen k :type])] (g-val x) v)
     v))
 
-(defn- holders-swap [ph m] (into {} (for [[k v] ph] [k (holder-swap k v m)])))
-
-(defn- uri-holder-swap [v [p1 p2 p3 :as payload]]
-  (if-let [sv (get-in p3 [:gen v :type])]
+(defn- uri-holder-swap [v [method uri mp :as payload]]
+  (if-let [sv (get-in mp [:gen v :type])]
     (let [gv (g-val sv)]
-      (list p1 (stg/replace p2 "psv+" (str gv)) p3))
+      (list method (stg/replace uri "psv+" (str gv)) mp))
     payload))
 
 (defn- swap-placeholders [k [method uri mp :as payload]]
-  (if-let [ph (p/encode-swapped-value k (k mp))]
-    (list method uri (assoc mp k (c/js-> (holders-swap ph mp))))
+  (if-let [phs (p/encode-value k (k mp))]
+    (list method uri (assoc mp k (c/js-> (p/holders-swap phs holder-swap mp))))
     payload))
 
 (defn- uri [codices payload]

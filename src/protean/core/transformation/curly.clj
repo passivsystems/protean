@@ -6,6 +6,7 @@
             [ring.util.codec :as cod]
             [cheshire.core :as jsn]
             [protean.core.codex.examples :as e]
+            [protean.core.codex.placeholder :as p]
             [protean.core.transformation.analysis :as txan]))
 
 ;; =============================================================================
@@ -36,9 +37,7 @@
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
 (defn curly-query-params-> [{:keys [query-params] :as entry} payload]
-  (println "query params in curly : " query-params)
-  (println "swapped qp : " (e/holders-swap query-params entry))
-  (if-let [rp (e/holders-swap query-params entry)]
+  (if-let [rp (p/holders-swap query-params e/holder-swap entry)]
     (if (empty? rp)
       (str payload "'")
       (str payload "?" (stg/join "&" (map #(str (key %) "="
