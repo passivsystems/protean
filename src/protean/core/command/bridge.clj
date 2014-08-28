@@ -51,7 +51,7 @@
   [{:keys [host port locs commands seed] :as corpus} codices]
   (println "building probes")
   (let [cmd (first commands)
-        paths (paths2locs locs corpus codices)
+        paths (distinct (paths2locs locs corpus codices))
         probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))]
     (println "dispatchng probes")
     (doall (map (fn [x] ((last x) (first x) codices res-persist!))  probes))))

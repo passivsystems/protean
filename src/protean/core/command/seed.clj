@@ -1,5 +1,5 @@
 (ns protean.core.command.seed
-  "Seed with generated values when integration testing or aggregated
+  "Replace placeholder values a client provided set of values, grow seed
    values when incrementally negotiating (workflows etc)."
   (:require [clojure.string :as stg]
             [protean.core.transformation.coerce :as txco]))

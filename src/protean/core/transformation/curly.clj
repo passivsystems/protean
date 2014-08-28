@@ -5,6 +5,7 @@
             [clojure.set :as st]
             [ring.util.codec :as cod]
             [cheshire.core :as jsn]
+            [protean.core.codex.examples :as e]
             [protean.core.transformation.analysis :as txan]))
 
 ;; =============================================================================
@@ -34,15 +35,20 @@
 
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
-(defn curly-query-params-> [entry payload]
-  (if-let [rp (:query-params entry)]
-    (str payload "?" (stg/join "&" (map #(str (key %) "="
-      (cod/form-encode (val %))) rp)) "'")
+(defn curly-query-params-> [{:keys [query-params] :as entry} payload]
+  (println "query params in curly : " query-params)
+  (println "swapped qp : " (e/holders-swap query-params entry))
+  (if-let [rp (e/holders-swap query-params entry)]
+    (if (empty? rp)
+      (str payload "'")
+      (str payload "?" (stg/join "&" (map #(str (key %) "="
+        (cod/form-encode (val %))) rp)) "'"))
     (str payload "'")))
 
 (defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
 
 (defn curly-> [entry]
+  (println "entry : " entry)
   (->> "curl -v"
        (curly-method-> entry)
        (curly-headers-> entry)

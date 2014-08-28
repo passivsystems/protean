@@ -2,18 +2,33 @@
   "Building probes and handling persisting/presenting raw results."
   (:require [protean.core.transformation.testy-cljhttp :as tc]
             [protean.core.command.test :as t]
-            [protean.core.command.seed :as s]))
+            [protean.core.command.seed :as s]
+            [protean.core.command.exemplify :as e]
+            [protean.core.command.generate :as g]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
+(defn- tl-negotiation
+  "Only ever translate placeholders with seed items, no generation."
+  [tests {:keys [seed] :as corpus} codices]
+  (s/seeds tests (:seed corpus)))
+
+(defn- tl-testdoc
+  "Prefer seed items in placeholder translation then codex examples then
+   generated values."
+  [tests {:keys [seed] :as corpus} codices]
+  (->> (s/seeds tests (:seed corpus))
+       (e/examples codices)
+       (g/generations codices)))
+
 (defn- translate
-  "Translate placeholders when visiting real nodes.
-   If boolean api is true we are visiting a real node.
-   Selects whether to seed, generate or use examples from codices as needed."
-  [tests corpus codices api]
-  (if api (s/seeds tests (:seed corpus)) tests))
+  "Translate placeholders when visiting real nodes."
+  [tests command corpus codices]
+  (if (some #{:doc :test} (list command))
+    (tl-testdoc tests corpus codices)
+    (tl-negotiation tests corpus codices)))
 
 
 ;; =============================================================================
@@ -34,8 +49,9 @@
      (let [h (or host "localhost")
            p (or port 3000)
            tests (tc/clj-httpify h p codices corpus)
-           seeded (translate tests corpus codices (or h p))
+           seeded (translate tests :test corpus codices)
            results (map #(t/test! %) seeded)]
+       (println "seeded : " seeded)
        (res-fn results)
        results))])
 
@@ -53,7 +69,7 @@
   "Persist result in its interim state to a store.
    In this protoype the store is the disk."
   [result]
-  (println "persisting results"))
+  (println "TODO: reminder placeholder for persisting results"))
 
 
 ;; =============================================================================
@@ -67,7 +83,8 @@
 
 (defmethod analyse :test [_ corpus codices results]
   (doseq [r results]
-    (let [fr (first r)
-          t (first fr)
-          s (:status (last fr))]
-      (println "Test : " t ", status : " s))))
+    (doseq [ir r]
+      (let [t-method (first ir)
+            t-uri (second ir)
+            s (:status (last ir))]
+        (println "Test : " t-method " - " t-uri ", status : " s)))))

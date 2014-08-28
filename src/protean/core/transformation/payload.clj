@@ -47,6 +47,7 @@
                                (assoc-item entry :headers :headers)
                                (assoc-item entry :query-params :query-params)
                                (assoc-item entry :form-params :form-params)
+                               (assoc-item entry :gen :gen)
                                (body entry)
                                (codex-rsp entry))))
 
