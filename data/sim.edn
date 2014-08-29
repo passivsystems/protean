@@ -31,7 +31,7 @@
         :get {
           :req {
             :headers {"Authorization" "token"}
-            :query-params {"blurb" "flibble"}
+            :query-params {:required {"blurb" "flibble"}}
           }
           :rsp {
             :body {
