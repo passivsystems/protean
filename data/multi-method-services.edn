@@ -2,26 +2,28 @@
 ;;
 ;; Demonstrates multi service path extraction
 
-( {
-   :sample {
-            :paths {
-                    "homes/1" {
-                               :get {:doc "Test homes get"}
-                               :put {:doc "Test homes put"}
-                               :delete {:doc "Test homes delete"}
-                               }
-                    }
-            }
-   }
+(
+{
+  :sample {
+    :paths {
+      "homes/1" {
+        :get {:doc "Test homes get"}
+        :put {:doc "Test homes put"}
+        :delete {:doc "Test homes delete"}
+      }
+    }
+  }
+}
 
-  {
-   :test {
-          :paths {
-                  "rooms/1" {
-                             :get {:doc "Test room get"}
-                             :put {:doc "Test room put"}
-                             :delete {:doc "Test room delete"}
-                             }
-                  }
-          }
-   })
+{
+  :test {
+    :paths {
+      "rooms/1" {
+        :get {:doc "Test room get"}
+        :put {:doc "Test room put"}
+        :delete {:doc "Test room delete"}
+      }
+    }
+  }
+}
+)
