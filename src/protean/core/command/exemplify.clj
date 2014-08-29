@@ -8,8 +8,7 @@
    This translation task occurs after seeding has completed
    (probably while some nodes are not visitable)."
   (:require [protean.core.transformation.coerce :as c]
-            [protean.core.codex.placeholder :as p]
-            [protean.core.codex.examples :as e]))
+            [protean.core.codex.placeholder :as p]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -19,7 +18,7 @@
   (let [v (if (= k :query-params) (get-in mp [k p-type]) (k mp))]
     (if-let [ph (p/encode-value k v)]
       (list method uri
-        (assoc mp k (p/encode-value k (p/holders-swap ph e/holder-swap mp))))
+        (assoc mp k (p/encode-value k (p/holders-swap ph p/holder-swap-exp mp))))
       payload)))
 
 (defn- example [test p-type]

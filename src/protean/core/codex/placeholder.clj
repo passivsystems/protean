@@ -1,12 +1,32 @@
 (ns protean.core.codex.placeholder
   "Placeholder functionality, swapping codex examples, generating."
-  (:require [protean.core.transformation.coerce :as c]))
+  (:refer-clojure :exclude [long int])
+  (:require [clojure.string :as stg]
+            [clojure.data.generators :as gen]
+            [protean.core.transformation.coerce :as c])
+  (:import java.lang.Math))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
 (def psv "psv+")
+
+(defn- int
+  "Generate a random int.
+   For some reason generators int does not return an int."
+  []
+  (.intValue (gen/uniform Integer/MIN_VALUE (inc Integer/MAX_VALUE))))
+
+(defn- int+ [] (Math/abs (clojure.core/int (gen/int))))
+
+(defn- long+ [] (Math/abs (gen/long)))
+
+(defn- g-val [v]
+  (case v
+    "Int" (int+)
+    "Long" (long+)
+    "String" (gen/string)))
 
 
 ;; =============================================================================
@@ -37,6 +57,22 @@
   "Encode body items as clojure, they are Json initially."
   [k x]
   (if (= k :body) (c/clj-> x) x))
+
+(defn holder-swap-uri [v [method uri mp :as payload]]
+  (if-let [sv (get-in mp [:gen v :type])]
+    (let [gv (g-val sv)]
+      (list method (stg/replace uri psv (str gv)) mp))
+    payload))
+
+(defn holder-swap-exp
+  "Swap codex example values in for placeholders."
+  [k v m]
+  (if (holder? v) (if-let [x (get-in m [:gen k :examples])] (first x) v) v))
+
+(defn holder-swap-gen
+  "Swap generative values in for placeholders."
+  [k v mp]
+  (if (holder? v) (if-let [x (get-in mp [:gen k :type])] (g-val x) v) v))
 
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."

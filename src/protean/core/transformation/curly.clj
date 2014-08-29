@@ -6,7 +6,6 @@
             [ring.util.codec :as cod]
             [cheshire.core :as jsn]
             [protean.core.protocol.http :as h]
-            [protean.core.codex.examples :as e]
             [protean.core.codex.placeholder :as p]
             [protean.core.transformation.analysis :as txan]))
 
@@ -37,13 +36,19 @@
 
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
+(defn- translate [phs entry]
+  (-> phs
+      (p/holders-swap p/holder-swap-exp entry)
+      (p/holders-swap p/holder-swap-gen entry)))
+
 (defn curly-query-params-> [{:keys [query-params] :as entry} payload]
-  (let [ph (:required query-params)]
-    (if-let [rp (p/holders-swap ph e/holder-swap entry)]
+  (let [phs (:required query-params)]
+    (if-let [rp (translate phs entry)]
       (if (empty? rp)
         (str payload "'")
-        (str payload "?" (stg/join "&" (map #(str (key %) "="
-          (cod/form-encode (val %))) rp)) "'"))
+        (str payload "?"
+          (stg/join "&"
+            (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'"))
       (str payload "'"))))
 
 (defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
