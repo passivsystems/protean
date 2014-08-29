@@ -38,12 +38,13 @@
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
 (defn curly-query-params-> [{:keys [query-params] :as entry} payload]
-  (if-let [rp (p/holders-swap query-params e/holder-swap entry)]
-    (if (empty? rp)
-      (str payload "'")
-      (str payload "?" (stg/join "&" (map #(str (key %) "="
-        (cod/form-encode (val %))) rp)) "'"))
-    (str payload "'")))
+  (let [ph (:required query-params)]
+    (if-let [rp (p/holders-swap ph e/holder-swap entry)]
+      (if (empty? rp)
+        (str payload "'")
+        (str payload "?" (stg/join "&" (map #(str (key %) "="
+          (cod/form-encode (val %))) rp)) "'"))
+      (str payload "'"))))
 
 (defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
 
