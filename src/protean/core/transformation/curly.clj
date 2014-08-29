@@ -47,7 +47,6 @@
 (defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
 
 (defn curly-> [entry]
-  (println "entry : " entry)
   (->> "curl -v"
        (curly-method-> entry)
        (curly-headers-> entry)
