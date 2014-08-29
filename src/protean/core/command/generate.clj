@@ -10,7 +10,9 @@
 
 (defn- swap-placeholders [k [method uri mp :as payload]]
   (if-let [phs (p/encode-value k (k mp))]
-    (list method uri (assoc mp k (c/js-> (p/holders-swap phs p/holder-swap-gen mp))))
+    (let [swapped (p/holders-swap phs p/holder-swap-gen mp)
+          swp (if (= k :body) (c/js-> swapped) swapped)]
+      (list method uri (assoc mp k swp)))
     payload))
 
 (defn- uri [codices payload]
@@ -22,6 +24,7 @@
 
 (defn- generate [test codices]
   (->> test
+       (swap-placeholders :query-params)
        (swap-placeholders :body)
        (uri codices)))
 
