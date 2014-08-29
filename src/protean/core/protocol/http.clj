@@ -19,10 +19,17 @@
 (defn status [method] {:status (or (method statuses) 500)})
 
 
+;; Headers
+;;;;;;;;;;
+
+(def ctype "Content-Type")
+
+
 ;; Content types
 ;;;;;;;;;;;;;;;;
 
 (def txt "text/plain")
 (def xml "text/xml")
-(def jsn "application/json; charset=utf-8")
+(def jsn-simple "application/json")
+(def jsn (str jsn-simple "; charset=utf-8"))
 (def frm "application/x-www-form-urlencoded")

@@ -4,6 +4,7 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
+            [protean.core.protocol.http :as h]
             [protean.core.transformation.sim :as txsim]
             [protean.core.transformation.coerce :as txco]
             [protean.core.transformation.analysis :as txan]
@@ -20,7 +21,7 @@
 ;; Helper functions and data
 ;; =============================================================================
 
-(def json {:headers {"Content-Type" "application/json; charset=utf-8"}})
+(def json {:headers {h/ctype h/jsn}})
 
 (def state (atom {}))
 

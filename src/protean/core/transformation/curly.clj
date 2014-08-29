@@ -5,6 +5,7 @@
             [clojure.set :as st]
             [ring.util.codec :as cod]
             [cheshire.core :as jsn]
+            [protean.core.protocol.http :as h]
             [protean.core.codex.examples :as e]
             [protean.core.codex.placeholder :as p]
             [protean.core.transformation.analysis :as txan]))
@@ -30,7 +31,7 @@
 
 (defn curly-body-> [entry payload]
   (if-let [b (:body-keys entry)]
-    (str payload " -H 'Content-type: application/json'" " --data '"
+    (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
       (jsn/generate-string b) "'")
     payload))
 
