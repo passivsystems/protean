@@ -60,21 +60,31 @@
 
 (defn holder-swap-uri [v [method uri mp :as payload]]
   (if-let [sv (get-in mp [:gen v :type])]
-    (let [gv (g-val sv)]
-      (list method (stg/replace uri psv (str gv)) mp))
+    (let [gv (g-val sv)
+          raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
+          ph-map (update-in raw-map [:codex :ph-swaps] vec)]
+      (list method (stg/replace uri psv (str gv)) ph-map))
     payload))
 
 (defn holder-swap-exp
   "Swap codex example values in for placeholders."
   [k v m]
-  (if (holder? v) (if-let [x (get-in m [:gen k :examples])] (first x) v) v))
+  (if (holder? v)
+    (if-let [x (get-in m [:gen k :examples])] [(first x) "exp"] [v "idn"])
+    [v "idn"]))
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
   [k v mp]
-  (if (holder? v) (if-let [x (get-in mp [:gen k :type])] (g-val x) v) v))
+  (if (holder? v)
+    (if-let [x (get-in mp [:gen k :type])] [(g-val x) "gen"] [v "idn"])
+    [v "idn"]))
 
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."
   [ph swp-fn m]
-  (into {} (for [[k v] ph] [k (swp-fn k v m)])))
+  (let [raw (for [[k v] ph] [k (swp-fn k v m)])
+        swapped (into {} (for [[k [sval stype :as v]] raw] [k sval]))
+        sts (for [[k [sval stype :as v]] raw] stype)
+        swap-type (if (some #{"gen" "exp"} sts) "dyn" "idn")]
+    [swapped swap-type]))

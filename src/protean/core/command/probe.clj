@@ -1,6 +1,7 @@
 (ns protean.core.command.probe
   "Building probes and handling persisting/presenting raw results."
-  (:require [protean.core.transformation.testy-cljhttp :as tc]
+  (:require [clojure.string :as stg]
+            [protean.core.transformation.testy-cljhttp :as tc]
             [protean.core.command.test :as t]
             [protean.core.command.seed :as s]
             [protean.core.command.exemplify :as e]
@@ -51,7 +52,6 @@
            tests (tc/clj-httpify h p codices corpus)
            seeded (translate tests :test corpus codices)
            results (map #(t/test! %) seeded)]
-       (println "seeded : " seeded)
        (res-fn results)
        results))])
 
@@ -81,10 +81,15 @@
 (defmethod analyse :doc [_ corpus codices result]
   (println "analysing doc probe data"))
 
+(defn- assess [m s phs]
+  (if phs
+    (if (some #{"dyn"} phs)
+      (if (and (= m 'client/get) (= s 200)) false true)
+      true)
+    true))
+
 (defmethod analyse :test [_ corpus codices results]
   (doseq [r results]
-    (doseq [ir r]
-      (let [t-method (first ir)
-            t-uri (second ir)
-            s (:status (last ir))]
-        (println "Test : " t-method " - " t-uri ", status : " s)))))
+    (doseq [[method uri mp phs] r]
+      (let [s (:status mp)]
+        (println "Test : " method " - " uri ", status : " s ", pass : " (assess method s phs))))))

@@ -11,6 +11,7 @@
        (p/assoc-item res :body :body)
        (res-location res)))
 
-(defn test! [[t1 t2 :as t]]
+(defn test! [[t1 t2 t3 :as t]]
   (require '[clj-http.client :as client])
-  (let [res (eval t)] [t1 t2 (result res)]))
+  (let [res (eval t)]
+    [t1 t2 (result res) (get-in t3 [:codex :ph-swaps])]))

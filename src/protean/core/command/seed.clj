@@ -39,14 +39,20 @@
 (defn- holder-swap [k v seed]
   (if (p/holder? v)
     (if-let [sv (get-in seed [(last (.split v PSV-EXP))])]
-      sv
-      (if-let [sv (bag-item v seed)] sv v))
-    v))
+      [sv :seed]
+      (if-let [sv (bag-item v seed)] [sv :seed] [v :idn]))
+    [v :idn]))
+
+(defn- tx-payload-map [k mp res]
+  (-> mp
+      (assoc k (p/encode-value k (first res)))
+      (update-in [:codex :ph-swaps] conj (second res))
+      (update-in [:codex :ph-swaps] vec)))
 
 (defn- swap-placeholders [k seed [method uri mp :as payload]]
   (if-let [phs (p/encode-value k (k mp))]
     (let [res (p/holders-swap phs holder-swap seed)]
-      (list method uri (assoc mp k (p/encode-value k res))))
+      (list method uri (tx-payload-map k mp res)))
     payload))
 
 ; TODO: weak, only handles 1 instance of uri placeholder

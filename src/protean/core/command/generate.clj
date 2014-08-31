@@ -8,11 +8,17 @@
 ;; Helper functions
 ;; =============================================================================
 
+(defn- tx-payload-swap [k mp res]
+  (-> mp
+      (assoc k (first res))
+      (update-in [:codex :ph-swaps] conj (second res))
+      (update-in [:codex :ph-swaps] vec)))
+
 (defn- swap-placeholders [k [method uri mp :as payload]]
   (if-let [phs (p/encode-value k (k mp))]
     (let [swapped (p/holders-swap phs p/holder-swap-gen mp)
-          swp (if (= k :body) (c/js-> swapped) swapped)]
-      (list method uri (assoc mp k swp)))
+          res [(if (= k :body) (c/js-> (first swapped)) (first swapped)) (last swapped)]]
+      (list method uri (tx-payload-swap k mp res)))
     payload))
 
 (defn- uri [codices payload]
