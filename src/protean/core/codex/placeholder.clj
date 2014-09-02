@@ -87,5 +87,8 @@
         raw (for [[k v] p] [k (swp-fn k v m)])
         swapped (into {} (for [[k [sval stype :as v]] raw] [k sval]))
         sts (for [[k [sval stype :as v]] raw] stype)
-        swap-type (if (some #{"gen" "exp"} sts) "dyn" "idn")]
+        swap-type (cond
+                   (some #{"gen" "exp"} sts) "dyn"
+                   (some #{"seed"} sts) "seed"
+                   :else "idn")]
     [swapped swap-type]))

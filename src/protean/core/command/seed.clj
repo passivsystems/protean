@@ -40,7 +40,7 @@
   (if (p/holder? v)
     (if-let [sv (get-in seed [(last (.split v PSV-EXP))])]
       [sv :seed]
-      (if-let [sv (bag-item v seed)] [sv :seed] [v :idn]))
+      (if-let [sv (bag-item v seed)] [sv "seed"] [v :idn]))
     [v :idn]))
 
 (defn- tx-payload-map [k mp res]
