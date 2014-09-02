@@ -124,9 +124,8 @@
     (println (aa/bold-green "Exploring quadrant..."))
     (let [codices (edn/read-string (slurp file))
           bres (b/visit b codices)]
-      ;; before analysis, grab results from first pass 'bres' (POST's only)
-      ;;   form a seed out of them and pass in to second iteration
-      ;;   restricting to RUD ops over the results from POST's
+
+
       (b/analyse b codices bres)
       (println (aa/bold-green "...finished exploring quadrant")))))
 

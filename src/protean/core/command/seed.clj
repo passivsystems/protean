@@ -61,7 +61,11 @@
     (let [v (p/uri-ns-holder uri)
           sv (bag-item v seed)
           new-uri (stg/replace uri #"psv\+" (last (.split sv "/")))]
-      (if sv (list method new-uri mp) payload))
+      (if sv
+        (let [raw (update-in mp [:codex :ph-swaps] conj "seed")
+              ph-map (update-in raw [:codex :ph-swaps] vec)]
+          (list method new-uri ph-map))
+        payload))
     payload))
 
 (defn- seed-> [test seed]

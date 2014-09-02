@@ -73,6 +73,30 @@
 
 
 ;; =============================================================================
+;; Probe dispatch
+;; =============================================================================
+
+(defmulti dispatch (fn [command & _] command))
+
+(defmethod dispatch :doc [_ corpus codices probes]
+  (println "dispatching probes"))
+
+(defmethod dispatch :test [_ corpus codices probes]
+  (println "dispatching probes")
+  (let [res
+          (doall (map (fn [x] ((last x) (first x) codices res-persist!)) probes))
+        raw-posts (filter #(= (first %) 'client/post) (apply concat res))
+        ps (filter #(or (:location (nth % 2)) (:body (nth % 2))) raw-posts)
+        vs (remove nil? (map #(or (:location (nth % 2)) (:body (nth % 2))) ps))
+        locs (for [[m p] probes] (:locs m))
+        bag (assoc-in corpus [:seed] {"bag" (vec vs)})
+        np (doall (map #(build :test (assoc-in bag [:locs] %) codices) locs))
+        nr (doall (map (fn [x] ((last x) (first x) codices res-persist!)) np))
+        fr (remove #(or (= (first %) 'client/post) (nil? (last %))) (apply concat nr))]
+    (concat (apply concat res) fr)))
+
+
+;; =============================================================================
 ;; Probe data analysis
 ;; =============================================================================
 
@@ -89,7 +113,6 @@
     true))
 
 (defmethod analyse :test [_ corpus codices results]
-  (doseq [r results]
-    (doseq [[method uri mp phs] r]
-      (let [s (:status mp)]
-        (println "Test : " method " - " uri ", status : " s ", pass : " (assess method s phs))))))
+  (doseq [[method uri mp phs] results]
+    (let [s (:status mp)]
+      (println "Test : " method " - " uri ", status : " s ", pass : " (assess method s phs)))))

@@ -13,7 +13,7 @@
 
 (defn js-> [d] (jsn/generate-string d))
 
-(defn clj-> [d] (jsn/parse-string d))
+(defn clj-> [d] (if (map? d) d (jsn/parse-string d)))
 
 (defn pretty-clj-> [d] (pprint (clj-> d)))
 
