@@ -39,23 +39,23 @@
 (defn- mod-1st-hdr
   "If a based on a probability defined in the codex optionally mutate the first
    response header."
-  [proj-payload errs prob]
-  (let [hdrs (:headers (:rsp proj-payload))
-        estatus (or (get-in proj-payload [:rsp :errors :status]) errs)
-        eprob (or (get-in proj-payload [:rsp :errors :probability]) prob)]
+  [{:keys [rsp] :as proj-payload} errs prob]
+  (let [hdrs (:headers rsp)
+        estatus (or (get-in rsp [:errors :status]) errs)
+        eprob (or (get-in rsp [:errors :probability]) prob)]
     (if (and estatus (percentage? eprob))
       (let [k (first (keys hdrs))]
         (if k (st/rename-keys hdrs {k (str k "mutated")}) hdrs))
       hdrs)))
 
-(defn- proj-2-status [proj-payload payload]
-  (if-let [status (:status (:rsp proj-payload))]
+(defn- proj-2-status [{:keys [rsp] :as proj-payload} payload]
+  (if-let [status (:status rsp)]
     (assoc payload :status status)
     payload))
 
-(defn- err-2-status [proj-payload proj-errs prob payload]
-  (let [estatus (or (get-in proj-payload [:rsp :errors :status]) proj-errs)
-        eprob (or (get-in proj-payload [:rsp :errors :probability]) prob)]
+(defn- err-2-status [{:keys [rsp] :as proj-payload} proj-errs prob payload]
+  (let [estatus (or (get-in rsp [:errors :status]) proj-errs)
+        eprob (or (get-in rsp [:errors :probability]) prob)]
     (if (and (and estatus (percentage? eprob)) (not (req-err-status? payload)))
       (assoc payload :status (rand-nth estatus))
       payload)))
