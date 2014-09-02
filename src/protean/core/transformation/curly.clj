@@ -37,9 +37,13 @@
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
 (defn- translate [phs entry]
-  (-> phs
-      (p/holders-swap p/holder-swap-exp entry)
-      (p/holders-swap p/holder-swap-gen entry)))
+  (if phs
+    (let [res
+          (-> phs
+              (p/holders-swap p/holder-swap-exp entry)
+              (p/holders-swap p/holder-swap-gen entry))]
+      (if (vector? res) (first res) res))
+    nil))
 
 (defn curly-query-params-> [{:keys [query-params] :as entry} payload]
   (let [phs (:required query-params)]
@@ -47,8 +51,8 @@
       (if (empty? rp)
         (str payload "'")
         (str payload "?"
-          (stg/join "&"
-            (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'"))
+             (stg/join "&"
+                       (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'"))
       (str payload "'"))))
 
 (defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))

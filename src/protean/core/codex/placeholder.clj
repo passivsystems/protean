@@ -83,8 +83,12 @@
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."
   [ph swp-fn m]
-  (let [raw (for [[k v] ph] [k (swp-fn k v m)])
+  (let [p (if (vector? ph) (first ph) ph)
+        raw (for [[k v] p] [k (swp-fn k v m)])
         swapped (into {} (for [[k [sval stype :as v]] raw] [k sval]))
         sts (for [[k [sval stype :as v]] raw] stype)
-        swap-type (if (some #{"gen" "exp"} sts) "dyn" "idn")]
+        swap-type (cond
+                   (some #{"gen" "exp"} sts) "dyn"
+                   (some #{"seed"} sts) "seed"
+                   :else "idn")]
     [swapped swap-type]))

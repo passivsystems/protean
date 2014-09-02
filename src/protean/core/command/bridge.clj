@@ -16,8 +16,7 @@
 
    Links expectations to probe results where outcome is a concern."
   (:require [protean.core.transformation.paths :as p]
-            [protean.core.command.probe :as pr])
-  (:use [protean.core.command.probe :only [res-persist! res-simple!]]))
+            [protean.core.command.probe :as pr]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -53,8 +52,7 @@
   (let [cmd (first commands)
         paths (distinct (paths2locs locs corpus codices))
         probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))]
-    (println "dispatchng probes")
-    (doall (map (fn [x] ((last x) (first x) codices res-persist!))  probes))))
+    (pr/dispatch cmd corpus codices probes)))
 
 (defn analyse
   "Analyse a probe data."
