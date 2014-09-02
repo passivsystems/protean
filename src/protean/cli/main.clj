@@ -124,8 +124,6 @@
     (println (aa/bold-green "Exploring quadrant..."))
     (let [codices (edn/read-string (slurp file))
           bres (b/visit b codices)]
-
-
       (b/analyse b codices bres)
       (println (aa/bold-green "...finished exploring quadrant")))))
 
