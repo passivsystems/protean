@@ -68,7 +68,7 @@
     payload))
 
 (defn- verify-query-params-> [req proj-payload payload]
-  (if-let [rpms (:query-params (:req proj-payload))]
+  (if-let [rpms (get-in proj-payload [:req :query-params :required])]
     (if (every? (set (keys (:q-params req))) (keys rpms))
       payload
       (assoc payload :status 400))
