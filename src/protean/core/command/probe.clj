@@ -92,7 +92,8 @@
         bag (assoc-in corpus [:seed] {"bag" (vec vs)})
         np (doall (map #(build :test (assoc-in bag [:locs] %) codices) locs))
         nr (doall (map (fn [x] ((last x) (first x) codices res-persist!)) np))
-        fr (remove #(or (= (first %) 'client/post) (nil? (last %))) (apply concat nr))]
+        fr (remove #(or (= (first %) 'client/post) (not (some #{:seed} (last %))))
+                   (apply concat nr))]
     (concat (apply concat res) fr)))
 
 
