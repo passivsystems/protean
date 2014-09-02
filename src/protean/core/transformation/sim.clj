@@ -48,33 +48,33 @@
         (if k (st/rename-keys hdrs {k (str k "mutated")}) hdrs))
       hdrs)))
 
-(defn- proj-2-status-> [proj-payload payload]
+(defn- proj-2-status [proj-payload payload]
   (if-let [status (:status (:rsp proj-payload))]
     (assoc payload :status status)
     payload))
 
-(defn- err-2-status-> [proj-payload proj-errs prob payload]
+(defn- err-2-status [proj-payload proj-errs prob payload]
   (let [estatus (or (get-in proj-payload [:rsp :errors :status]) proj-errs)
         eprob (or (get-in proj-payload [:rsp :errors :probability]) prob)]
     (if (and (and estatus (percentage? eprob)) (not (req-err-status? payload)))
       (assoc payload :status (rand-nth estatus))
       payload)))
 
-(defn- verify-headers-> [req proj-payload payload]
+(defn- verify-headers [req proj-payload payload]
   (if-let [hdrs (:headers (:req proj-payload))]
     (if (every? (set (keys (:hdrs req))) (map stg/lower-case (keys hdrs)))
       payload
       (assoc payload :status 400))
     payload))
 
-(defn- verify-query-params-> [req proj-payload payload]
+(defn- verify-query-params [req proj-payload payload]
   (if-let [rpms (get-in proj-payload [:req :query-params :required])]
     (if (every? (set (keys (:q-params req))) (keys rpms))
       payload
       (assoc payload :status 400))
     payload))
 
-(defn- verify-form-> [req proj-payload payload]
+(defn- verify-form [req proj-payload payload]
   (if-let [f-keys (:form-params (:req proj-payload))]
     (let [req-form-ks (set (keys (:form-params req)))]
       (if (= req-form-ks (set (keys f-keys)))
@@ -82,7 +82,7 @@
         (assoc payload :status 400)))
     payload))
 
-(defn- verify-body-> [req proj-payload payload]
+(defn- verify-body [req proj-payload payload]
   (if-let [b-keys (:body (:req proj-payload))]
     (let [req-body-ks (set (keys (jsn/parse-string (:body req))))]
       (if (= req-body-ks (set (keys b-keys)))
@@ -90,19 +90,19 @@
         (assoc payload :status 400)))
     payload))
 
-(defn- verify-2-status-> [req proj-payload payload]
-  (->> (verify-headers-> req proj-payload payload)
-       (verify-query-params-> req proj-payload)
-       (verify-form-> req proj-payload)
-       (verify-body-> req proj-payload)))
+(defn- verify-2-status [req proj-payload payload]
+  (->> (verify-headers req proj-payload payload)
+       (verify-query-params req proj-payload)
+       (verify-form req proj-payload)
+       (verify-body req proj-payload)))
 
-(defn- status-> [req proj-payload proj-errs prob]
+(defn- status [req proj-payload proj-errs prob]
   (->> (h/status (:method req))
-       (proj-2-status-> proj-payload)
-       (verify-2-status-> req proj-payload)
-       (err-2-status-> proj-payload proj-errs prob)))
+       (proj-2-status proj-payload)
+       (verify-2-status req proj-payload)
+       (err-2-status proj-payload proj-errs prob)))
 
-(defn- headers-> [proj-payload proj-errs prob payload]
+(defn- headers [proj-payload proj-errs prob payload]
   (if-let [hdrs (mod-1st-hdr proj-payload proj-errs prob)]
     (if (err-status? payload) payload (assoc payload :headers hdrs))
     payload))
@@ -111,7 +111,7 @@
   (assoc payload :headers {"Content-Type" header} :body body))
 
 ;; TODO: this is nasty, needs refactoring, no time right now
-(defn- body-> [proj-payload payload]
+(defn- body [proj-payload payload]
   (when (:time (:rsp proj-payload))
     (Thread/sleep (* (:time (:rsp proj-payload)) 1000)))
   (if (err-status? payload)
@@ -141,8 +141,8 @@
         req (req-> req)]
     (if-let [proj-payload (service-path? codices proj k)]
       (if ((:method req) proj-payload)
-        (->> (status-> req ((:method req) proj-payload) proj-errors prob)
-             (headers-> ((:method req) proj-payload) proj-errors prob)
-             (body-> ((:method req) proj-payload)))
+        (->> (status req ((:method req) proj-payload) proj-errors prob)
+             (headers ((:method req) proj-payload) proj-errors prob)
+             (body ((:method req) proj-payload)))
         {:status 405})
       {:status 404})))
