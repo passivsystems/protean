@@ -8,6 +8,7 @@
   	    [clj-http.client :as clt]
             [io.aviso.ansi :as aa]
             [protean.core.protocol.http :as pth]
+            [protean.cli.interface :as i]
             [protean.core.transformation.coerce :as ptc]
             [protean.core.transformation.analysis :as pta]
             [protean.core.transformation.curly :as txc]
@@ -132,46 +133,40 @@
 ;; Application entry point
 ;; =============================================================================
 
-(defn -main [& args]
-  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
-    ;; Handle help and error conditions
+(defn- bomb [summary] (exit 0 (usage summary))) ; exit nicely and print usage
+
+(defn- handle-errors
+  [{:keys [name file] :as options} arguments errors summary]
+  (let [cmd (first arguments)]
     (cond
-      (:help options) (exit 0 (usage summary))
+      (:help options) (bomb summary)
       (not= (count arguments) 1) (exit 1 (usage summary))
       errors (exit 1 (error-msg errors))
-      (and (= (first arguments) "service")
-           (not (:name options))) (exit 0 (usage summary))
-      (and (= (first arguments) "add-services")
-           (not (:file options))) (exit 0 (usage summary))
-      (and (= (first arguments) "del-service")
-           (not (:name options))) (exit 0 (usage summary))
-      (and (= (first arguments) "add-service-error")
-           (or (not (:name options))
-               (not (:status-err options)))) (exit 0 (usage summary))
-      (and (= (first arguments) "set-service-error-prob")
-           (or (not (:name options))
-               (not (:level options)))) (exit 0 (usage summary))
-      (and (= (first arguments) "del-service-errors")
-           (not (:name options))) (exit 0 (usage summary))
-      (and (= (first arguments) "doc")
-                (or (not (:name options))
-                    (not (:file options))
-                    (not (:directory options)))) (exit 0 (usage summary))
-      (and (= (first arguments) "visit"
-                (or (not (:file options))
-                    (not (:body options))))) (exit 0 (usage summary)))
-    ;; Execute program with options
+      (and (= cmd i/svc) (not name)) (bomb summary)
+      (and (= cmd i/svc-usg) (not name)) (bomb summary)
+      (and (= cmd i/add-svcs) (not file)) (bomb summary)
+      (and (= cmd i/del-svc) (not name)) (bomb summary)
+      (and (= cmd i/add-svc-err) (i/add-svc-err? options)) (bomb summary)
+      (and (= cmd i/set-svc-err-prob) (i/set-svc-err-prob? options)) (bomb summary)
+      (and (= cmd i/del-svc-errs) (not name)) (bomb summary)
+      (and (= cmd i/doc) (i/doc? options)) (bomb summary)
+      (and (= cmd i/visit (i/visit? options))) (bomb summary))))
+
+(defn -main [& args]
+  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
+        cmd (first arguments) name (:name options) file (:file options)]
+    (handle-errors options arguments errors summary)
     (cli-banner)
     (println "\n")
-    (case (first arguments)
-      "services" (projects options)
-      "service" (project options)
-      "service-usage" (project-usage options)
-      "add-services" (add-projects options)
-      "del-service" (delete-project options)
-      "add-service-error" (add-project-error options)
-      "set-service-error-prob" (set-project-error-prob options)
-      "del-service-errors" (del-project-errors options)
-      "doc" (doc options)
-      "visit" (visit options)
-      (exit 1 (usage-exit summary)))))
+    (cond
+      (= cmd i/svcs) (projects options)
+      (= cmd i/svc) (project options)
+      (= cmd i/svc-usg) (project-usage options)
+      (= cmd i/add-svcs) (add-projects options)
+      (= cmd i/del-svc) (delete-project options)
+      (= cmd i/add-svc-err) (add-project-error options)
+      (= cmd i/set-svc-err-prob) (set-project-error-prob options)
+      (= cmd i/del-svc-errs) (del-project-errors options)
+      (= cmd i/doc) (doc options)
+      (= cmd i/visit) (visit options)
+      :else (exit 1 (usage-exit summary)))))
