@@ -11,3 +11,9 @@
     (is (= cmd "curl"))
     (is (= verbosity "-v"))
     (is (= uri "'http://localhost:8080/sample/simple'"))))
+
+(deftest query-param-curly
+  (let [codices (d/read-edn "curly.edn")
+        curly (curly-analysis-> "localhost" 8080 codices "curly")
+        [cmd verbosity uri] (split (first curly) #" ")]
+    (is (= uri "'http://localhost:8080/curly/query-params?blurb=flibble'"))))

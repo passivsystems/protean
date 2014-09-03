@@ -1,0 +1,23 @@
+;; A sample simulation codex
+;;
+;; Illustrates response body etc
+
+{
+  :curly {
+    :paths {
+      "query-params" {
+        :get {
+          :req {
+            :query-params {:required {"blurb" "flibble"}}
+          }
+          :rsp {
+            :body {
+              "k1" "v1"
+              "k2" "v2"
+            }
+          }
+        }
+      }
+    }
+  }
+}
