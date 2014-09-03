@@ -7,8 +7,7 @@
 (deftest simple-curly
   (let [codices (d/read-edn "get-codex.edn")
         curly (curly-analysis-> "localhost" 8080 codices "sample")
-        c (first curly)
-        s (split c #" ")]
-    (is (= (first s) "curl"))
-    (is (= (second s) "-v"))
-    (is (= (last s) "'http://localhost:8080/sample/simple'"))))
+        [cmd verbosity uri] (split (first curly) #" ")]
+    (is (= cmd "curl"))
+    (is (= verbosity "-v"))
+    (is (= uri "'http://localhost:8080/sample/simple'"))))
