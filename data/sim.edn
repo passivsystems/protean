@@ -16,6 +16,12 @@
         }
       }
 
+      "status-override" {
+        :get {
+          :rsp {:status 204}
+        }
+      }
+
       "wild/*" {
         :get {
           :rsp {

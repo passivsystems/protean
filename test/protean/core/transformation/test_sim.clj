@@ -97,3 +97,9 @@
         cdx (d/read-edn "multi-method.edn")
         rsp (sim-rsp-> req cdx)]
     (is (= (:status rsp) 405))))
+
+(deftest status-override
+  (let [req (get-req "/sim/status-override")
+        cdx (d/read-edn "sim.edn")
+        rsp (sim-rsp-> req cdx)]
+    (is (= (:status rsp) 204))))
