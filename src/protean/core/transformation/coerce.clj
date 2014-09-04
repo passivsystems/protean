@@ -11,7 +11,7 @@
 
 (defn int-> [s] (. Integer parseInt s))
 
-(defn js-> [d] (jsn/generate-string d))
+(defn js-> [d] (if d (jsn/generate-string d) d))
 
 (defn clj-> [d] (if (map? d) d (jsn/parse-string d)))
 

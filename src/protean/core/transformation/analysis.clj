@@ -51,7 +51,8 @@
 
 (defn codex-rsp-> [resource payload]
   (assoc payload :codex
-    {:body (get-in resource [:spec :rsp :body])
+    {:q-params-type (get-in resource [:spec :req :query-params-type])
+     :body (get-in resource [:spec :rsp :body])
      :body-res (get-in resource [:spec :rsp :body-res])
      :success-code (get-in resource [:spec :rsp :success-code])
      :content-type (get-in resource [:spec :rsp :content-type])}))

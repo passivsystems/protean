@@ -51,8 +51,9 @@
 
 (defn- swap-placeholders [k seed [method uri mp :as payload]]
   (if-let [phs (p/encode-value k (k mp))]
-    (let [res (p/holders-swap phs holder-swap seed)]
-      (list method uri (tx-payload-map k mp res)))
+    (let [swap-mp (merge seed mp)
+          swapped (p/holders-swap phs holder-swap swap-mp k :seed)]
+      (list method uri (tx-payload-map k mp swapped)))
     payload))
 
 ; TODO: weak, only handles 1 instance of uri placeholder
@@ -69,12 +70,15 @@
     payload))
 
 (defn- seed-> [test seed]
-  (->> test
-       (header-authzn-> "Basic" seed)
-       (header-authzn-> "Bearer" seed)
-       (swap-placeholders :query-params seed)
-       (swap-placeholders :body seed)
-       (swap-placeholders :form-params seed)
-       (uri-> seed)))
+  (let [new-test
+        (->> test
+             (header-authzn-> "Basic" seed)
+             (header-authzn-> "Bearer" seed)
+             (swap-placeholders :query-params seed)
+             (swap-placeholders :body seed)
+             (swap-placeholders :form-params seed)
+             (uri-> seed))]
+    new-test))
 
-(defn seeds [tests seed] (if seed (map #(seed-> % seed) tests) tests))
+(defn seeds [tests seed]
+  (if seed (map #(seed-> % seed) tests) tests))

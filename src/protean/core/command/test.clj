@@ -1,4 +1,7 @@
 (ns protean.core.command.test
+  "Launch tests and do some basic formatting of results.
+
+   N.B. currently locked in with clj-http."
   (:require [protean.core.transformation.payload :as p]))
 
 (defn- res-location [res payload]

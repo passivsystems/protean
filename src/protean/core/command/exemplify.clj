@@ -14,10 +14,6 @@
 ;; Helper functions
 ;; =============================================================================
 
-;; -    (if-let [ph (p/encode-value k v)]
-;; -      (list method uri
-;; -        (assoc mp k (p/encode-value k (p/holders-swap ph p/holder-swap-exp mp))))
-
 (defn- tx-payload-map [k mp res]
   (-> mp
       (assoc k (p/encode-value k (first res)))
@@ -27,7 +23,7 @@
 (defn- swap-placeholders [k p-type [method uri mp :as payload]]
   (let [v (if (= k :query-params) (get-in mp [k p-type]) (k mp))]
     (if-let [phs (p/encode-value k v)]
-      (let [res (p/holders-swap phs p/holder-swap-exp mp)]
+      (let [res (p/holders-swap phs p/holder-swap-exp mp k :exp)]
         (list method uri (tx-payload-map k mp res)))
       payload)))
 
@@ -35,4 +31,5 @@
   (->> test
        (swap-placeholders :query-params p-type)))
 
-(defn examples [codices p-type tests] (map #(example % p-type) tests))
+(defn examples [codices p-type tests]
+  (map #(example % p-type) tests))
