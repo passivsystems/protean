@@ -11,6 +11,7 @@
 ;; =============================================================================
 
 (def psv "psv+")
+(def ns-psv "/psv+")
 
 (defn- int
   "Generate a random int.
@@ -41,7 +42,7 @@
 (defn uri-ns-holder?
   "Does a uri contain a ns prefixed wildcard placeholder ?"
   [v]
-  (.contains v (str "/" psv)))
+  (.contains v ns-psv))
 
 
 ;; =============================================================================
@@ -51,7 +52,7 @@
 (defn uri-ns-holder
   "Get ns prefixed wildcard portion of uri, E.G. things/psv+."
   [uri]
-  (-> uri (.split "/psv\\+") first (.split "/") last (str "/psv+")))
+  (-> uri (.split "/psv\\+") first (.split "/") last ns-psv))
 
 (defn encode-value
   "Encode body items as clojure, they are Json initially."
