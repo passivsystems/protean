@@ -39,7 +39,7 @@
 (defn holder?
   "Does a simple value contain a placeholder ?"
   [v]
-  (.contains v psv))
+  (if (string? v) (.contains v psv) false))
 
 (defn uri-ns-holder?
   "Does a uri contain a ns prefixed wildcard placeholder ?"
