@@ -48,7 +48,7 @@
    Uses node data encoded in 'codices' to optionally calculate generative input
    values, or document or sim."
   [{:keys [host port locs commands seed] :as corpus} codices]
-  (println "building probes")
+  (pr/config (first commands) corpus)
   (let [cmd (first commands)
         paths (distinct (paths2locs locs corpus codices))
         probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))]

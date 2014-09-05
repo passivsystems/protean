@@ -1,6 +1,7 @@
 (ns protean.core.command.probe
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as stg]
+            [io.aviso.ansi :as aa]
             [protean.core.transformation.testy-cljhttp :as tc]
             [protean.core.command.test :as t]
             [protean.core.command.seed :as s]
@@ -10,6 +11,17 @@
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
+
+(defn- hlr [t] (println (aa/bold-red t)))
+
+(defn- hlg [t] (println (aa/bold-green t)))
+
+(defn- show-test [level]
+  (cond
+   (= level 1) (hlr "ʘ‿ʘ I'm too young to die")
+   (= level 2) (hlr "⊙︿⊙ Hey not too rough")
+   (= level 3) (hlr "ミ●﹏☉ミ Hurt me plenty")
+   (= level 4) (hlr "✖_✖ Ultra violence")))
 
 (defn- tl-negotiation
   "Only ever translate placeholders with seed items, no generation."
@@ -30,6 +42,17 @@
   (if (some #{:doc :test} (list command))
     (tl-testdoc tests corpus codices)
     (tl-negotiation tests corpus codices)))
+
+
+;; =============================================================================
+;; Probe config
+;; =============================================================================
+
+(defmulti config (fn [command & _] command))
+
+(defmethod config :test [_ corpus]
+  (show-test (get-in corpus [:config "test-level"] 1))
+  (hlg "building probes"))
 
 
 ;; =============================================================================
@@ -81,7 +104,7 @@
   (println "dispatching probes"))
 
 (defmethod dispatch :test [_ corpus codices probes]
-  (println "dispatching probes")
+  (hlg "dispatching probes")
   (let [res
           (doall (map (fn [x] ((last x) (first x) codices res-persist!)) probes))
         raw-posts (filter #(= (first %) 'client/post) (apply concat res))
