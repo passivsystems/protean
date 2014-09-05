@@ -1,7 +1,7 @@
 (ns protean.core.command.seed
   "Replace placeholder values a client provided set of values, grow seed
    values when incrementally negotiating (workflows etc)."
-  (:require [clojure.string :as stg]
+  (:require [clojure.string :as s]
             [protean.core.transformation.coerce :as txco]
             [protean.core.codex.placeholder :as p]))
 
@@ -23,7 +23,7 @@
     (if (and (.contains auth p/psv) (.contains auth strat))
       (if-let [sauth (token seed strat)]
         (let [n (assoc-in mp [:headers azn]
-                  (str strat " " (last (stg/split sauth #" "))))]
+                  (str strat " " (last (s/split sauth #" "))))]
           (list method uri n))
         payload)
       payload)
@@ -61,7 +61,7 @@
   (if (p/uri-ns-holder? uri)
     (let [v (p/uri-ns-holder uri)
           sv (bag-item v seed)
-          new-uri (stg/replace uri #"psv\+" (last (.split sv "/")))]
+          new-uri (if sv (s/replace uri #"psv\+" (last (.split sv "/"))) uri)]
       (if sv
         (let [raw (update-in mp [:codex :ph-swaps] conj "seed")
               ph-map (update-in raw [:codex :ph-swaps] vec)]
