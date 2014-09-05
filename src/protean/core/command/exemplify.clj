@@ -29,7 +29,8 @@
 
 (defn- example [test p-type]
   (->> test
-       (swap-placeholders :query-params p-type)))
+       (swap-placeholders :query-params p-type)
+       (swap-placeholders :body p-type)))
 
 (defn examples [codices p-type tests]
   (map #(example % p-type) tests))
