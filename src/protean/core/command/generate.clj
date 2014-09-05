@@ -8,7 +8,7 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- tx-payload-swap [k mp res]
+(defn- track-payload-swap [k mp res]
   (-> mp
       (assoc k (first res))
       (update-in [:codex :ph-swaps] conj (second res))
@@ -16,9 +16,10 @@
 
 (defn- swap-placeholders [k [method uri mp :as payload]]
   (if-let [phs (p/encode-value k (k mp))]
-    (let [swapped (p/holders-swap phs p/holder-swap-gen mp)
-          res [(if (= k :body) (c/js-> (first swapped)) (first swapped)) (last swapped)]]
-      (list method uri (tx-payload-swap k mp res)))
+    (let [swapped (p/holders-swap phs p/holder-swap-gen mp k :gen)
+          svs (if (= k :body) (c/js-> (first swapped)) (first swapped))
+          res [svs (last swapped)]]
+      (list method uri (track-payload-swap k mp res)))
     payload))
 
 (defn- uri [codices payload]
@@ -34,4 +35,5 @@
        (swap-placeholders :body)
        (uri codices)))
 
-(defn generations [codices tests] (map #(generate % codices) tests))
+(defn generations [codices tests]
+  (map #(generate % codices) tests))

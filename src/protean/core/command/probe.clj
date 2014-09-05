@@ -20,7 +20,7 @@
   "Prefer seed items in placeholder translation then codex examples then
    generated values."
   [tests {:keys [seed] :as corpus} codices]
-  (->> (s/seeds tests (:seed corpus))
+  (->> (s/seeds tests seed)
        (e/examples codices :required)
        (g/generations codices)))
 
@@ -46,7 +46,6 @@
   (println "building a test probe to visit : " locs)
   [corpus
    (fn engage [{:keys [locs host port] :as corpus} codices res-fn]
-     (println "dispatching a test probe to visit : " locs)
      (let [h (or host "localhost")
            p (or port 3000)
            tests (tc/clj-httpify h p codices corpus)

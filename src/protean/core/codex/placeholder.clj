@@ -11,6 +11,7 @@
 ;; =============================================================================
 
 (def psv "psv+")
+(def ns-psv "/psv+")
 
 (defn- int
   "Generate a random int.
@@ -28,6 +29,8 @@
     "Long" (long+)
     "String" (gen/string)))
 
+(defn- qp? [type] (= type :query-params))
+
 
 ;; =============================================================================
 ;; Truthiness functions
@@ -41,7 +44,7 @@
 (defn uri-ns-holder?
   "Does a uri contain a ns prefixed wildcard placeholder ?"
   [v]
-  (.contains v (str "/" psv)))
+  (.contains v ns-psv))
 
 
 ;; =============================================================================
@@ -51,7 +54,7 @@
 (defn uri-ns-holder
   "Get ns prefixed wildcard portion of uri, E.G. things/psv+."
   [uri]
-  (-> uri (.split "/psv\\+") first (.split "/") last (str "/psv+")))
+  (-> uri (.split "/psv\\+") first (.split "/") last (str "/" psv)))
 
 (defn encode-value
   "Encode body items as clojure, they are Json initially."
@@ -80,12 +83,33 @@
     (if-let [x (get-in mp [:gen k :type])] [(g-val x) "gen"] [v "idn"])
     [v "idn"]))
 
+(defn- json-qp? [m p]
+  (if (empty? p)
+    false
+    ;;(= (get-in m [:codex :q-params-type]) :json)
+    (and (= (get-in m [:codex :q-params-type]) :json)
+         (map? (first (vals p))))
+    ))
+
+(defn- swap-qp [swp-fn m p]
+  (let [c (if (json-qp? m p) (first (vals p)) p)]
+    (for [[k v] c] [k (swp-fn k v m)])))
+
+(defn- swap-body [swp-fn m p] (for [[k v] p] [k (swp-fn k v m)]))
+
+(defn- mapify-swapped [raw m p type ph-op]
+  (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
+        v-res (if (and (qp? type) (= ph-op :gen) (json-qp? m p)) (c/js-> mapified) mapified)]
+    (if (json-qp? m p)
+      {(first (keys p)) v-res}
+      v-res)))
+
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."
-  [ph swp-fn m]
+  [ph swp-fn m type ph-op]
   (let [p (if (vector? ph) (first ph) ph)
-        raw (for [[k v] p] [k (swp-fn k v m)])
-        swapped (into {} (for [[k [sval stype :as v]] raw] [k sval]))
+        raw (if (qp? type) (swap-qp swp-fn m p) (swap-body swp-fn m p))
+        swapped (mapify-swapped raw m p type ph-op)
         sts (for [[k [sval stype :as v]] raw] stype)
         swap-type (cond
                    (some #{"gen" "exp"} sts) "dyn"
