@@ -49,7 +49,7 @@
                                (clazz pnl-info)))])))
              (width "500px"))
         (cell headers ":")
-        (cell query-params "=")
+        (cell (:required query-params) "=")
         (cell form-params "=")
         (cell body-keys ":")]))
 
