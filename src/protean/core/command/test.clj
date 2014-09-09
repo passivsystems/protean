@@ -11,7 +11,7 @@
 
 (defn- result [res]
   (->> {:status (:status res)}
-       (p/assoc-item res :body :body)
+       (p/assoc-item res :body :body nil)
        (res-location res)))
 
 (defn test! [[t1 t2 t3 :as t]]

@@ -28,11 +28,17 @@
   [s]
   (s/replace s "*" "psv+"))
 
+(defn- rp-build [entry out-k corpus]
+  (if (= (get-in corpus [:config "test-level"]) (int 1))
+    (get-in entry [out-k :required])
+    (merge (get-in entry [out-k :required]) (get-in entry [out-k :optional]))))
+
 (defn assoc-item
   "Extracts out-k out of entry and assocs to payload as in-k."
-  [entry out-k in-k payload]
+  [entry out-k in-k corpus payload]
   (if-let [v (if (= out-k :query-params)
-               (get-in entry [out-k :required])
+               ;;(get-in entry [out-k :required])
+               (rp-build entry out-k corpus)
                (out-k entry))]
     (if (empty? v) payload (assoc payload in-k v))
     payload))
@@ -44,16 +50,18 @@
 
 (defn- codex-rsp [entry payload] (assoc payload :codex (:codex entry)))
 
-(defn- options [entry payload]
-  (assoc payload :options (->> {}
-                               (assoc-item entry :headers :headers)
-                               (assoc-item entry :query-params :query-params)
-                               (assoc-item entry :form-params :form-params)
-                               (assoc-item entry :gen :gen)
-                               (body entry)
-                               (codex-rsp entry))))
+(defn- options [entry corpus payload]
+  (assoc payload :options
+         (->> {}
+              (assoc-item entry :headers :headers corpus)
+              (assoc-item entry :query-params :query-params corpus)
+              (assoc-item entry :form-params :form-params corpus)
+              (assoc-item entry :gen :gen corpus)
+              (body entry)
+              (codex-rsp entry))))
 
-(defn- payload [entry] (->> (update-in entry [:uri] uri) (options entry)))
+(defn- payload [entry corpus]
+  (->> (update-in entry [:uri] uri) (options entry corpus)))
 
 
 ;; =============================================================================
@@ -62,4 +70,4 @@
 
 (defn build-payload [host port codices corpus]
   (let [analysed (a/analysis-> host port codices corpus)]
-    (map #(payload %) analysed)))
+    (map #(payload % corpus) analysed)))
