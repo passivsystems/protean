@@ -50,9 +50,11 @@
     (if-let [rp (translate phs entry :query-params)]
       (if (empty? rp)
         (str payload "'")
-        (str payload "?"
-             (stg/join "&"
-                       (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'"))
+        (if (= (get-in entry [:codex :q-params-type]) :json)
+          (str payload "?q=" (rp "q"))
+          (str payload "?"
+               (stg/join "&"
+               (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'")))
       (str payload "'"))))
 
 (defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
