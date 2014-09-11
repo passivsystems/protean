@@ -1,20 +1,13 @@
 (ns protean.cli.main
   "A basic command line interface for Protean."
-  (:require [clojure.string :as stg]
+  (:require [clojure.string :as s]
             [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
-  	    [clojure.tools.cli :refer [parse-opts]]
-            [ring.util.codec :as cod]
-  	    [clj-http.client :as clt]
+  	        [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
-            [protean.core.protocol.http :as pth]
             [protean.cli.interface :as i]
-            [protean.core.transformation.coerce :as ptc]
-            [protean.core.transformation.analysis :as pta]
-            [protean.core.transformation.curly :as txc]
-            [protean.core.transformation.testy-cljhttp :as tc]
-            [protean.core.command.bridge :as b]
-            [protean.core.command.test :as t])
+            [protean.core.transformation.coerce :as c]
+            [protean.core.command.bridge :as b])
   (:use protean.cli.simadmin)
   (:import java.net.URI)
   (:gen-class))
@@ -38,32 +31,6 @@
 (defn- nice-vals [v] (into [] (map #(keyword %) v)))
 
 (defn- sane-corpus [m] (-> m nice-keys (update-in [:commands] nice-vals)))
-
-(defn- body [ctype body]
-  (if-let [b body]
-    (cond
-      (= ctype pth/xml) (ptc/pretty-xml-> b)
-      (= ctype pth/txt) b
-      :else (ptc/js-> b))
-    "N/A"))
-
-(defn- codices->silk [f n d]
-  (let [codices (edn/read-string (slurp f))
-        locs {:locs (if n (vector n) n)}
-        an (pta/analysis-> "host" 1234 codices locs)]
-    (doseq [e an]
-      (let [uri-path (-> (URI. (:uri e)) (.getPath))
-            path  (stg/replace uri-path #"/" "-")
-            id (str (name (:method e)) path)
-            body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
-            full (assoc e :id id :path (subs uri-path 1) :curl (cod/url-decode (txc/curly-> e)) :sample-response body)]
-        (spit (str d "/" id ".edn") (pr-str (update-in full [:method] name)))))))
-
-(defn- visit [h p f b]
-  (println (aa/bold-green "Exploring quadrant..."))
-  (let [codices (edn/read-string (slurp f))
-        br (b/visit b codices)]
-    (println "finished visiting sim")))
 
 (def cli-options
   [["-p" "--port PORT" "Port number"
@@ -100,7 +67,7 @@
         "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc, test etc"
         ""
         "Please refer to the manual page for more information."]
-       (stg/join \newline)))
+       (s/join \newline)))
 
 (defn- usage [options-summary] (cli-banner) (usage-hud options-summary))
 
@@ -108,7 +75,7 @@
 
 (defn- error-msg [errors]
   (str "The following errors occurred while parsing your command:\n\n"
-       (stg/join \newline errors)))
+       (s/join \newline errors)))
 
 (defn- exit [status msg] (println msg) (System/exit status))
 
@@ -117,11 +84,8 @@
 ;; Domain functionality
 ;; =============================================================================
 
-(defn doc [{:keys [host port file name directory] :as options}]
-  (codices->silk file name directory))
-
-(defn visit [{:keys [host port file body] :as options}]
-  (let [b (sane-corpus (ptc/clj-> body))]
+(defn- visit [{:keys [host port file body] :as options}]
+  (let [b (sane-corpus (c/clj-> body))]
     (println (aa/bold-green "Exploring quadrant..."))
     (let [codices (edn/read-string (slurp file))
           bres (b/visit b codices)]
@@ -149,7 +113,6 @@
       (and (= cmd i/add-svc-err) (i/add-svc-err? options)) (bomb summary)
       (and (= cmd i/set-svc-err-prob) (i/set-svc-err-prob? options)) (bomb summary)
       (and (= cmd i/del-svc-errs) (not name)) (bomb summary)
-      (and (= cmd i/doc) (i/doc? options)) (bomb summary)
       (and (= cmd i/visit (i/visit? options))) (bomb summary))))
 
 (defn -main [& args]
@@ -167,6 +130,5 @@
       (= cmd i/add-svc-err) (add-project-error options)
       (= cmd i/set-svc-err-prob) (set-project-error-prob options)
       (= cmd i/del-svc-errs) (del-project-errors options)
-      (= cmd i/doc) (doc options)
       (= cmd i/visit) (visit options)
       :else (exit 1 (usage-exit summary)))))

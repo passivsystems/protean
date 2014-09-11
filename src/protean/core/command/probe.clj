@@ -1,12 +1,18 @@
 (ns protean.core.command.probe
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as stg]
+            [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
+            [protean.core.protocol.http :as pth]
+            [protean.core.transformation.coerce :as ptc]
+            [protean.core.transformation.analysis :as a]
+            [protean.core.transformation.curly :as c]
             [protean.core.transformation.testy-cljhttp :as tc]
             [protean.core.command.test :as t]
             [protean.core.command.seed :as s]
             [protean.core.command.exemplify :as e]
-            [protean.core.command.generate :as g]))
+            [protean.core.command.generate :as g])
+  (:import java.net.URI))
 
 ;; =============================================================================
 ;; Helper functions
@@ -43,12 +49,22 @@
     (tl-testdoc tests corpus codices)
     (tl-negotiation tests corpus codices)))
 
+(defn- body [ctype body]
+  (if-let [b body]
+    (cond
+      (= ctype pth/xml) (ptc/pretty-xml-> b)
+      (= ctype pth/txt) b
+      :else (ptc/js-> b))
+    "N/A"))
+
 
 ;; =============================================================================
 ;; Probe config
 ;; =============================================================================
 
 (defmulti config (fn [command & _] command))
+
+(defmethod config :doc [_ corpus] (hlg "building probes"))
 
 (defmethod config :test [_ corpus]
   (show-test (get-in corpus [:config "test-level"] 1))
@@ -61,9 +77,19 @@
 
 (defmulti build (fn [command & _] command))
 
-(defmethod build :doc [_ corpus codices]
-  (println "building a doc probe")
-  (println "corpus : " corpus))
+(defmethod build :doc [_ {:keys [locs] :as corpus} codices]
+  (println "building a doc probe to visit : " locs)
+  [corpus
+   (fn engage [{:keys [locs directory] :as corpus} codices]
+     (let [e (first (a/analysis-> "host" 1234 codices corpus))
+           uri-path (-> (URI. (:uri e)) (.getPath))
+           path  (stg/replace uri-path #"/" "-")
+           id (str (name (:method e)) path)
+           body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
+           full (assoc e :id id :path (subs uri-path 1)
+                         :curl (cod/url-decode (c/curly-> e))
+                         :sample-response body)]
+       (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name)))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)
@@ -101,7 +127,8 @@
 (defmulti dispatch (fn [command & _] command))
 
 (defmethod dispatch :doc [_ corpus codices probes]
-  (println "dispatching probes"))
+  (println "dispatching probes")
+  (doall (map (fn [x] ((last x) (first x) codices)) probes)))
 
 (defmethod dispatch :test [_ corpus codices probes]
   (hlg "dispatching probes")
