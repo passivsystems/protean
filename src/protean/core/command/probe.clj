@@ -153,7 +153,7 @@
 (defmulti analyse (fn [command & _] command))
 
 (defmethod analyse :doc [_ corpus codices result]
-  (println "analysing doc probe data"))
+  (println "documentation has been produced at the location you specified"))
 
 (defn- assess [m s phs]
   (if phs
