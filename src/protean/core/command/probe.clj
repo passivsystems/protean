@@ -81,19 +81,19 @@
   (println "building a doc probe to visit : " locs)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
-     (let [e (first (a/analysis-> "host" 1234 codices corpus))
-           uri-path (-> (URI. (:uri e)) (.getPath))
-           path  (stg/replace uri-path #"/" "-")
-           id (str (name (:method e)) path)
-           body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
-           success (get-in e [:codex :success-code])
-           errors (get-in e [:codex :errors])
-           full (assoc e :id id :path (subs uri-path 1)
+     (doseq [e (a/analysis-> "host" 1234 codices corpus)]
+       (let [uri-path (-> (URI. (:uri e)) (.getPath))
+             path  (stg/replace uri-path #"/" "-")
+             id (str (name (:method e)) path)
+             body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
+             success (get-in e [:codex :success-code])
+             errors (get-in e [:codex :errors])
+             full (assoc e :id id :path (subs uri-path 1)
                          :success-code (str success)
                          :error-codes (str errors)
                          :curl (cod/url-decode (c/curly-> e))
                          :sample-response body)]
-       (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name)))))])
+         (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name))))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)
