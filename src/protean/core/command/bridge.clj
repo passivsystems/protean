@@ -30,6 +30,12 @@
 ;; Commands
 ;; =============================================================================
 
+(defn- analyse
+  "Analyse a probe data."
+  [{:keys [locs] :as corpus} codices results command]
+  (println "analysing probe data")
+  (pr/analyse command corpus codices results))
+
 (defn visit
   "Construct and dispatch a range of probes of different types based on a
    'corpus'.
@@ -48,14 +54,9 @@
    Uses node data encoded in 'codices' to optionally calculate generative input
    values, or document or sim."
   [{:keys [host port locs commands seed] :as corpus} codices]
-  (pr/config (first commands) corpus)
-  (let [cmd (first commands)
-        paths (distinct (paths2locs locs corpus codices))
-        probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))]
-    (pr/dispatch cmd corpus codices probes)))
-
-(defn analyse
-  "Analyse a probe data."
-  [{:keys [locs commands] :as corpus} codices results]
-  (println "analysing probe data")
-  (pr/analyse (first commands) corpus codices results))
+  (doseq [cmd commands]
+    (pr/config cmd corpus)
+    (let [paths (distinct (paths2locs locs corpus codices))
+          probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))
+          results (pr/dispatch cmd corpus codices probes)]
+      (analyse corpus codices results cmd))))
