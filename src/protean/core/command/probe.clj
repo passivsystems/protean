@@ -131,7 +131,7 @@
 (defmulti dispatch (fn [command & _] command))
 
 (defmethod dispatch :doc [_ corpus codices probes]
-  (println "dispatching probes")
+  (hlg "dispatching probes")
   (doall (map (fn [x] ((last x) (first x) codices)) probes)))
 
 (defmethod dispatch :test [_ corpus codices probes]
@@ -157,6 +157,7 @@
 (defmulti analyse (fn [command & _] command))
 
 (defmethod analyse :doc [_ corpus codices result]
+  (hlg "analysing probe data")
   (println "documentation has been produced at the location you specified"))
 
 (defn- assess [m s phs]
@@ -167,6 +168,7 @@
     true))
 
 (defmethod analyse :test [_ corpus codices results]
+  (hlg "analysing probe data")
   (doseq [[method uri mp phs] results]
     (let [s (:status mp)]
       (println "Test : " method " - " uri ", status : " s ", pass : " (assess method s phs)))))
