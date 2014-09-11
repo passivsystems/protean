@@ -86,7 +86,11 @@
            path  (stg/replace uri-path #"/" "-")
            id (str (name (:method e)) path)
            body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
+           success (get-in e [:codex :success-code])
+           errors (get-in e [:codex :errors])
            full (assoc e :id id :path (subs uri-path 1)
+                         :success-code (str success)
+                         :error-codes (str errors)
                          :curl (cod/url-decode (c/curly-> e))
                          :sample-response body)]
        (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name)))))])
