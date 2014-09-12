@@ -189,7 +189,7 @@
           :doc "Get with mandatory request headers/query str params"
           :req {
             :headers {"X-Auth" "XYZ"}
-            :query-params {"blurb" "flibble"}
+            :query-params {:required {"blurb" "flibble"}}
           }
           :rsp {:body {"t2key" "t2val"}}
         }
@@ -254,7 +254,7 @@
           :doc "Get a starch source suitable for a specific drink type"
           :req {
             :headers {"Authorization" "psv+Bearer token"}
-            :query-params {"drink" "psv+drink"}
+            :query-params {:required {"drink" "psv+drink"}}
           }
           :rsp {:success-code 200 :content-type "text/plain" :body "/starches/malted-grain"}
         }
@@ -267,7 +267,7 @@
           :doc "Get a flavouring suitable for a specific drink type"
           :req {
             :headers {"Authorization" "psv+Bearer token"}
-            :query-params {"drink" "psv+drink"}
+            :query-params {:required {"drink" "psv+drink"}}
           }
           :rsp {:success-code 200 :content-type "text/plain" :body "/flavourings/golding-hops"}
         }
