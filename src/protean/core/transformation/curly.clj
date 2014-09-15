@@ -51,7 +51,7 @@
       (if (empty? rp)
         (str payload "'")
         (if (= (get-in entry [:codex :q-params-type]) :json)
-          (str payload "?q=" (rp "q"))
+          (str payload "?q=" (rp "q") "'")
           (str payload "?"
                (stg/join "&"
                (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'")))
