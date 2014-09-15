@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -cp /usr/lib/protean/protean.jar protean.server.core

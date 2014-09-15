@@ -16,7 +16,10 @@ then
     mkdir -p ../target/deb/usr/lib/protean
 
     cp ../target/*standalone* ../target/deb/usr/lib/protean/protean.jar
+    cp ../sample-codex.edn ../target/deb/usr/lib/protean/sample-codex.edn
+    cp -r ../public ../target/deb/usr/lib/protean
     cp -r etc/protean ../target/deb/usr/bin
+    cp -r etc/protean-server ../target/deb/usr/bin
 
     # Copy over the DEBIAN directory
     cp -r DEBIAN ../target/deb
