@@ -63,8 +63,7 @@
         "  add-service-error      -n myservice -s 500 (Add an error status code to a service)"
         "  set-service-error-prob -n myservice -l 10 (Set error probability)"
         "  del-service-errors     -n myservice (Delete error response codes)"
-        "  doc                    -f codex -n name -d doc-site (Build API docs)"
-        "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc, test etc"
+        "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc, test etc)"
         ""
         "Please refer to the manual page for more information."]
        (s/join \newline)))
