@@ -21,6 +21,7 @@
 
 (timbre/set-config! [:appenders :spit :enabled?] true)
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
+(timbre/set-level! :info)
 
 (defonce host (.getCanonicalHostName (InetAddress/getLocalHost)))
 

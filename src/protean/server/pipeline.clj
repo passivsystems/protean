@@ -25,11 +25,9 @@
 
 (def state (atom {}))
 
-(defn- log-request [req]
-  (info "request is : " req)
-  (info "request method : " (:request-method req))
-  (info "request uri : " (:uri req))
-  (info "request query params : " (:query-params req)))
+(defn- log-request [{:keys [request-method uri query-params] :as req}]
+  (debug "request is : " req)
+  (info "method: " request-method ", uri: " uri ", query-params: " query-params))
 
 (defn handler
   [f & handlers]
