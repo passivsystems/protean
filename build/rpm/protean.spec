@@ -21,15 +21,13 @@ mkdir -p %{buildroot}/usr/bin
 mkdir -p %{buildroot}/usr/lib/protean
 mkdir -p %{buildroot}/usr/share/protean
 install -m644 target/*standalone* %{buildroot}/usr/lib/protean/protean.jar
-install -m755 public %{buildroot}/usr/lib/protean
+install -d -m755 public/ %{buildroot}/usr/lib/protean/public/
 install -m755 build/etc/protean-server %{buildroot}/usr/bin
 install -m755 build/etc/protean %{buildroot}/usr/bin
 
 %files
-%defattr (,root,root,-)
-/usr/bin/protean
-/usr/lib/protean
-/usr/share
+%defattr (-,root,root,-)
+/usr/
 
 %post
 
