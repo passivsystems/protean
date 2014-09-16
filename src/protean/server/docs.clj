@@ -6,6 +6,7 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
+            [protean.config :as c]
             [protean.core.transformation.analysis :as txan]
             [protean.core.transformation.curly :as txc])
   (:use [clojure.java.io :refer [file]]
@@ -30,7 +31,7 @@
 (defn services-tr [payload]
   (map #(li (a (str "/documentation/services/" (name %)) (name %))) payload))
 
-(l/defdocument services-template (file "public/html/projects.html")
+(l/defdocument services-template (file (str (c/html-dir) "/projects.html"))
   [payload]
   (l/id="project-version") (<- (version))
   (l/id="projects-list") (<- (services-tr payload)))
@@ -55,7 +56,7 @@
 
 (defn service-tr [payload] (map #(tr (service-td %)) payload))
 
-(l/defdocument service-template (file "public/html/project.html")
+(l/defdocument service-template (file (str (c/html-dir) "/project.html"))
   [id payload]
   (l/id="project-version") (<- (version))
   (l/id="project-name") (<- (name id))
