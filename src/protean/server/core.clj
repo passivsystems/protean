@@ -9,6 +9,7 @@
             [compojure.route :as route]
             [environ.core :refer [env]]
             [me.rossputin.diskops :as do]
+            [protean.config :as c]
             [protean.server.pipeline :as pipe]
             [protean.core.transformation.coerce :as txco]
             [protean.server.docs :as pdoc])
@@ -26,19 +27,15 @@
 
 (defonce host (.getCanonicalHostName (InetAddress/getLocalHost)))
 
-(def port (atom 3000))
-
-(defn svc-files []
-  (let [c-dir (or (env :codex-dir) (do/pwd))]
-    (info "codex directory : " c-dir)
-    (-> (remove #(.isDirectory %) (file-seq (file c-dir)))
-        (do/filter-exts ["edn"]))))
+(defn files [c-dir]
+  (-> (remove #(.isDirectory %) (file-seq (file c-dir)))
+      (do/filter-exts ["edn"])))
 
 (defn- build-services
   "Load services from disk."
-  []
-  (let [files (remove #(= (.getName (.getParentFile %)) "data") (svc-files))]
-    (doseq [f files]
+  [c-dir]
+  (let [fs (remove #(= (.getName (.getParentFile %)) "data") (files c-dir))]
+    (doseq [f fs]
       (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
   (keys @pipe/state))
 
@@ -48,11 +45,11 @@
 ;; =============================================================================
 
 (defroutes admin-routes
-  (route/files "/resource" {:root "public/resource"})
+  (route/files "/resource" {:root (c/res-dir)})
 
   (GET    "/" [] (pipe/service-index))
   (GET    "/documentation/api" [] (pipe/service-api))
-  (GET    "/documentation/services/:id" [id] (pipe/service-docs id host @port))
+  (GET    "/documentation/services/:id" [id] (pipe/service-docs id host))
   (GET    "/documentation/services" [] (pipe/services-docs))
   (GET    "/documentation" [] (pipe/service-documentation))
   (GET    "/roadmap" [] (pipe/service-road))
@@ -63,7 +60,7 @@
     (pipe/put-proj-error-prob id prob))
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
-  (GET    "/services/:id/usage" [id] (pipe/service-usage id host @port))
+  (GET    "/services/:id/usage" [id] (pipe/service-usage id host))
   (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
   (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
   (GET    "/status" [] (pipe/status)))
@@ -85,12 +82,12 @@
 ;; Application entry point
 ;; =============================================================================
 
-(defn -main [& [api-p admin-p]]
-  (let [api-port (or api-p "3000")
-        admin-port (or admin-p "3001")
-        services (build-services)]
+(defn -main [& args]
+  (let [api-port (c/sim-port)
+        c-dir (c/codex-dir)]
     (info "Starting protean - v" (pdoc/version))
-    (reset! port api-port)
-    (info (str "Services loaded : " services))
-    (server (txco/int-> api-port) (txco/int-> admin-port))
+    (info "Codex directory : " c-dir)
+    (info "Asset directory : " (c/asset-dir))
+    (info (str "Services loaded : " (build-services c-dir)))
+    (server (txco/int-> api-port) (txco/int-> (c/admin-port)))
     (info (str "Protean has started"))))

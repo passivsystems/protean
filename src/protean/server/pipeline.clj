@@ -4,6 +4,7 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
+            [protean.config :as c]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.sim :as txsim]
             [protean.core.transformation.coerce :as txco]
@@ -65,8 +66,8 @@
 
 (defn service [id] (assoc json :body (txco/js-> ((keyword id) @state))))
 
-(defn service-usage [id host port]
-  (assoc json :body (txco/js-> (txc/curly-analysis-> host port @state id))))
+(defn service-usage [id host]
+  (assoc json :body (txco/js-> (txc/curly-analysis-> host (c/sim-port) @state id))))
 
 (defn del-proj [id]
   (reset! state (dissoc @state (keyword id)))
@@ -104,20 +105,26 @@
 
 (defn services-docs [] (txdocs/services-template (sort (keys @state))))
 
-(defn service-docs [id host port]
+(defn service-docs [id host]
   (txdocs/service-template id
-    (txan/analysis-> host port @state {:locs [id]})))
+    (txan/analysis-> host (c/sim-port) @state {:locs [id]})))
 
-(l/defdocument service-index (file "public/html/index.html") []
+(defn- html [f] (str (c/html-dir) f))
+
+(l/defdocument service-index
+  (file (html "/index.html")) []
   (l/id="project-version") (<- (txdocs/version)))
 
-(l/defdocument service-api (file "public/html/api.html") []
+(l/defdocument service-api
+  (file (html "/api.html")) []
   (l/id="project-version") (<- (txdocs/version)))
 
-(l/defdocument service-documentation (file "public/html/documentation.html") []
+(l/defdocument service-documentation
+  (file (html "/documentation.html")) []
   (l/id="project-version") (<- (txdocs/version)))
 
-(l/defdocument service-road (file "public/html/roadmap.html") []
+(l/defdocument service-road
+  (file (html "/roadmap.html")) []
   (l/id="project-version") (<- (txdocs/version)))
 
 
