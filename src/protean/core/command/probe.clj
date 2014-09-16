@@ -121,7 +121,8 @@
   "Persist result in its interim state to a store.
    In this protoype the store is the disk."
   [result]
-  (println "TODO: reminder placeholder for persisting results"))
+  ;;(println "TODO: reminder placeholder for persisting results")
+  )
 
 
 ;; =============================================================================
