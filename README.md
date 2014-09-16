@@ -36,18 +36,23 @@ Protean is still new and will be subject to some change until it hits the 1.0.0 
 
 by default the admin area runs on 3001 and the main app area on 3000.
 
-You can override the port with:
+You can override the port by:
 
-    lein run 4000 4001
+    creating environment variables ADMIN_PORT and SIM_PORT
 
 Build a distributable with lein uberjar, then run with:
 
-    java -jar protean.jar 4000 4001
+    java -jar protean.jar -Dadmin.port=4001 -Dsim.port=4000
 
 
 Or just download a release and unpack it into a location of your choice, then run with:
 
     java -jar protean.jar
+
+The following environment variables (can be -D params instead) are also available:
+
+    CODEX_DIR (configures where codex files are looked up)
+    ASSET_DIR (configures where html and css assets for admin website are looked up)
 
 ### Command line interface
 
