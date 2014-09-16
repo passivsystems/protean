@@ -171,5 +171,7 @@
 (defmethod analyse :test [_ corpus codices results]
   (hlg "analysing probe data")
   (doseq [[method uri mp phs] results]
-    (let [s (:status mp)]
-      (println "Test : " method " - " uri ", status : " s ", pass : " (assess method s phs)))))
+    (let [status (:status mp)
+          ass (assess method status phs)
+          so (if ass (aa/bold-green ass) (aa/bold-red ass))]
+      (println "Test : " method " - " uri ", status : " status ", pass : " so))))
