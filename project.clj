@@ -15,6 +15,7 @@
                  [ring/ring-codec "1.0.0"]
                  [compojure "1.1.8"]
                  [cheshire "5.3.1"]
+                 [environ "1.0.0"]
                  [com.taoensso/timbre "3.2.1"]
                  [clj-http "0.9.2"]
                  [io.aviso/pretty "0.1.12"]

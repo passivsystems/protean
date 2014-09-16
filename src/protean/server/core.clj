@@ -7,6 +7,7 @@
             [compojure.core :refer [defroutes ANY DELETE GET POST PUT]]
             [compojure.handler :as handler]
             [compojure.route :as route]
+            [environ.core :refer [env]]
             [me.rossputin.diskops :as do]
             [protean.server.pipeline :as pipe]
             [protean.core.transformation.coerce :as txco]
@@ -28,8 +29,10 @@
 (def port (atom 3000))
 
 (defn svc-files []
-  (-> (remove #(.isDirectory %) (file-seq (file (do/pwd))))
-      (do/filter-exts ["edn"])))
+  (let [c-dir (or (env :codex-dir) (do/pwd))]
+    (info "codex directory : " c-dir)
+    (-> (remove #(.isDirectory %) (file-seq (file c-dir)))
+        (do/filter-exts ["edn"]))))
 
 (defn- build-services
   "Load services from disk."
