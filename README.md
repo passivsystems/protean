@@ -92,7 +92,7 @@ or
 
 will list configured services.
 
-We recommend 'drip' (github.com/flatland/drip) to speed things up with the command line.  The sample script uses drip.
+We recommend 'drip' (github.com/flatland/drip) to speed things up with the command line.
 
 
 ## Documentation
