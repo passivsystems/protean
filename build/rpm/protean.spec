@@ -20,6 +20,8 @@ cd %{_topdir}/../
 mkdir -p %{buildroot}/usr/bin
 mkdir -p %{buildroot}/usr/lib/protean
 cp -r target/*standalone* %{buildroot}/usr/lib/protean/protean.jar
+cp -r public %{buildroot}/usr/lib/protean
+cp -r build/etc/protean-server %{buildroot}/usr/bin
 cp -r build/etc/protean %{buildroot}/usr/bin
 
 %files
