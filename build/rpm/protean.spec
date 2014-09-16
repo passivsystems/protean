@@ -19,15 +19,17 @@ Protean API simulation, documentation, testing and negotiation.
 cd %{_topdir}/../
 mkdir -p %{buildroot}/usr/bin
 mkdir -p %{buildroot}/usr/lib/protean
-cp -r target/*standalone* %{buildroot}/usr/lib/protean/protean.jar
-cp -r public %{buildroot}/usr/lib/protean
-cp -r build/etc/protean-server %{buildroot}/usr/bin
-cp -r build/etc/protean %{buildroot}/usr/bin
+mkdir -p %{buildroot}/usr/share/protean
+install -m644 target/*standalone* %{buildroot}/usr/lib/protean/protean.jar
+install -m755 public %{buildroot}/usr/lib/protean
+install -m755 build/etc/protean-server %{buildroot}/usr/bin
+install -m755 build/etc/protean %{buildroot}/usr/bin
 
 %files
-%defattr (755,root,root,-)
+%defattr (,root,root,-)
 /usr/bin/protean
-/usr/lib/protean/protean.jar
+/usr/lib/protean
+/usr/share
 
 %post
 
