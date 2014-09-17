@@ -17,10 +17,9 @@ function download_tarball {
      echo ""
      echo $(tput setaf 2)"--> Downloading Protean..."$(tput sgr0)
      echo ""
-
-     $HTTP_CLIENT https://github.com/passivsystems/protean-cli/releases/download/0.5.0/protean.tgz -o $HOME/bin/protean.tgz
-     tar xf $HOME/bin/protean.tgz -C $HOME/bin
-     rm $HOME/bin/protean.tgz
+     $HTTP_CLIENT https://github.com/passivsystems/protean/releases/download/0.9.0-pre.3/protean-osx.tgz -o $HOME/bin/protean-osx.tgz
+     tar xf $HOME/bin/protean-osx.tgz -C $HOME/bin
+     rm $HOME/bin/protean-osx.tgz
 }
 
 download_tarball

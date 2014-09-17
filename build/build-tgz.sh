@@ -14,5 +14,5 @@ cp -r ../public ../target/tgz
 cp ../sample-codex.edn ../target/tgz
 cp tgz/* ../target/tgz
 cd ../target/tgz
-tar cvzf protean.tgz *
+tar cvzf protean-osx.tgz *
 cd ../../build
