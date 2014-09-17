@@ -55,7 +55,7 @@
      :body (get-in resource [:spec :rsp :body])
      :body-res (get-in resource [:spec :rsp :body-res])
      :success-code (get-in resource [:spec :rsp :success-code])
-     :errors (get-in resource [:spec :errors :status])
+     :errors (get-in resource [:spec :rsp :errors :status])
      :content-type (get-in resource [:spec :rsp :content-type])}))
 
 (defn analyse-> [resource host port]
