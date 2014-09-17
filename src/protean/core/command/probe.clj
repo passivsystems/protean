@@ -86,7 +86,7 @@
              path  (stg/replace uri-path #"/" "-")
              id (str (name (:method e)) path)
              body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
-             success (get-in e [:codex :success-code])
+             success (or (get-in e [:codex :success-code]) (:status (pth/status (:method e))))
              errors (get-in e [:codex :errors])
              full (assoc e :id id :path (subs uri-path 1)
                          :success-code (str success)
