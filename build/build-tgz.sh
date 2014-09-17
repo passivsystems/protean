@@ -10,7 +10,9 @@
 # Assumes that lein uberjar has been run and uberjar exists in target directory
 mkdir -p ../target/tgz
 cp ../target/*standalone* ../target/tgz/protean.jar
-cp tgz/protean ../target/tgz
+cp -r ../public ../target/tgz
+cp ../sample-codex.edn ../target/tgz
+cp tgz/* ../target/tgz
 cd ../target/tgz
 tar cvzf protean.tgz *
 cd ../../build
