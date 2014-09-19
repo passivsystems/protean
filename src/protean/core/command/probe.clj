@@ -54,7 +54,7 @@
     (cond
       (= ctype pth/xml) (ptc/pretty-xml-> b)
       (= ctype pth/txt) b
-      :else (ptc/js-> b))
+      :else (ptc/pretty-js-> b))
     "N/A"))
 
 

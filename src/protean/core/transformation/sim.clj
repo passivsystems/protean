@@ -121,8 +121,8 @@
         (cond
           (= ctype h/xml) (rsp payload ctype (txco/pretty-xml-> body))
           (= ctype h/txt) (rsp payload ctype body)
-          :else (rsp payload h/jsn (txco/js-> body)))
-        (rsp payload h/jsn (txco/js-> body)))
+          :else (rsp payload h/jsn (txco/pretty-js-> body)))
+        (rsp payload h/jsn (txco/pretty-js-> body)))
       payload)))
 
 
