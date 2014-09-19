@@ -107,7 +107,7 @@
     (if (err-status? payload) payload (assoc payload :headers hdrs))
     payload))
 
-(defn- build-rsp [payload header body]
+(defn- rsp [payload header body]
   (assoc payload :headers {"Content-Type" header} :body body))
 
 ;; TODO: this is nasty, needs refactoring, no time right now
@@ -119,13 +119,10 @@
     (if-let [body (:body (:rsp proj-payload))]
       (if-let [ctype (:content-type (:rsp proj-payload))]
         (cond
-          (= ctype h/xml) (build-rsp payload ctype
-                          (txco/pretty-xml-> body))
-          (= ctype h/txt) (build-rsp payload ctype body)
-          :else (assoc payload
-                  :headers {"Content-Type" h/jsn}
-                  :body (txco/js-> body)))
-        (assoc payload :body (txco/js-> body)))
+          (= ctype h/xml) (rsp payload ctype (txco/pretty-xml-> body))
+          (= ctype h/txt) (rsp payload ctype body)
+          :else (rsp payload h/jsn (txco/js-> body)))
+        (rsp payload h/jsn (txco/js-> body)))
       payload)))
 
 
