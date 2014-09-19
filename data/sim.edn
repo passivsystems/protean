@@ -16,6 +16,24 @@
         }
       }
 
+      "path-txt" {
+        :get {
+          :rsp {
+            :content-type "text/plain"
+            :body "plain text response"
+          }
+        }
+      }
+
+      "path-xml" {
+        :get {
+          :rsp {
+            :content-type "text/xml"
+            :body [:parent [:child {:type "xml"}]]
+          }
+        }
+      }
+
       "status-override" {
         :get {
           :rsp {:status 204}

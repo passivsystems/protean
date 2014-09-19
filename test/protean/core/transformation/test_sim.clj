@@ -103,3 +103,21 @@
         cdx (d/read-edn "sim.edn")
         rsp (sim-rsp-> req cdx)]
     (is (= (:status rsp) 204))))
+
+(deftest json-ctype
+  (let [req (get-req "/sim/path1")
+        cdx (d/read-edn "sim.edn")
+        rsp (sim-rsp-> req cdx)]
+    (is (= (.contains (get-in rsp [:headers h/ctype]) h/jsn) true))))
+
+(deftest txt-ctype
+  (let [req (get-req "/sim/path-txt")
+        cdx (d/read-edn "sim.edn")
+        rsp (sim-rsp-> req cdx)]
+    (is (= (.contains (get-in rsp [:headers h/ctype]) h/txt) true))))
+
+(deftest xml-ctype
+  (let [req (get-req "/sim/path-xml")
+        cdx (d/read-edn "sim.edn")
+        rsp (sim-rsp-> req cdx)]
+    (is (= (.contains (get-in rsp [:headers h/ctype]) h/xml) true))))
