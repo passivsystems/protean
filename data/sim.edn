@@ -19,7 +19,7 @@
       "path-txt" {
         :get {
           :rsp {
-            :content-type "text/plain"
+            :headers {"Content-Type" "text/plain"}
             :body "plain text response"
           }
         }
@@ -28,7 +28,7 @@
       "path-xml" {
         :get {
           :rsp {
-            :content-type "text/xml"
+            :headers {"Content-Type" "text/xml"}
             :body [:parent [:child {:type "xml"}]]
           }
         }

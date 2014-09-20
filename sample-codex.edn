@@ -38,7 +38,7 @@
         :get {
           :doc "Get with XML content type/response"
           :rsp {
-            :content-type "text/xml"
+            :headers {"Content-Type" "text/xml"}
             :body [:parent [:child {:type "xml"}]]
           }
         }
