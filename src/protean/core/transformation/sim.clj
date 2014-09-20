@@ -117,7 +117,7 @@
   (if (err-status? payload)
     payload
     (if-let [body (:body (:rsp proj-payload))]
-      (if-let [ctype (:content-type (:rsp proj-payload))]
+      (if-let [ctype (get-in proj-payload [:rsp :headers "Content-Type"])]
         (cond
           (= ctype h/xml) (rsp payload ctype (txco/pretty-xml-> body))
           (= ctype h/txt) (rsp payload ctype body)
