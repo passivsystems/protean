@@ -1,5 +1,5 @@
-(ns protean.server.core
-  "Entry point into the app.  Config, server and routes."
+(ns protean.server.main
+  "Entry point into the server component.  Config, server and routes."
   (:require [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
             [ring.adapter.jetty :as jetty]
@@ -11,7 +11,7 @@
             [me.rossputin.diskops :as do]
             [protean.config :as c]
             [protean.server.pipeline :as pipe]
-            [protean.core.transformation.coerce :as txco]
+            [protean.core.transformation.coerce :as co]
             [protean.server.docs :as pdoc])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File java.net.InetAddress)
@@ -89,5 +89,5 @@
     (info "Codex directory : " c-dir)
     (info "Asset directory : " (c/asset-dir))
     (info (str "Services loaded : " (build-services c-dir)))
-    (server (txco/int-> api-port) (txco/int-> (c/admin-port)))
+    (server (co/int api-port) (co/int (c/admin-port)))
     (info (str "Protean has started"))))

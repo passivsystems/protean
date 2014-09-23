@@ -3,7 +3,7 @@
    command structure."
   (:require [clojure.string :as stg]
             [clojure.set :as st]
-            [ring.util.codec :as cod]
+            [ring.util.codec :as e]
             [cheshire.core :as jsn]
             [protean.core.protocol.http :as h]
             [protean.core.codex.placeholder :as p]
@@ -54,7 +54,7 @@
           (str payload "?q=" (rp "q") "'")
           (str payload "?"
                (stg/join "&"
-               (map #(str (key %) "=" (cod/form-encode (val %))) rp)) "'")))
+               (map #(str (key %) "=" (e/form-encode (val %))) rp)) "'")))
       (str payload "'"))))
 
 (defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))

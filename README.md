@@ -32,7 +32,7 @@ Protean is still new and will be subject to some change until it hits the 1.0.0 
 ### Server
 
     lein deps
-    lein run -m protean.server.core
+    lein run -m protean.server.main
 
 by default the admin area runs on 3001 and the main app area on 3000.
 

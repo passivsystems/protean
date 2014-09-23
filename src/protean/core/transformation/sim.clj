@@ -1,29 +1,34 @@
 (ns protean.core.transformation.sim
-  (:require [clojure.string :as stg]
+  (:require [clojure.string :as s]
             [clojure.set :as st]
             [cheshire.core :as jsn]
             [protean.core.protocol.http :as h]
-            [protean.core.transformation.coerce :as txco]))
+            [protean.core.codex.document :as d]
+            [protean.core.transformation.coerce :as c]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn- err-status? [payload] (some #{(:status payload)} h/errs))
+(defn- err-status?
+  "Is payload status a codex error status code ?"
+  [{:keys [status]}] (some #{status} h/errs))
 
-(defn- req-err-status? [payload] (some #{(:status payload)} h/req-errs))
+(defn- client-err-status?
+  "Is payload status a codex client error status code ? "
+  [{:keys [status]}] (some #{status} h/client-errs))
 
 (defn- percentage? [x] (if (< (rand-int 100) x) true false))
 
 (defn- partial-path? [key path]
-  (let [split-path (set (stg/split path #"/"))]
-    (>= (count (st/intersection (set (stg/split key #"/")) split-path))
+  (let [split-path (set (s/split path #"/"))]
+    (>= (count (st/intersection (set (s/split key #"/")) split-path))
        (dec (count split-path)))))
 
 (defn- wild-path? [k paths]
   (let [candidates (filter #(partial-path? k %) paths)]
-    (if-let [x (filter #(= (count (stg/split k #"/"))
-                           (count (stg/split % #"/"))) candidates)]
+    (if-let [x (filter #(= (count (s/split k #"/"))
+                           (count (s/split % #"/"))) candidates)]
       (first x)
       nil)))
 
@@ -39,90 +44,88 @@
 (defn- mod-1st-hdr
   "If a based on a probability defined in the codex optionally mutate the first
    response header."
-  [{:keys [rsp] :as proj-payload} errs prob]
-  (let [hdrs (:headers rsp)
-        estatus (or (get-in rsp [:errors :status]) errs)
-        eprob (or (get-in rsp [:errors :probability]) prob)]
-    (if (and estatus (percentage? eprob))
+  [codex errs prob]
+  (let [hdrs (d/hdrs-rsp codex)
+        estatus (or (d/err-status codex) errs)]
+    (if (and estatus (percentage? (or (d/err-prob codex) prob)))
       (let [k (first (keys hdrs))]
         (if k (st/rename-keys hdrs {k (str k "mutated")}) hdrs))
       hdrs)))
 
-(defn- proj-2-status [{:keys [rsp] :as proj-payload} payload]
+(defn- proj-2-status [{:keys [rsp]} payload]
   (if-let [status (:status rsp)]
     (assoc payload :status status)
     payload))
 
-(defn- err-2-status [{:keys [rsp] :as proj-payload} proj-errs prob payload]
-  (let [estatus (or (get-in rsp [:errors :status]) proj-errs)
-        eprob (or (get-in rsp [:errors :probability]) prob)]
-    (if (and (and estatus (percentage? eprob)) (not (req-err-status? payload)))
+(defn- err-2-status [codex proj-errs prob payload]
+  (let [estatus (or (d/err-status codex) proj-errs)
+        eprob (or (d/err-prob codex) prob)]
+    (if (and
+          (and estatus (percentage? eprob))
+          (not (client-err-status? payload)))
       (assoc payload :status (rand-nth estatus))
       payload)))
 
-(defn- verify-headers [req proj-payload payload]
-  (if-let [hdrs (:headers (:req proj-payload))]
-    (if (every? (set (keys (:hdrs req))) (map stg/lower-case (keys hdrs)))
+(defn- verify-headers [req codex payload]
+  (if-let [hdrs (d/hdrs-req codex)]
+    (if (every? (set (keys (:hdrs req))) (map s/lower-case (keys hdrs)))
       payload
       (assoc payload :status 400))
     payload))
 
-(defn- verify-query-params [req proj-payload payload]
-  (if-let [rpms (get-in proj-payload [:req :query-params :required])]
+(defn- verify-query-params [req codex payload]
+  (if-let [rpms (d/qp codex)]
     (if (every? (set (keys (:q-params req))) (keys rpms))
       payload
       (assoc payload :status 400))
     payload))
 
-(defn- verify-form [req proj-payload payload]
-  (if-let [f-keys (:form-params (:req proj-payload))]
+(defn- verify-form [req codex payload]
+  (if-let [f-keys (d/fp codex)]
     (let [req-form-ks (set (keys (:form-params req)))]
       (if (= req-form-ks (set (keys f-keys)))
         payload
         (assoc payload :status 400)))
     payload))
 
-(defn- verify-body [req proj-payload payload]
-  (if-let [b-keys (:body (:req proj-payload))]
+(defn- verify-body [req codex payload]
+  (if-let [b-keys (d/body-req codex)]
     (let [req-body-ks (set (keys (jsn/parse-string (:body req))))]
       (if (= req-body-ks (set (keys b-keys)))
         payload
         (assoc payload :status 400)))
     payload))
 
-(defn- verify-2-status [req proj-payload payload]
-  (->> (verify-headers req proj-payload payload)
-       (verify-query-params req proj-payload)
-       (verify-form req proj-payload)
-       (verify-body req proj-payload)))
+(defn- verify-2-status [req codex payload]
+  (->> (verify-headers req codex payload)
+       (verify-query-params req codex)
+       (verify-form req codex)
+       (verify-body req codex)))
 
-(defn- status [req proj-payload proj-errs prob]
+(defn- status [req codex proj-errs prob]
   (->> (h/status (:method req))
-       (proj-2-status proj-payload)
-       (verify-2-status req proj-payload)
-       (err-2-status proj-payload proj-errs prob)))
+       (proj-2-status codex)
+       (verify-2-status req codex)
+       (err-2-status codex proj-errs prob)))
 
-(defn- headers [proj-payload proj-errs prob payload]
-  (if-let [hdrs (mod-1st-hdr proj-payload proj-errs prob)]
+(defn- headers [codex proj-errs prob payload]
+  (if-let [hdrs (mod-1st-hdr codex proj-errs prob)]
     (if (err-status? payload) payload (assoc payload :headers hdrs))
     payload))
 
-(defn- rsp [payload header body]
-  (assoc payload :headers {"Content-Type" header} :body body))
-
 ;; TODO: this is nasty, needs refactoring, no time right now
-(defn- body [proj-payload payload]
-  (when (:time (:rsp proj-payload))
-    (Thread/sleep (* (:time (:rsp proj-payload)) 1000)))
+(defn- body [codex payload]
+  (when (:time (:rsp codex))
+    (Thread/sleep (* (:time (:rsp codex)) 1000)))
   (if (err-status? payload)
     payload
-    (if-let [body (:body (:rsp proj-payload))]
-      (if-let [ctype (get-in proj-payload [:rsp :headers "Content-Type"])]
+    (if-let [body (:body (:rsp codex))]
+      (if-let [ctype (d/rsp-type codex)]
         (cond
-          (= ctype h/xml) (rsp payload ctype (txco/pretty-xml-> body))
-          (= ctype h/txt) (rsp payload ctype body)
-          :else (rsp payload h/jsn (txco/pretty-js-> body)))
-        (rsp payload h/jsn (txco/pretty-js-> body)))
+          (h/xml? ctype) (h/rsp payload ctype (c/pretty-xml body))
+          (h/txt? ctype) (h/rsp payload ctype body)
+          :else (h/rsp payload h/jsn (c/pretty-js body)))
+        (h/rsp payload h/jsn (c/pretty-js body)))
       payload)))
 
 
@@ -131,15 +134,15 @@
 ;; =============================================================================
 
 (defn sim-rsp-> [{:keys [uri] :as req} codices]
-  (let [proj (keyword (second (stg/split uri #"/")))
-        k (second (stg/split uri (re-pattern (str "/" (name proj) "/"))))
+  (let [proj (keyword (second (s/split uri #"/")))
+        k (second (s/split uri (re-pattern (str "/" (name proj) "/"))))
         proj-errors (get (get-in codices [proj :errors]) :status)
         prob (or (get (get-in codices [proj :errors]) :probability) 0)
         req (req-> req)]
-    (if-let [proj-payload (service-path? codices proj k)]
-      (if ((:method req) proj-payload)
-        (->> (status req ((:method req) proj-payload) proj-errors prob)
-             (headers ((:method req) proj-payload) proj-errors prob)
-             (body ((:method req) proj-payload)))
+    (if-let [codex (service-path? codices proj k)]
+      (if ((:method req) codex)
+        (->> (status req ((:method req) codex) proj-errors prob)
+             (headers ((:method req) codex) proj-errors prob)
+             (body ((:method req) codex)))
         {:status 405})
       {:status 404})))

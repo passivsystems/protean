@@ -11,7 +11,7 @@
 (def errs #{400 405 500 502 503 504})
 
 ; client (request errors)
-(def req-errs #{400 405})
+(def client-errs #{400 405})
 
 ; default per method status codes
 (def statuses {:get 200 :post 201 :put 204 :delete 204 :head 200})
@@ -33,3 +33,21 @@
 (def jsn-simple "application/json")
 (def jsn (str jsn-simple "; charset=utf-8"))
 (def frm "application/x-www-form-urlencoded")
+
+
+;; =============================================================================
+;; Helper functions
+;; =============================================================================
+
+;; Content type
+;;;;;;;;;;;;;;;
+
+(defn xml? [c] (= c xml))
+(defn txt? [c] (= c txt))
+
+
+;; Response
+;;;;;;;;;;;
+
+(defn rsp [payload header body]
+  (assoc payload :headers {ctype header} :body body))

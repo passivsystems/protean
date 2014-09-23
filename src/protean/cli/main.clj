@@ -84,7 +84,7 @@
 ;; =============================================================================
 
 (defn- visit [{:keys [host port file body] :as options}]
-  (let [b (sane-corpus (c/clj-> body))]
+  (let [b (sane-corpus (c/clj body))]
     (println (aa/bold-green "Exploring quadrant..."))
     (let [codices (edn/read-string (slurp file))]
       (b/visit b codices)

@@ -7,7 +7,7 @@
             [protean.config :as c]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.sim :as txsim]
-            [protean.core.transformation.coerce :as txco]
+            [protean.core.transformation.coerce :as co]
             [protean.core.transformation.analysis :as txan]
             [protean.core.transformation.curly :as txc]
             [protean.server.docs :as txdocs])
@@ -43,7 +43,7 @@
       {:status 500})))
 
 (defn- body [req-body]
-  (let [rbody (slurp req-body)] (if (not-empty rbody) (txco/clj-> rbody) nil)))
+  (let [rbody (slurp req-body)] (if (not-empty rbody) (co/clj rbody) nil)))
 
 
 ;; =============================================================================
@@ -62,12 +62,12 @@
 ;; services
 ;;;;;;;;;;;
 
-(defn services []  (assoc json :body (txco/js-> (sort (keys @state)))))
+(defn services []  (assoc json :body (co/js (sort (keys @state)))))
 
-(defn service [id] (assoc json :body (txco/js-> ((keyword id) @state))))
+(defn service [id] (assoc json :body (co/js ((keyword id) @state))))
 
 (defn service-usage [id host]
-  (assoc json :body (txco/js-> (txc/curly-analysis-> host (c/sim-port) @state id))))
+  (assoc json :body (co/js (txc/curly-analysis-> host (c/sim-port) @state id))))
 
 (defn del-proj [id]
   (reset! state (dissoc @state (keyword id)))
@@ -90,12 +90,12 @@
 
 (defn put-proj-error [proj err]
   (reset! state
-    (update-in @state [(keyword proj) :errors :status] conj (txco/int-> err)))
+    (update-in @state [(keyword proj) :errors :status] conj (co/int err)))
   {:status 204})
 
 (defn put-proj-error-prob [proj prob]
   (reset! state
-    (assoc-in @state [(keyword proj) :errors :probability] (txco/int-> prob)))
+    (assoc-in @state [(keyword proj) :errors :probability] (co/int prob)))
   {:status 204})
 
 
@@ -131,4 +131,4 @@
 ;; service status
 ;;;;;;;;;;;;;;;;;
 
-(defn status [] (assoc json :body (txco/js-> {"status" "ok"})))
+(defn status [] (assoc json :body (co/js {"status" "ok"})))

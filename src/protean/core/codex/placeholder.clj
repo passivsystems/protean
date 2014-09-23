@@ -16,8 +16,7 @@
 (defn- int
   "Generate a random int.
    For some reason generators int does not return an int."
-  []
-  (.intValue (gen/uniform Integer/MIN_VALUE (inc Integer/MAX_VALUE))))
+  [] (.intValue (gen/uniform Integer/MIN_VALUE (inc Integer/MAX_VALUE))))
 
 (defn- int+ [] (Math/abs (clojure.core/int (gen/int))))
 
@@ -38,13 +37,11 @@
 
 (defn holder?
   "Does a simple value contain a placeholder ?"
-  [v]
-  (if (string? v) (.contains v psv) false))
+  [v] (if (string? v) (.contains v psv) false))
 
 (defn uri-ns-holder?
   "Does a uri contain a ns prefixed wildcard placeholder ?"
-  [v]
-  (.contains v ns-psv))
+  [v] (.contains v ns-psv))
 
 
 ;; =============================================================================
@@ -53,13 +50,11 @@
 
 (defn uri-ns-holder
   "Get ns prefixed wildcard portion of uri, E.G. things/psv+."
-  [uri]
-  (-> uri (.split "/psv\\+") first (.split "/") last (str "/" psv)))
+  [uri] (-> uri (.split "/psv\\+") first (.split "/") last (str "/" psv)))
 
 (defn encode-value
   "Encode body items as clojure, they are Json initially."
-  [k x]
-  (if (= k :body) (c/clj-> x) x))
+  [k x] (if (= k :body) (c/clj x) x))
 
 (defn holder-swap-uri [v [method uri mp :as payload]]
   (if-let [sv (get-in mp [:gen v :type])]
@@ -86,10 +81,8 @@
 (defn- json-qp? [m p]
   (if (empty? p)
     false
-    ;;(= (get-in m [:codex :q-params-type]) :json)
     (and (= (get-in m [:codex :q-params-type]) :json)
-         (map? (first (vals p))))
-    ))
+         (map? (first (vals p))))))
 
 (defn- swap-qp [swp-fn m p]
   (let [c (if (json-qp? m p) (first (vals p)) p)]
@@ -99,7 +92,7 @@
 
 (defn- mapify-swapped [raw m p type ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
-        v-res (if (and (qp? type) (= ph-op :gen) (json-qp? m p)) (c/js-> mapified) mapified)]
+        v-res (if (and (qp? type) (= ph-op :gen) (json-qp? m p)) (c/js mapified) mapified)]
     (if (json-qp? m p)
       {(first (keys p)) v-res}
       v-res)))

@@ -37,7 +37,6 @@
   "Extracts out-k out of entry and assocs to payload as in-k."
   [entry out-k in-k corpus payload]
   (if-let [v (if (= out-k :query-params)
-               ;;(get-in entry [out-k :required])
                (rp-build entry out-k corpus)
                (out-k entry))]
     (if (empty? v) payload (assoc payload in-k v))
@@ -45,7 +44,7 @@
 
 (defn- body [entry payload]
   (if (:body-keys entry)
-    (assoc payload :body (c/js-> (:body-keys entry)))
+    (assoc payload :body (c/js (:body-keys entry)))
     payload))
 
 (defn- codex-rsp [entry payload] (assoc payload :codex (:codex entry)))

@@ -4,7 +4,7 @@
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [protean.core.protocol.http :as pth]
-            [protean.core.transformation.coerce :as ptc]
+            [protean.core.transformation.coerce :as co]
             [protean.core.transformation.analysis :as a]
             [protean.core.transformation.curly :as c]
             [protean.core.transformation.testy-cljhttp :as tc]
@@ -52,9 +52,9 @@
 (defn- body [ctype body]
   (if-let [b body]
     (cond
-      (= ctype pth/xml) (ptc/pretty-xml-> b)
+      (= ctype pth/xml) (co/pretty-xml b)
       (= ctype pth/txt) b
-      :else (ptc/pretty-js-> b))
+      :else (co/pretty-js b))
     "N/A"))
 
 

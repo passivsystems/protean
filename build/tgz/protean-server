@@ -2,4 +2,4 @@
 
 export CODEX_DIR=$HOME/bin
 export ASSET_DIR=$HOME/bin/public
-java -cp $HOME/bin/protean.jar protean.server.core
+java -cp $HOME/bin/protean.jar protean.server.main
