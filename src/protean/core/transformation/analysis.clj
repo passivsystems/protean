@@ -45,6 +45,11 @@
     (assoc payload :doc doc)
     payload))
 
+(defn desc-> [resource payload]
+  (if-let [desc (:description (:spec resource))]
+    (assoc payload :desc desc)
+    payload))
+
 (defn uri-> [{:keys [svc path]} host port payload]
   (let [uri (str "http://" host ":" port "/" (name svc) "/" path)]
     (assoc payload :uri uri)))
@@ -67,6 +72,7 @@
        (uri-> resource host port)
        (assoc-tx-> resource :query-params :query-params)
        (doc-> resource)
+       (desc-> resource)
        (codex-rsp-> resource)))
 
 
