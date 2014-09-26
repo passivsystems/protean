@@ -161,10 +161,21 @@
   (hlg "analysing probe data")
   (println "documentation has been produced at the location you specified"))
 
+(defn- get? [m] (= m 'client/get))
+
+(defn- put? [m] (= m 'client/put))
+
+(defn- del? [m] (= m 'client/delete))
+
 (defn- assess [m s phs]
   (if phs
     (if (some #{"dyn"} phs)
-      (if (and (= m 'client/get) (= s 200)) false true)
+      (cond
+        (and (get? m) (= s 200)) false
+        (and (put? m) (= s 204)) false
+        (and (del? m) (= s 204)) false
+        :else true)
+      ;(if (and (= m 'client/get) (= s 200)) false true)
       true)
     true))
 
