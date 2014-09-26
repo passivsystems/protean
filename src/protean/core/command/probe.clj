@@ -175,7 +175,6 @@
         (and (put? m) (= s 204)) false
         (and (del? m) (= s 204)) false
         :else true)
-      ;(if (and (= m 'client/get) (= s 200)) false true)
       true)
     true))
 
