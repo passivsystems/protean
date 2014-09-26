@@ -4,7 +4,7 @@
   (:require [clojure.string :as stg]
             [clojure.data.generators :as gen]
             [protean.core.transformation.coerce :as c])
-  (:import java.lang.Math))
+  (:import java.lang.Math java.util.Random))
 
 ;; =============================================================================
 ;; Helper functions
@@ -13,14 +13,16 @@
 (def psv "psv+")
 (def ns-psv "/psv+")
 
+(def rnd (Random.))
+
 (defn- int
   "Generate a random int.
    For some reason generators int does not return an int."
   [] (.intValue (gen/uniform Integer/MIN_VALUE (inc Integer/MAX_VALUE))))
 
-(defn- int+ [] (Math/abs (clojure.core/int (gen/int))))
+(defn- int+ [] (Math/abs (.nextInt rnd)))
 
-(defn- long+ [] (Math/abs (gen/long)))
+(defn- long+ [] (Math/abs (.nextLong rnd)))
 
 (defn- g-val [v]
   (case v
