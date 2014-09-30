@@ -12,7 +12,7 @@
             [protean.core.command.seed :as s]
             [protean.core.command.exemplify :as e]
             [protean.core.command.generate :as g])
-  (:import java.net.URI))
+  (:import java.io.File java.net.URI))
 
 ;; =============================================================================
 ;; Helper functions
@@ -77,14 +77,28 @@
 
 (defmulti build (fn [command & _] command))
 
+(defn- name-param [title]
+  (println "title : " title)
+  (if (.contains title "psv+") (stg/replace title "psv+" "*") title))
+
+(defn- doc-params [directory resource params]
+  "Doc query params for a given node.
+   Directory is the data directory root to spit doc files into.
+   Resource is the current endpoint (parent of params).
+   Params is the gen information for a resources params."
+  (let [parent-dir (.getParent (File. directory))]
+    (.mkdir (File. (str parent-dir "/" resource)))
+    (doseq [[k v] params]
+      (let [qm {:title (name-param k) :type (:type v) :doc (:doc v)}]
+        (spit (str parent-dir "/" resource "/" (java.util.UUID/randomUUID) ".edn") (pr-str qm))))))
+
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
      (doseq [e (a/analysis-> "host" 1234 codices corpus)]
        (let [uri-path (-> (URI. (:uri e)) (.getPath))
-             path  (stg/replace uri-path #"/" "-")
-             id (str (name (:method e)) path)
+             id (str (name (:method e)) (stg/replace uri-path #"/" "-"))
              body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
              success (or (get-in e [:codex :success-code]) (:status (pth/status (:method e))))
              errors (get-in e [:codex :errors])
@@ -93,7 +107,8 @@
                          :error-codes (str errors)
                          :curl (cod/url-decode (c/curly-> e))
                          :sample-response body)]
-         (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name))))))])
+         (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name)))
+         (doc-params directory id (:gen e)))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)
