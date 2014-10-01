@@ -30,8 +30,11 @@
 
 (defn curly-body-> [entry payload]
   (if-let [b (:body-keys entry)]
-    (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
-      (jsn/generate-string b) "'")
+    (if (map? b)
+      (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
+           (jsn/generate-string b) "'")
+      (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
+           (jsn/generate-string (first b)) "'"))
     payload))
 
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))

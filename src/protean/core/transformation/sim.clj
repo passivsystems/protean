@@ -89,11 +89,16 @@
     payload))
 
 (defn- verify-body [req codex payload]
-  (if-let [b-keys (d/body-req codex)]
-    (let [req-body-ks (set (keys (jsn/parse-string (:body req))))]
-      (if (= req-body-ks (set (keys b-keys)))
-        payload
-        (assoc payload :status 400)))
+  (if-let [codex-body (d/body-req codex)]
+    (let [body-jsn (jsn/parse-string (:body req))]
+      (if (map? codex-body)
+        (let [req-body-ks (set (keys body-jsn))]
+          (if (= req-body-ks (set (keys codex-body)))
+            payload
+            (assoc payload :status 400)))
+        (if (contains? codex-body body-jsn)
+          payload
+          (assoc payload :status 400))))
     payload))
 
 (defn- verify-2-status [req codex payload]

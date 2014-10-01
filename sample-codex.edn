@@ -70,6 +70,22 @@
         :delete {:doc "Delete sample"}
       }
 
+      "test-json-boolean" {
+        :put {
+          :doc "Put with mandatory body payload - JSON boolean,
+                optional constraint (boolean) for sim and doc purposes."
+          :req {:body #{true false}}
+        }
+      }
+
+      "test-json-string" {
+        :put {
+          :doc "Put with mandatory body payload - JSON string,
+                optional constraint to val in a set for sim and doc purposes."
+          :req {:body #{"kermit" "gonzo"}}
+        }
+      }
+
       "slow" {
         :get {
           :doc "Get with slow response (secs) - useful for testing timeouts"
