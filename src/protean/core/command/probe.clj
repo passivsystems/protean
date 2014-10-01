@@ -89,7 +89,8 @@
   (let [parent-dir (.getParent (File. directory))]
     (.mkdir (File. (str parent-dir "/" resource)))
     (doseq [[k v] params]
-      (let [qm {:title (name-param k) :type (:type v) :doc (:doc v)}]
+      (let [type (if (= (:type v) "Range") (str (:type v) " - " (:range v)) (:type v))
+            qm {:title (name-param k) :type type :doc (:doc v)}]
         (spit (str parent-dir "/" resource "/" (java.util.UUID/randomUUID) ".edn") (pr-str qm))))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
