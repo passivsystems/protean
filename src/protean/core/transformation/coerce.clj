@@ -22,4 +22,6 @@
 
 (defn xml [d] (xml/sexp-as-element d))
 
+(defn str-xml [d] (xml/emit-str (xml d)))
+
 (defn pretty-xml [d] (xml/indent-str (xml d)))

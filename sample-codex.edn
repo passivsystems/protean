@@ -42,6 +42,14 @@
             :body [:parent [:child {:type "xml"}]]
           }
         }
+
+        :put {
+          :doc "Put an xml document, verify presence of elements"
+          :req {
+            :headers {"Content-Type" "text/xml"}
+            :body [:a [:b [:c]]]
+          }
+        }
       }
 
       "test" {
