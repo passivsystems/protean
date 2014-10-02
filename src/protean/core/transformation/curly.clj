@@ -30,17 +30,24 @@
     payload))
 
 (defn curly-body-> [entry payload]
-  (if (= (get-in entry [:codex :content-type-req]) h/xml)
-    (if-let [b (:body-keys entry)]
-      (str payload " --data '" (c/str-xml b) "'")
-      payload)
-    (if-let [b (:body-keys entry)]
+  (cond
+    (= (get-in entry [:codex :content-type-req]) h/xml)
+      (if-let [b (:body-keys entry)]
+        (str payload " --data '" (c/str-xml b) "'")
+        payload)
+      (not (get-in entry [:codex :content-type-req]))
+      (if-let [b (:body-keys entry)]
            (if (map? b)
              (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
                   (jsn/generate-string b) "'")
              (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
                   (jsn/generate-string (first b)) "'"))
-           payload)))
+           payload)
+    (= (get-in entry [:codex :content-type-req]) h/txt)
+      (if-let [b (:body-keys entry)]
+        (str payload " --data '"
+             (jsn/generate-string (first b)) "'")
+        payload)))
 
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 

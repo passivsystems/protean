@@ -94,6 +94,25 @@
         }
       }
 
+      "test-plain-text" {
+        :get {
+          :doc "Get a plain text response"
+          :rsp {
+            :headers {"Content-Type" "text/plain"}
+            :body "Plain text response"
+          }
+        }
+
+        :post {
+          :doc "Post a plain text body - for sim restrict string to membership
+                of a set"
+          :req {
+            :headers {"Content-Type" "text/plain"}
+            :body #{"kermit" "gonzo"}
+          }
+        }
+      }
+
       "slow" {
         :get {
           :doc "Get with slow response (secs) - useful for testing timeouts"
