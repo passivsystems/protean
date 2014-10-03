@@ -96,39 +96,75 @@
         </p>
 
 
-        <h3>Testing your services</h3>
+        <!--
+          -----------------
+          API Documentation
+          -----------------
+        -->
+
+        <h3>Generating API documentation for your services</h3>
+
+        <p>Protean can generate shiny API documentation for your services.  To do this it uses <a href="http://www.silkyweb.org" target="_blank">Silk</a>.</p>
+
+        <p>Below is the command for generating documentation for the out of the box <strong>service/codex</strong>:</p>
+
+        <code>
+          <kbd>protean visit -f sample-codex.edn -b '{"locs":["sample"], "commands":["doc"],"directory":"/path/to/site/protean-sample-docs/data/api"}'</kbd>
+        </code>
+
+        <p>Here we do several things:</p>
+
+        <ul>
+          <li>specify the <code>sample</code> service (all endpoints) in the locs (locations) directive</li>
+          <li>specify the <code>doc</code> command</li>
+          <li>specify where to put the documentation data so a silk site can use it (here we place doucmentation data in <code>data/api</code>)</li>
+        </ul>
 
         <p>
-          Protean can automatically generate integration tests for simulations or real API's.  It can test across every service defined within the system or a specified range.
-          When testing real API's it is possible to pass in seed data for auth tokens and other pieces of information needed to represent the initial state of the system.
-          Protean will figure out the order to incrementally test endpoints, just supply a sequence of services or service/resource combinations.
+          <code><kbd>silk spin</kbd></code> can now be run in the root of your silk site to construct the apidocs site.
         </p>
 
-        <p>Integration testing all resources in the sample <strong>simulation</strong>:</p>
-        <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"locs":["sample"]}}' 'http://localhost:3001/test'</kbd></code>
+
+        <!--
+          -------------------
+          Integration testing
+          -------------------
+        -->
+
+        <h3>Integration testing your services</h3>
+
+        <p>
+          Protean can automatically generate integration tests for simulations or real API's.  It is possible to specify the surface are of the API to range
+          over for testing and the rigour to apply in the test process.  The order in which to test the endpoints is figured out.
+        </p>
+
+        <h4>Integration testing all resources in the sample <strong>simulation</strong>:</h4>
+        <code><kbd>protean visit -f ~/sample-codex.edn -b '{"locs":["sample"], "commands":["test"], "config":{"test-level":1}}'</kbd></code>
+        <ul>
+          <li>specifies <code>sample</code> in the locs directive</li>
+          <li>specifies the <code>test</code> command</li>
+          <li>specifies <code>test-level</code> 1 which is the least rigorous</li>
+        </ul>
+
+        <h4>Integration testing all resources in a <strong>real</strong> API (provide a host and port pointing to your API)</h4>
+        <code><kbd>protean visit -f ~/sample-codex.edn -b '{"host": "some-host", "port": 11080, "locs":["sample"], "commands":["test"], "config":{"test-level":1}}'</kbd></code>
         <br /><br />
 
-        <p>Integration testing all resources in a <strong>real</strong> API (provide a host and port pointing to your API).</p>
-
-        <code><kbd>curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice"]}}' 'http://localhost:3001/test'</kbd></code>
-        <br /><br />
-
-        <p>Integration testing a range of resources for a given service, passing in some seed data.</p>
-
+        <h4>Integration testing a range of resources for a given service</h4>
         <p>
         See <a href="#test-codex">test codex</a> for a sample of a codex which could enable this kind of auto integration test generation.
         </p>
         <code>
           <kbd>
-          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["myservice token myservice create/user"],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
+          protean visit -f ~/sample-codex.edn -b '{"host": "some-host", "port": 11080, "locs":["sample header xml"], "commands":["test"], "config":{"test-level":1}}'
           </kbd>
         </code>
         <br /><br />
 
-        <p>Finally testing all of multiple services.</p>
+        <h4>Finally testing all of multiple services.</h4>
         <code>
           <kbd>
-          curl -v -X POST -H "Content-Type: application/json" --data '{"host":"myhost","port":8000,locs":["svc1","svc2"],"seed":{"Authorization":["Basic token"],"username":"myuser","password":"secure-password"}}}' 'http://localhost:3001/test'
+            protean visit -f ~/some-service.edn -b '{"host": "some-host", "port": 11080, "locs":["svc1", "svc2"], "commands":["test"], "config":{"test-level":1}}'
           </kbd>
         </code>
       </section>
@@ -188,7 +224,7 @@
         :get {
           :doc "Get with XML content type/response"
           :rsp {
-            :content-type "text/xml"
+            :headers {"Content-Type" "text/xml"}
             :body [:parent [:child {:type "xml"}]]
           }
         }
@@ -268,7 +304,11 @@
             :headers {"Authorization" "psv+Bearer token"}
             :query-params {:required {"drink" "psv+drink"}}
           }
-          :rsp {:success-code 200 :content-type "text/plain" :body "/starches/malted-grain"}
+          :rsp {
+            :success-code 200
+            :headers {"Content-Type" "text/plain"}
+            :body "/starches/malted-grain"
+          }
         }
       }
 
@@ -281,7 +321,11 @@
             :headers {"Authorization" "psv+Bearer token"}
             :query-params {:required {"drink" "psv+drink"}}
           }
-          :rsp {:success-code 200 :content-type "text/plain" :body "/flavourings/golding-hops"}
+          :rsp {
+            :success-code 200
+            :headers {"Content-Type" "text/plain"}
+            :body "/flavourings/golding-hops"
+          }
         }
       }
 
