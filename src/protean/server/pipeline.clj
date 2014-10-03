@@ -105,10 +105,6 @@
 
 (defn services-docs [] (txdocs/services-template (sort (keys @state))))
 
-(defn service-docs [id host]
-  (txdocs/service-template id
-    (txan/analysis-> host (c/sim-port) @state {:locs [id]})))
-
 (defn- html [f] (str (c/html-dir) f))
 
 (l/defdocument service-index

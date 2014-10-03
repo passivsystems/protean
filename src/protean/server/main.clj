@@ -49,7 +49,6 @@
 
   (GET    "/" [] (pipe/service-index))
   (GET    "/documentation/api" [] (pipe/service-api))
-  (GET    "/documentation/services/:id" [id] (pipe/service-docs id host))
   (GET    "/documentation/services" [] (pipe/services-docs))
   (GET    "/documentation" [] (pipe/service-documentation))
   (GET    "/roadmap" [] (pipe/service-road))
