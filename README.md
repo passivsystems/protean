@@ -103,7 +103,7 @@ Documentation is available on http://localhost:3001 when you run Protean locally
 
 Create a file with a .edn extension. See *sample-codex.edn* at the root of this repository. Once you are finished your can add your service *codex* by;
 * uploading with the basic Protean CLI
-    - protean-cli add-services -f /path/to/service.edn
+    - protean add-services -f /path/to/service.edn
 * uploading with curl
     - curl -v -X PUT --data-binary "@/path/to/service.edn" http://localhost:3001/services
 * drop the .edn file in the root of your Protean directory and restart it
@@ -113,15 +113,15 @@ Create a file with a .edn extension. See *sample-codex.edn* at the root of this 
 
 Lists all services:
 
-    protean-cli services
+    protean services
 
 Shows the service configuration for myservice.
 
-    protean-cli service -n myservice
+    protean service -n myservice
 
 Shows the curl commands that can be used for myservice.
 
-    protean-cli service-usage -n myservice
+    protean service-usage -n myservice
 
 Please explore the CLI or documentation to learn more.
 
