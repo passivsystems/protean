@@ -60,6 +60,7 @@
         "  service-usage          -n myservice (List curl statements to use API)"
         "  add-services           -f service-config-file.edn (Add services in a codex)"
         "  del-service            -n myservice (Delete a service)"
+        "  service-errors         -n myservice (Show service level error status codes)"
         "  add-service-error      -n myservice -s 500 (Add an error status code to a service)"
         "  set-service-error-prob -n myservice -l 10 (Set error probability)"
         "  del-service-errors     -n myservice (Delete error response codes)"
@@ -108,6 +109,7 @@
       (and (= cmd i/svc-usg) (not name)) (bomb summary)
       (and (= cmd i/add-svcs) (not file)) (bomb summary)
       (and (= cmd i/del-svc) (not name)) (bomb summary)
+      (and (= cmd i/svc-errs) (not name)) (bomb summary)
       (and (= cmd i/add-svc-err) (i/add-svc-err? options)) (bomb summary)
       (and (= cmd i/set-svc-err-prob) (i/set-svc-err-prob? options)) (bomb summary)
       (and (= cmd i/del-svc-errs) (not name)) (bomb summary)
@@ -125,6 +127,7 @@
       (= cmd i/svc-usg) (project-usage options)
       (= cmd i/add-svcs) (add-projects options)
       (= cmd i/del-svc) (delete-project options)
+      (= cmd i/svc-errs) (service-errors options)
       (= cmd i/add-svc-err) (add-project-error options)
       (= cmd i/set-svc-err-prob) (set-project-error-prob options)
       (= cmd i/del-svc-errs) (del-project-errors options)

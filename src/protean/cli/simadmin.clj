@@ -26,6 +26,10 @@
                         {:throw-exceptions false})]
    (projects options)))
 
+(defn service-errors [{:keys [host port name]}]
+  (let [rsp (clt/get (str "http://" host ":" port "/services/" name "/errors"))]
+    (c/pretty-clj (:body rsp))))
+
 (defn add-project-error [{:keys [host port name status-err] :as options}]
   (let [rsp
     (clt/put (str "http://" host ":" port

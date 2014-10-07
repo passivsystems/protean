@@ -84,6 +84,9 @@
       (spit (str (name (key d)) ".edn") (pr-str {(key d) (val d)})))
     (services)))
 
+(defn service-errors [id]
+  (assoc json :body (co/js (get-in @state [(keyword id) :errors :status]))))
+
 (defn delete-proj-errors [service]
   (reset! state (ib/dissoc-in @state [(keyword service) :errors :status]))
   {:status 204})

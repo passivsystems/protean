@@ -11,6 +11,7 @@
 (def svc-usg "service-usage")
 (def svcs "services")
 (def add-svcs "add-services")
+(def svc-errs "service-errors")
 (def add-svc-err "add-service-error")
 (def set-svc-err-prob "set-service-error-prob")
 (def del-svc "del-service")
