@@ -78,7 +78,6 @@
 (defmulti build (fn [command & _] command))
 
 (defn- name-param [title]
-  (println "title : " title)
   (if (.contains title "psv+") (stg/replace title "psv+" "*") title))
 
 (defn- doc-params [directory resource params]
