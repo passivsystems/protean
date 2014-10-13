@@ -15,6 +15,7 @@
      }
   "
   (:require [clojure.string :as s]
+            [protean.core.protocol.http :as h]
             [protean.core.transformation.analysis :as a]
             [protean.core.transformation.coerce :as c]))
 
@@ -49,6 +50,13 @@
 
 (defn- codex-rsp [entry payload] (assoc payload :codex (:codex entry)))
 
+;; add json ctype to request headers if there is no ctype and we are post or put
+(defn- postprocess [entry payload]
+  (if (and (some #{(:method entry)} [:post :put])
+           (not (get-in payload [:headers "Content-Type"])))
+    (assoc-in payload [:headers h/ctype]  h/jsn-simple )
+    payload))
+
 (defn- options [entry corpus payload]
   (assoc payload :options
          (->> {}
@@ -57,7 +65,8 @@
               (assoc-item entry :form-params :form-params corpus)
               (assoc-item entry :gen :gen corpus)
               (body entry)
-              (codex-rsp entry))))
+              (codex-rsp entry)
+              (postprocess entry))))
 
 (defn- payload [entry corpus]
   (->> (update-in entry [:uri] uri) (options entry corpus)))

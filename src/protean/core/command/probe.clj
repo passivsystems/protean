@@ -158,7 +158,7 @@
         ps (filter #(or (:location (nth % 2)) (:body (nth % 2))) raw-posts)
         vs (remove nil? (map #(or (:location (nth % 2)) (:body (nth % 2))) ps))
         locs (for [[m p] probes] (:locs m))
-        bag (assoc-in corpus [:seed] {"bag" (vec vs)})
+        bag (assoc-in corpus [:seed "bag"] (vec vs))
         np (doall (map #(build :test (assoc-in bag [:locs] %) codices) locs))
         nr (doall (map (fn [x] ((last x) (first x) codices res-persist!)) np))
         fr (remove #(or (= (first %) 'client/post) (not (some #{"seed"} (last %))))
