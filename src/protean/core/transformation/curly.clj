@@ -35,7 +35,8 @@
       (if-let [b (:body-keys entry)]
         (str payload " --data '" (c/str-xml b) "'")
         payload)
-      (not (get-in entry [:codex :content-type-req]))
+      (or (not (get-in entry [:codex :content-type-req]))
+          (= (get-in entry [:codex :content-type-req]) h/jsn-simple))
       (if-let [b (:body-keys entry)]
            (if (map? b)
              (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
