@@ -24,20 +24,24 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- encode [svc path md sp] {:svc svc :path path :method md :spec sp})
+(defn- encode [svc path md sp codex]
+  (let [merged (update-in sp [:req :headers] merge (:headers codex))]
+    {:svc svc :path path :method md :spec merged}))
 
-(defn- methods-range [svc paths]
-  (map #(encode svc (first (keys paths)) (key %) (val %)) (first (vals paths))))
+(defn- methods-range [svc paths codex]
+  (map #(encode svc (first (keys paths)) (key %) (val %) codex) (first (vals paths))))
 
 (defn- combi-paths [codices combi]
   (let [svc (keyword (first combi)) paths-loc (rest combi)
-        paths (map #(hash-map % (get-in codices [svc :paths %])) paths-loc)]
-    (map #(methods-range svc %) paths)))
+        paths (map #(hash-map % (get-in codices [svc :paths %])) paths-loc)
+        codex (:req (svc codices))]
+    (map #(methods-range svc % codex) paths)))
 
 (defn- svc-paths [codices svc]
   (let [paths-raw (get-in codices [(keyword svc) :paths])
-        paths (map #(hash-map (first %) (last %)) paths-raw)]
-    (map #(methods-range (keyword svc) %) paths)))
+        paths (map #(hash-map (first %) (last %)) paths-raw)
+        codex (:req ((keyword svc) codices))]
+    (map #(methods-range (keyword svc) % codex) paths)))
 
 (defn- proc-group [codices group path-fn coll]
   (if (seq group)
