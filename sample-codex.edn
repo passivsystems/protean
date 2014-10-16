@@ -121,5 +121,6 @@
       }
     }
     :errors {:status [500 503] :probability 25}
+    :rsp {:headers {"X-Powered-By" "Protean"}}
   }
 }

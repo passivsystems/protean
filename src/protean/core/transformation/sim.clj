@@ -48,8 +48,9 @@
 (defn- mod-1st-hdr
   "If a based on a probability defined in the codex optionally mutate the first
    response header."
-  [codex errs prob]
-  (let [hdrs (d/hdrs-rsp codex)
+  [codex errs svc-rsp prob]
+  (let [path-hdrs (d/hdrs-rsp codex)
+        hdrs (if-let [r-hdrs (:headers svc-rsp)] (merge path-hdrs r-hdrs) path-hdrs)
         estatus (or (d/err-status codex) errs)]
     (if (and estatus (percentage? (or (d/err-prob codex) prob)))
       (let [k (first (keys hdrs))]
@@ -137,8 +138,8 @@
        (verify-2-status req codex)
        (err-2-status codex proj-errs prob)))
 
-(defn- headers [codex proj-errs prob payload]
-  (if-let [hdrs (mod-1st-hdr codex proj-errs prob)]
+(defn- headers [codex proj-errs svc-rsp prob payload]
+  (if-let [hdrs (mod-1st-hdr codex proj-errs svc-rsp prob)]
     (if (err-status? payload) payload (assoc payload :headers hdrs))
     payload))
 
@@ -166,12 +167,13 @@
   (let [proj (keyword (second (s/split uri #"/")))
         k (second (s/split uri (re-pattern (str "/" (name proj) "/"))))
         proj-errors (get (get-in codices [proj :errors]) :status)
+        svc-rsp (:rsp (proj codices))
         prob (or (get (get-in codices [proj :errors]) :probability) 0)
         req (req-> req)]
     (if-let [codex (service-path? codices proj k)]
       (if ((:method req) codex)
         (->> (status req ((:method req) codex) proj-errors prob)
-             (headers ((:method req) codex) proj-errors prob)
+             (headers ((:method req) codex) proj-errors svc-rsp prob)
              (body ((:method req) codex)))
         {:status 405})
       {:status 404})))

@@ -22,5 +22,7 @@
 
 (deftest sim-full-formparams-payload
   (let [p (payload-item "sim full/form-params" "sim.edn")]
-    (is (= (count (get-in p [:options :headers])) 1))
+    ;; we expect two headers as we enforce request headers in the sim
+    ;; post/put etc therefore calculate a request header
+    (is (= (count (get-in p [:options :headers])) 2))
     (is (= (count (get-in p [:options :form-params])) 1))))

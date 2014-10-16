@@ -50,4 +50,6 @@
 ;;;;;;;;;;;
 
 (defn rsp [payload header body]
-  (assoc payload :headers {ctype header} :body body))
+  (if (get-in payload [:headers ctype])
+    (assoc payload :body body)
+    (assoc-in (assoc payload :body body) [:headers ctype] header)))
