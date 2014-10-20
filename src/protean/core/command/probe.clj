@@ -12,7 +12,7 @@
             [protean.core.command.seed :as s]
             [protean.core.command.exemplify :as e]
             [protean.core.command.generate :as g])
-  (:import java.io.File java.net.URI))
+  (:import java.io.File java.net.URI java.util.UUID))
 
 ;; =============================================================================
 ;; Helper functions
@@ -90,7 +90,7 @@
     (doseq [[k v] params]
       (let [type (if (= (:type v) "Range") (str (:type v) " - " (:range v)) (:type v))
             qm {:title (name-param k) :type type :doc (:doc v)}]
-        (spit (str parent-dir "/" resource "/" (java.util.UUID/randomUUID) ".edn") (pr-str qm))))))
+        (spit (str parent-dir "/" resource "/" (UUID/randomUUID) ".edn") (pr-str qm))))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
