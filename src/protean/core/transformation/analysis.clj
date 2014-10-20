@@ -62,7 +62,8 @@
      :success-code (get-in resource [:spec :rsp :success-code])
      :errors (get-in resource [:spec :rsp :errors :status])
      :content-type-req (get-in resource [:spec :req :headers "Content-Type"])
-     :content-type (get-in resource [:spec :rsp :headers "Content-Type"])}))
+     :content-type (get-in resource [:spec :rsp :headers "Content-Type"])
+     :headers (get-in resource [:spec :rsp :headers])}))
 
 (defn analyse-> [resource host port]
   (->> (method-> resource)
