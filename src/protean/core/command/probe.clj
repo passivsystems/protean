@@ -103,7 +103,7 @@
              success (or (get-in e [:codex :success-code]) (:status (pth/status (:method e))))
              errors (get-in e [:codex :errors])
              full (assoc e :id id :path (subs uri-path 1)
-                         :success-code (str success)
+                         :success-code (str success) ; TODO: should this be status to consolidate ?
                          :error-codes (str errors)
                          :curl (cod/url-decode (c/curly-> e))
                          :sample-response body)]
