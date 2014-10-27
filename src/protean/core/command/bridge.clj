@@ -16,7 +16,8 @@
 
    Links expectations to probe results where outcome is a concern."
   (:require [protean.core.transformation.paths :as p]
-            [protean.core.command.probe :as pr]))
+            [protean.core.command.probe :as pr]
+            [me.rossputin.diskops :as d]))
 
 ;; =============================================================================
 ;; Helper functions

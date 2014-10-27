@@ -1,8 +1,10 @@
 (ns protean.core.command.probe
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as stg]
+            [clojure.java.io :refer [file]]
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
+            [me.rossputin.diskops :as d]
             [protean.core.protocol.http :as pth]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.analysis :as a]
@@ -57,6 +59,13 @@
       :else (co/pretty-js b))
     "N/A"))
 
+(defn prep-docs [{:keys [directory]}]
+  (if (d/exists-dir? directory)
+    (do (d/delete-directory (.getParent (file directory)))
+
+        (.mkdirs (file directory)))
+    (.mkdirs (file directory))))
+
 
 ;; =============================================================================
 ;; Probe config
@@ -105,6 +114,7 @@
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
+  (prep-docs corpus)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
      (doseq [e (a/analysis-> "host" 1234 codices corpus)]
