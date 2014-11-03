@@ -57,7 +57,7 @@
     (let [res
           (-> phs
               (p/holders-swap p/holder-swap-exp entry k :exp)
-              (p/holders-swap p/holder-swap-gen entry k :gen))]
+              (p/holders-swap p/holder-swap-gen entry k :format))]
       (if (vector? res) (first res) res))
     nil))
 

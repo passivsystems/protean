@@ -17,13 +17,6 @@
   (let [generex (Generex. regex)]
     (.random generex)))
 
-(defn- int2 [] 
-  (println "in int+")
-;  (generate "[0-3]([a-c]|[e-g]{1,2})")) ; TODO specify range for int
-;  (generate "[0-9]")) ; TODO specify range for int
-  (generate "\\\\d"))
-;  (Math/abs (.nextInt rnd)))
-
 (defn- g-val [v]
   (case v
     :Int (gen/int)
@@ -65,7 +58,7 @@
   [k x] (if (= k :body) (c/clj x) x))
 
 (defn holder-swap-uri [v [method uri mp :as payload]]
-  (if-let [sv (get-in mp [:gen v :type])]
+  (if-let [sv (get-in mp [:format v :type])]
     (let [gv (g-val sv)
           raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
           ph-map (update-in raw-map [:codex :ph-swaps] vec)]
@@ -76,14 +69,14 @@
   "Swap codex example values in for placeholders."
   [k v m]
   (if (holder? v)
-    (if-let [x (get-in m [:gen k :examples])] [(first x) "exp"] [v "idn"])
+    (if-let [x (get-in m [:format k :examples])] [(first x) "exp"] [v "idn"])
     [v "idn"]))
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
   [k v mp]
   (if (holder? v)
-    (if-let [x (get-in mp [:gen k :type])] [(g-val x) "gen"] [v "idn"])
+    (if-let [x (get-in mp [:format k :type])] [(g-val x) "format"] [v "idn"])
     [v "idn"]))
 
 (defn- json-qp? [m p]
@@ -100,7 +93,7 @@
 
 (defn- mapify-swapped [raw m p type ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
-        v-res (if (and (qp? type) (= ph-op :gen) (json-qp? m p)) (c/js mapified) mapified)]
+        v-res (if (and (qp? type) (= ph-op :format) (json-qp? m p)) (c/js mapified) mapified)]
     (if (json-qp? m p)
       {(first (keys p)) v-res}
       v-res)))
