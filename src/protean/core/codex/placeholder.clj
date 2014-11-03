@@ -4,7 +4,7 @@
   (:require [clojure.string :as stg]
             [clojure.data.generators :as gen]
             [protean.core.transformation.coerce :as c])
-  (:import java.lang.Math java.util.Random))
+  (:import java.lang.Math java.util.Random com.mifmif.common.regex.Generex))
 
 ;; =============================================================================
 ;; Helper functions
@@ -13,22 +13,28 @@
 (def psv "psv+")
 (def ns-psv "/psv+")
 
-(def rnd (Random.))
+(defn- generate [regex]
+  (let [generex (Generex. regex)]
+    (.random generex)))
 
-(defn- int
-  "Generate a random int.
-   For some reason generators int does not return an int."
-  [] (.intValue (gen/uniform Integer/MIN_VALUE (inc Integer/MAX_VALUE))))
-
-(defn- int+ [] (Math/abs (.nextInt rnd)))
-
-(defn- long+ [] (Math/abs (.nextLong rnd)))
+(defn- int2 [] 
+  (println "in int+")
+;  (generate "[0-3]([a-c]|[e-g]{1,2})")) ; TODO specify range for int
+;  (generate "[0-9]")) ; TODO specify range for int
+  (generate "\\\\d"))
+;  (Math/abs (.nextInt rnd)))
 
 (defn- g-val [v]
   (case v
-    "Int" (int+)
-    "Long" (long+)
-    "String" (gen/string)))
+    :Int (gen/int)
+    :Long (gen/long)
+    :Short (gen/short)
+    :Byte (gen/byte)
+    :Boolean (gen/boolean)
+    :Uuid (gen/uuid)
+    :Date (gen/date)
+    :String (gen/string)
+    (generate v)))
 
 (defn- qp? [type] (= type :query-params))
 

@@ -59,12 +59,18 @@
       :else (co/pretty-js b))
     "N/A"))
 
-(defn prep-docs [{:keys [directory]}]
-  (if (d/exists-dir? directory)
-    (do (d/delete-directory (.getParent (file directory)))
+(defn bomb [msg]
+  (println (aa/red msg))
+    (System/exit 0))
 
-        (.mkdirs (file directory)))
-    (.mkdirs (file directory))))
+(defn prep-docs [{:keys [directory]}]
+  (if (not directory)
+    (bomb "please provide \"directory\" config to generate docs")
+    (if (d/exists-dir? directory)
+      (do ; TODO Confirm this, was deleting the parent directory (and getting NPE if it is relative); (println "deleting parent of " (file directory) "(" (.getParent (.getAbsoluteFile (file directory))) ")")
+          (d/delete-directory (file directory))
+          (.mkdirs (file directory)))
+      (.mkdirs (file directory)))))
 
 
 ;; =============================================================================

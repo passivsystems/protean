@@ -65,6 +65,9 @@
         "  set-service-error-prob -n myservice -l 10 (Set error probability)"
         "  del-service-errors     -n myservice (Delete error response codes)"
         "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc, test etc)"
+        "                         e.g."
+        "                             visit -f sample-petstore.edn -b '{\"host\": \"petstore.swagger.wordnik.com\", \"port\": 80, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
+        "                             visit -f sample-petstore.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"docs\"}'"
         ""
         "Please refer to the manual page for more information."]
        (s/join \newline)))
@@ -85,6 +88,7 @@
 ;; =============================================================================
 
 (defn- visit [{:keys [host port file body] :as options}]
+  ; TODO fail if b has no commands?
   (let [b (sane-corpus (c/clj body))]
     (println (aa/bold-green "Exploring quadrant..."))
     (let [codices (edn/read-string (slurp file))]
