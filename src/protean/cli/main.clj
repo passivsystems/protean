@@ -55,6 +55,14 @@
         options-summary
         ""
         "Actions:"
+        "Codex actions:"
+        "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc, test etc)"
+        "                         e.g. To run tests against a server"
+        "                             visit -f sample-petstore.edn -b '{\"host\": \"localhost\", \"port\": 3000, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
+        "                         e.g. To generate documentation"
+        "                             visit -f sample-petstore.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"docs\"}'"
+        ""
+        "Interact with running Protean server:"
         "  services               (List services)"
         "  service                -n myservice (List service)"
         "  service-usage          -n myservice (List curl statements to use API)"
@@ -64,10 +72,6 @@
         "  add-service-error      -n myservice -s 500 (Add an error status code to a service)"
         "  set-service-error-prob -n myservice -l 10 (Set error probability)"
         "  del-service-errors     -n myservice (Delete error response codes)"
-        "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc, test etc)"
-        "                         e.g."
-        "                             visit -f sample-petstore.edn -b '{\"host\": \"petstore.swagger.wordnik.com\", \"port\": 80, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
-        "                             visit -f sample-petstore.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"docs\"}'"
         ""
         "Please refer to the manual page for more information."]
        (s/join \newline)))

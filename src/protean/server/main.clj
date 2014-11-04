@@ -28,13 +28,13 @@
 (defonce host (.getCanonicalHostName (InetAddress/getLocalHost)))
 
 (defn files [c-dir]
-  (-> (remove #(.isDirectory %) (file-seq (file c-dir)))
+  (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
       (do/filter-exts ["edn"])))
 
 (defn- build-services
   "Load services from disk."
   [c-dir]
-  (let [fs (remove #(= (.getName (.getParentFile %)) "data") (files c-dir))]
+  (let [fs (files c-dir)]
     (doseq [f fs]
       (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
   (keys @pipe/state))
@@ -90,4 +90,5 @@
     (info "Asset directory : " (c/asset-dir))
     (info (str "Services loaded : " (build-services c-dir)))
     (server (co/int api-port) (co/int (c/admin-port)))
-    (info (str "Protean has started"))))
+    (info (str "Protean has started"
+      " : api-port " api-port ", admin-port " (c/admin-port)))))

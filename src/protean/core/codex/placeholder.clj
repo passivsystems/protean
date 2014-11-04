@@ -2,9 +2,8 @@
   "Placeholder functionality, swapping codex examples, generating."
   (:refer-clojure :exclude [long int])
   (:require [clojure.string :as stg]
-            [clojure.data.generators :as gen]
             [protean.core.transformation.coerce :as c])
-  (:import java.lang.Math java.util.Random com.mifmif.common.regex.Generex))
+  (:import java.lang.Math java.util.Random))
 
 ;; =============================================================================
 ;; Helper functions
@@ -13,21 +12,27 @@
 (def psv "psv+")
 (def ns-psv "/psv+")
 
+(def rnd (Random.))
+
 (defn- generate [regex]
-  (let [generex (Generex. regex)]
-    (.random generex)))
+  (let [generator (org.databene.benerator.primitive.RegexStringGenerator. regex)]
+    (.init generator (org.databene.benerator.engine.DefaultBeneratorContext.))
+    (.generate generator)))
 
 (defn- g-val [v]
-  (case v
-    :Int (gen/int)
-    :Long (gen/long)
-    :Short (gen/short)
-    :Byte (gen/byte)
-    :Boolean (gen/boolean)
-    :Uuid (gen/uuid)
-    :Date (gen/date)
-    :String (gen/string)
-    (generate v)))
+  (let [date "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))"
+        time "T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+        timezone "(Z|\\+[0-1][0-9]:[03]0)"]
+    (case v
+      :Int (Math/abs (.nextInt rnd))
+      :Long (Math/abs (.nextLong rnd))
+      :Double (.nextDouble rnd)
+      :Boolean (.nextBoolean rnd)
+      :Uuid (.toString (java.util.UUID/randomUUID))
+      :Date (generate date)
+      :DateTime (generate (str date time timezone))
+      :String (generate "[ -~]*") ; all ASCII chars between space and tilde are the printable chars.
+    (generate v))))
 
 (defn- qp? [type] (= type :query-params))
 
