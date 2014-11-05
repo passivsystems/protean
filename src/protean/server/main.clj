@@ -14,7 +14,7 @@
             [protean.core.transformation.coerce :as co]
             [protean.server.docs :as pdoc])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
-  (:import java.io.File java.net.InetAddress)
+  (:import java.io.File)
   (:gen-class))
 
 ;; =============================================================================
@@ -24,8 +24,6 @@
 (timbre/set-config! [:appenders :spit :enabled?] true)
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
 (timbre/set-level! :info)
-
-(defonce host (.getCanonicalHostName (InetAddress/getLocalHost)))
 
 (defn files [c-dir]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
@@ -60,7 +58,7 @@
     (pipe/put-proj-error-prob id prob))
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
-  (GET    "/services/:id/usage" [id] (pipe/service-usage id host))
+  (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
   (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
   (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
   (GET    "/status" [] (pipe/status)))

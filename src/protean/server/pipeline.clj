@@ -116,7 +116,9 @@
 
 (l/defdocument service-api
   (file (html "/api.html")) []
-  (l/id="project-version") (<- (txdocs/version)))
+  (l/id="project-version") (<- (txdocs/version))
+  (l/id="hostname") (<- c/host)
+  (l/id="admin-port") (<- c/admin-port))
 
 (l/defdocument service-documentation
   (file (html "/documentation.html")) []
