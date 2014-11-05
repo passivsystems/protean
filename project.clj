@@ -26,4 +26,5 @@
                  [org.slf4j/slf4j-simple "1.6.4"]]
   :plugins [[lein-ring "0.8.10"]]
   :aot :all
+  :uberjar-name ~(str (-> "project.clj" slurp read-string (nth 1)) "-" (-> "project.clj" slurp read-string (nth 2)) "-standalone.jar")
   :main protean.cli.main)
