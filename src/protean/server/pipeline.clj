@@ -126,6 +126,10 @@
   (file (html "/roadmap.html")) []
   (l/id="project-version") (<- (txdocs/version)))
 
+(l/defdocument service-community
+  (file (html "/community.html")) []
+  (l/id="project-version") (<- (txdocs/version)))
+
 
 ;; service status
 ;;;;;;;;;;;;;;;;;
