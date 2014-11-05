@@ -23,6 +23,7 @@
 ;;;;;;;;;;
 
 (def ctype "Content-Type")
+(def azn "Authorization")
 
 
 ;; Content types

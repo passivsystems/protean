@@ -5,9 +5,10 @@
             [clojure.set :as st]
             [ring.util.codec :as e]
             [cheshire.core :as jsn]
+            [protean.core.codex.placeholder :as p]
+            [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
             [protean.core.protocol.http :as h]
-            [protean.core.codex.placeholder :as p]
             [protean.core.transformation.analysis :as txan]))
 
 ;; =============================================================================
@@ -66,7 +67,7 @@
     (if-let [rp (translate phs entry :query-params)]
       (if (empty? rp)
         (str payload "'")
-        (if (= (get-in entry [:codex :q-params-type]) :json)
+        (if (d/qp-json? entry)
           (str payload "?q=" (rp "q") "'")
           (str payload "?"
                (stg/join "&"

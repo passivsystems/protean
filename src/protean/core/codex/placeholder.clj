@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [long int])
   (:require [clojure.string :as stg]
             [clojure.data.generators :as gen]
+            [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c])
   (:import java.lang.Math java.util.Random))
 
@@ -45,6 +46,30 @@
   "Does a uri contain a ns prefixed wildcard placeholder ?"
   [v] (.contains v ns-psv))
 
+(defn authzn-holder?
+  "Does the authzn header contain a placeholder ?"
+  [v] (if-let [auth (d/azn v)] (holder? auth) false))
+
+(defn params-holder?
+  "Do test params contain a placeholder ?
+   body is the test request body
+   k may be query-params|form-params|body"
+  [body k]
+  (if-let [params (if (= k :body) (c/clj (k body)) (k body))]
+    (if (first (filter #(holder? %) (vals params)))
+      true
+      false)
+    false))
+
+(defn test-holder?
+  "Does a test contain placeholders of any kind ?"
+  [[method uri mp :as test]]
+  (or (uri-ns-holder? uri)
+      (authzn-holder? mp)
+      (params-holder? mp :query-params)
+      (params-holder? mp :body)
+      (params-holder? mp :form-params)))
+
 
 ;; =============================================================================
 ;; Transformation functions
@@ -81,10 +106,7 @@
     [v "idn"]))
 
 (defn- json-qp? [m p]
-  (if (empty? p)
-    false
-    (and (= (get-in m [:codex :q-params-type]) :json)
-         (map? (first (vals p))))))
+  (if (empty? p) false (and (d/qp-json? m) (map? (first (vals p))))))
 
 (defn- swap-qp [swp-fn m p]
   (let [c (if (json-qp? m p) (first (vals p)) p)]

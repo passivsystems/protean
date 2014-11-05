@@ -2,6 +2,7 @@
   "Replace placeholder values a client provided set of values, grow seed
    values when incrementally negotiating (workflows etc)."
   (:require [clojure.string :as s]
+            [protean.core.protocol.http :as h]
             [protean.core.transformation.coerce :as txco]
             [protean.core.codex.placeholder :as p]))
 
@@ -10,19 +11,18 @@
 ;; =============================================================================
 
 (defonce PSV-EXP "psv\\+")
-(def azn "Authorization")
 
 (defn- token [seed strat]
-  (let [tokens (get-in seed [azn])]
+  (let [tokens (get-in seed [h/azn])]
     (first (filter #(.contains % strat) tokens))))
 
 ; TODO: needs refactoring, trying to get a prototype out
 ; strat is either Basic or Bearer
 (defn- header-authzn-> [strat seed [method uri mp :as payload]]
-  (if-let [auth (get-in mp [:headers azn])]
+  (if-let [auth (get-in mp [:headers h/azn])]
     (if (and (.contains auth p/psv) (.contains auth strat))
       (if-let [sauth (token seed strat)]
-        (let [n (assoc-in mp [:headers azn]
+        (let [n (assoc-in mp [:headers h/azn]
                   (str strat " " (last (s/split sauth #" "))))]
           (list method uri n))
         payload)

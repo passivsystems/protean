@@ -5,6 +5,7 @@
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as d]
+            [protean.core.codex.placeholder :as p]
             [protean.core.protocol.http :as pth]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.analysis :as a]
@@ -208,17 +209,19 @@
   (if phs
     (if (some #{"dyn"} phs)
       (cond
-        (and (get? m) (= s 200)) false
-        (and (put? m) (= s 204)) false
-        (and (del? m) (= s 204)) false
-        :else true)
-      true)
-    true))
+        (and (get? m) (= s 200)) "fail"
+        (and (put? m) (= s 204)) "fail"
+        (and (del? m) (= s 204)) "fail"
+        :else "pass")
+      (if (= s 500) "error" "pass"))
+    "pass"))
 
 (defmethod analyse :test [_ corpus codices results]
   (hlg "analysing probe data")
   (doseq [[method uri mp phs] results]
     (let [status (:status mp)
           ass (assess method status phs)
-          so (if ass (aa/bold-green ass) (aa/bold-red ass))]
-      (println "Test : " method " - " uri ", status : " status ", pass : " so))))
+          so (if (or (p/uri-ns-holder? uri) (p/authzn-holder? mp))
+               (aa/bold-red "error - untested")
+               (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass)))]
+      (println "Test : " method " - " uri ", status - " status ": " so))))
