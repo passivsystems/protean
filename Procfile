@@ -1,1 +1,1 @@
-web:    java $JAVA_OPTS -cp target/protean-*-standalone.jar protean.server.main
+web:    java $JAVA_OPTS -Dadmin.port=$PORT -cp target/protean-*-standalone.jar protean.server.main
