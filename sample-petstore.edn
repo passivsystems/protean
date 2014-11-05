@@ -32,7 +32,7 @@
             :format {
               "pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be updated"}
               "name" {:type :String, :doc "Updated name of the pet"}
-;              "status" {:type "(available|pending|sold)", :doc "Updated status of the pet"}
+              "status" {:type "(available|pending|sold)", :doc "Updated status of the pet"}
             }
           }
           :errors {:status [405]}

@@ -21,7 +21,7 @@
 
 (defn- g-val [v]
   (let [date "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))"
-        time "T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+        time "([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
         timezone "(Z|\\+[0-1][0-9]:[03]0)"]
     (case v
       :Int (Math/abs (.nextInt rnd))
@@ -30,7 +30,7 @@
       :Boolean (.nextBoolean rnd)
       :Uuid (.toString (java.util.UUID/randomUUID))
       :Date (generate date)
-      :DateTime (generate (str date time timezone))
+      :DateTime (generate (str date "T" time timezone))
       :String (generate "[ -~]*") ; all ASCII chars between space and tilde are the printable chars.
     (generate v))))
 
