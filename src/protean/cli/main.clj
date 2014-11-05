@@ -119,7 +119,6 @@
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
         cmd (first arguments) name (:name options) file (:file options)]
     (handle-errors options arguments errors summary)
-    (cli-banner)
     (println "\n")
     (cond
       (= cmd i/svcs) (projects options)
