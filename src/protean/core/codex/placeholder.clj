@@ -4,7 +4,11 @@
   (:require [clojure.string :as stg]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c])
-  (:import java.lang.Math java.util.Random java.util.UUID))
+  (:import java.lang.Math
+           java.util.Random
+           java.util.UUID
+           org.databene.benerator.primitive.RegexStringGenerator
+           org.databene.benerator.engine.DefaultBeneratorContext))
 
 ;; =============================================================================
 ;; Helper functions
@@ -16,8 +20,8 @@
 (def rnd (Random.))
 
 (defn- generate [regex]
-  (let [generator (org.databene.benerator.primitive.RegexStringGenerator. regex)]
-    (.init generator (org.databene.benerator.engine.DefaultBeneratorContext.))
+  (let [generator (RegexStringGenerator. regex)]
+    (.init generator (DefaultBeneratorContext.))
     (.generate generator)))
 
 (defn- g-val [v]
