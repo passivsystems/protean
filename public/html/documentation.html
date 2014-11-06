@@ -271,11 +271,11 @@
         <h3>Sample test enabled simulation codex</h3>
 
         <p>
-          With a little more metadata added (one or two fields for each resource) it is possible for Protean to automatically generate integration tests for either a
+          With a little more metadata added it is possible for Protean to automatically generate integration tests for either a
           simluation, or the real API behind it.
 
-          We need to know what the status code is for a successful operation, and optionally how to dig a specific result out of a composite datastructure in the result.
-          For this we use the <strong>:success-code</strong> and <strong>:body-res</strong> directives respectively.
+          We may need to know how to dig a specific item out of a composite datastructure in the result.
+          For this we use the <strong>:body-res</strong> directive.
 
           Below is a sample of a codex from the <a href="https://github.com/rossputin/protean-beers" target="_blank">Protean Beers sample API project</a>.
         </p>
@@ -288,7 +288,6 @@
         :get {
           :doc "Get an auth token"
           :rsp {
-            :success-code 200
             :body-res "access_token"
             :body {"access_token" "mytoken" "token_type" "bearer"}
           }
@@ -305,7 +304,6 @@
             :query-params {:required {"drink" "psv+drink"}}
           }
           :rsp {
-            :success-code 200
             :headers {"Content-Type" "text/plain"}
             :body "/starches/malted-grain"
           }
@@ -322,7 +320,6 @@
             :query-params {:required {"drink" "psv+drink"}}
           }
           :rsp {
-            :success-code 200
             :headers {"Content-Type" "text/plain"}
             :body "/flavourings/golding-hops"
           }
@@ -340,7 +337,7 @@
               "flavouring" "/flavourings/psv+"
             }
           }
-          :rsp {:success-code 200 :body "/drinks/ale"}
+          :rsp {:body "/drinks/ale"}
         }
       }
     }
