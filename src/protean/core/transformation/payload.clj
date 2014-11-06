@@ -63,7 +63,7 @@
               (assoc-item entry :headers :headers corpus)
               (assoc-item entry :query-params :query-params corpus)
               (assoc-item entry :form-params :form-params corpus)
-              (assoc-item entry :format :format corpus)
+              (assoc-item entry :vars :vars corpus)
               (body entry)
               (codex-rsp entry)
               (postprocess entry))))

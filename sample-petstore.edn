@@ -30,7 +30,7 @@
         :doc "Updates a pet in the store with form data"
         :req {
           :query-params {:required {"name" "psv+name" "status" "psv+status"}}
-          :format {
+          :vars {
             "pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be updated"}
             "name" {:type :String, :doc "Updated name of the pet"}
             "status" {:type "(available|pending|sold)", :doc "Updated status of the pet"}
@@ -42,7 +42,7 @@
       :get {
         :doc "Find a pet by ID"
         :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be fetched"}}
+          :vars {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be fetched"}}
         }
         :errors {:status [400 404]}
       }
@@ -50,14 +50,14 @@
       :delete {
         :doc "Deletes a pet"
         :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be deleted"}}
+          :vars {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be deleted"}}
         }
       }
 
       :patch {
         :doc "Partial updates to a pet"
         :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be patched"}}
+          :vars {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be patched"}}
         }
       }
 
