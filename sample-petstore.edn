@@ -6,6 +6,8 @@
 ;;
 
 {
+  :includes [ "defaults.edn" ]
+
   "petstore" {
 
     "api/pet" {
