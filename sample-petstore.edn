@@ -1,0 +1,92 @@
+;; Sample API codex
+;;
+;; We call Protean Project/Service configurations codices
+;; The sample codex illustrates most if not all of what is possible
+;; with Protean
+;;
+
+{
+  :petstore {
+    :paths {
+
+      "api/pet" {
+
+        :put {
+          :doc "Update an existing pet"
+          :errors {:status [400 404 405]} ; Need to document the error codes
+        }
+
+        :post {
+          :doc "Add a new pet to the store"
+          :errors {:status [405]}
+        }
+
+      }
+  
+      "api/pet/*" {
+
+        :post {
+          :doc "Updates a pet in the store with form data"
+          :req {
+            :query-params {:required {"name" "psv+name" "status" "psv+status"}}
+            :format {
+              "pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be updated"}
+              "name" {:type :String, :doc "Updated name of the pet"}
+              "status" {:type "(available|pending|sold)", :doc "Updated status of the pet"}
+            }
+          }
+          :errors {:status [405]}
+        }
+
+        :get {
+          :doc "Find a pet by ID"
+          :req {
+            :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be fetched"}}
+          }
+          :errors {:status [400 404]}
+        }
+
+        :delete {
+          :doc "Deletes a pet"
+          :req {
+            :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "Pet id to delete"}}
+          }
+        }
+
+        :patch {
+          :doc "parital updates to a pet"
+          :req {
+            :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be patched"}}
+          }
+        }
+
+      }
+
+      "api/pet/findByStatus" {
+        :get {
+          :doc "Finds pet by status"
+          :query-params {:optional {"status" {:type "(available|pending|sold)" :doc "Status values that need to be considered for filter. available is default."}}}
+        }
+      }
+
+      "api/pet/findByTags" {
+        :get {
+          :doc "Finds Pets by tags"
+          :query-params {:required {"tags" {:type :String :doc "Tags to filter by"}}}
+        }
+      }
+
+      "api/pet/uploadImage" {
+        :post {
+          :doc "uploads an image"
+          :query-params {:required {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
+;            {"file" {:type :File}} ; Binary?; Multipart?
+          }
+        }
+      }
+    }
+
+ ;   :errors {:status [500 503] :probability 25}
+ ;   :rsp {:headers {"X-Powered-By" "Protean"}}
+  }
+}

@@ -6,9 +6,11 @@
 ;; Configuration
 ;; =============================================================================
 
+(defonce host (or (env :hostname) (.getCanonicalHostName (java.net.InetAddress/getLocalHost))))
+
 (defn sim-port [] (or (env :sim-port) "3000"))
 
-(defn admin-port []  (or (env :admin-port) "3001"))
+(defn admin-port [] (or (env :admin-port) "3001"))
 
 (defn codex-dir []  (or (env :codex-dir) (d/pwd)))
 

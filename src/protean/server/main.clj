@@ -14,7 +14,7 @@
             [protean.core.transformation.coerce :as co]
             [protean.server.docs :as pdoc])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
-  (:import java.io.File java.net.InetAddress)
+  (:import java.io.File)
   (:gen-class))
 
 ;; =============================================================================
@@ -25,16 +25,14 @@
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
 (timbre/set-level! :info)
 
-(defonce host (.getCanonicalHostName (InetAddress/getLocalHost)))
-
 (defn files [c-dir]
-  (-> (remove #(.isDirectory %) (file-seq (file c-dir)))
+  (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
       (do/filter-exts ["edn"])))
 
 (defn- build-services
   "Load services from disk."
   [c-dir]
-  (let [fs (remove #(= (.getName (.getParentFile %)) "data") (files c-dir))]
+  (let [fs (files c-dir)]
     (doseq [f fs]
       (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
   (keys @pipe/state))
@@ -61,7 +59,7 @@
     (pipe/put-proj-error-prob id prob))
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
-  (GET    "/services/:id/usage" [id] (pipe/service-usage id host))
+  (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
   (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
   (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
   (GET    "/status" [] (pipe/status)))
@@ -91,4 +89,5 @@
     (info "Asset directory : " (c/asset-dir))
     (info (str "Services loaded : " (build-services c-dir)))
     (server (co/int api-port) (co/int (c/admin-port)))
-    (info (str "Protean has started"))))
+    (info (str "Protean has started"
+      " : api-port " api-port ", admin-port " (c/admin-port)))))

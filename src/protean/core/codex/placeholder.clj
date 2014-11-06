@@ -2,10 +2,9 @@
   "Placeholder functionality, swapping codex examples, generating."
   (:refer-clojure :exclude [long int])
   (:require [clojure.string :as stg]
-            [clojure.data.generators :as gen]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c])
-  (:import java.lang.Math java.util.Random))
+  (:import java.lang.Math java.util.Random java.util.UUID))
 
 ;; =============================================================================
 ;; Helper functions
@@ -16,20 +15,25 @@
 
 (def rnd (Random.))
 
-(defn- int
-  "Generate a random int.
-   For some reason generators int does not return an int."
-  [] (.intValue (gen/uniform Integer/MIN_VALUE (inc Integer/MAX_VALUE))))
-
-(defn- int+ [] (Math/abs (.nextInt rnd)))
-
-(defn- long+ [] (Math/abs (.nextLong rnd)))
+(defn- generate [regex]
+  (let [generator (org.databene.benerator.primitive.RegexStringGenerator. regex)]
+    (.init generator (org.databene.benerator.engine.DefaultBeneratorContext.))
+    (.generate generator)))
 
 (defn- g-val [v]
-  (case v
-    "Int" (int+)
-    "Long" (long+)
-    "String" (gen/string)))
+  (let [date "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))"
+        time "([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+        timezone "(Z|\\+[0-1][0-9]:[03]0)"]
+    (case v
+      :Int (Math/abs (.nextInt rnd))
+      :Long (Math/abs (.nextLong rnd))
+      :Double (.nextDouble rnd)
+      :Boolean (.nextBoolean rnd)
+      :Uuid (.toString (UUID/randomUUID))
+      :Date (generate date)
+      :DateTime (generate (str date "T" time timezone))
+      :String (generate "[ -~]*") ; all ASCII chars between space and tilde are the printable chars.
+    (generate v))))
 
 (defn- qp? [type] (= type :query-params))
 
@@ -84,7 +88,7 @@
   [k x] (if (= k :body) (c/clj x) x))
 
 (defn holder-swap-uri [v [method uri mp :as payload]]
-  (if-let [sv (get-in mp [:gen v :type])]
+  (if-let [sv (get-in mp [:format v :type])]
     (let [gv (g-val sv)
           raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
           ph-map (update-in raw-map [:codex :ph-swaps] vec)]
@@ -95,14 +99,14 @@
   "Swap codex example values in for placeholders."
   [k v m]
   (if (holder? v)
-    (if-let [x (get-in m [:gen k :examples])] [(first x) "exp"] [v "idn"])
+    (if-let [x (get-in m [:format k :examples])] [(first x) "exp"] [v "idn"])
     [v "idn"]))
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
   [k v mp]
   (if (holder? v)
-    (if-let [x (get-in mp [:gen k :type])] [(g-val x) "gen"] [v "idn"])
+    (if-let [x (get-in mp [:format k :type])] [(g-val x) "format"] [v "idn"])
     [v "idn"]))
 
 (defn- json-qp? [m p]
@@ -116,7 +120,7 @@
 
 (defn- mapify-swapped [raw m p type ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
-        v-res (if (and (qp? type) (= ph-op :gen) (json-qp? m p)) (c/js mapified) mapified)]
+        v-res (if (and (qp? type) (= ph-op :format) (json-qp? m p)) (c/js mapified) mapified)]
     (if (json-qp? m p)
       {(first (keys p)) v-res}
       v-res)))

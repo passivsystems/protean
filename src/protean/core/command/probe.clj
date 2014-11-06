@@ -60,12 +60,17 @@
       :else (co/pretty-js b))
     "N/A"))
 
-(defn prep-docs [{:keys [directory]}]
-  (if (d/exists-dir? directory)
-    (do (d/delete-directory (.getParent (file directory)))
+(defn- bomb [msg]
+  (println (aa/red msg))
+    (System/exit 0))
 
-        (.mkdirs (file directory)))
-    (.mkdirs (file directory))))
+(defn prep-docs [{:keys [directory]}]
+  (if (not directory)
+    (bomb "please provide \"directory\" config to generate docs")
+    (if (d/exists-dir? directory)
+      (do (d/delete-directory (file directory))
+          (.mkdirs (file directory)))
+      (.mkdirs (file directory)))))
 
 
 ;; =============================================================================
@@ -95,22 +100,22 @@
    Directory is the data directory root.
    Resource is the current endpoint (parent of params).
    Params is the gen information for a resources params."
-  (let [parent-dir (.getParent (File. directory))]
-    (.mkdirs (File. (str parent-dir "/" resource "/params/")))
+  (let [target-dir (file directory)]
+    (.mkdirs (File. (str target-dir "/" resource "/params/")))
     (doseq [[k v] params]
       (let [type (if (= (:type v) "Range") (str (:type v) " - " (:range v)) (:type v))
             qm {:title (name-param k) :type type :doc (:doc v)}]
-        (spit (str parent-dir "/" resource "/params/" (UUID/randomUUID) ".edn") (pr-str qm))))))
+        (spit (str target-dir "/" resource "/params/" (UUID/randomUUID) ".edn") (pr-str qm))))))
 
 (defn- doc-hdrs [directory resource hdrs]
   "Doc response headers for a given node.
    Directory is the data directory root.
    Resource is the current endpoint (parent of headers).
    hdrs is the codex rsp headers."
-  (let [parent-dir (.getParent (File. directory))]
-    (.mkdirs (File. (str parent-dir "/" resource "/headers/")))
+  (let [target-dir (file directory)]
+    (.mkdirs (File. (str target-dir "/" resource "/headers/")))
     (doseq [[k v] hdrs]
-      (spit (str parent-dir "/" resource "/headers/" (UUID/randomUUID) ".edn")
+      (spit (str target-dir "/" resource "/headers/" (UUID/randomUUID) ".edn")
             (pr-str {:title k :value v})))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
@@ -130,7 +135,7 @@
                          :curl (cod/url-decode (c/curly-> e))
                          :sample-response body)]
          (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name)))
-         (doc-params directory id (:gen e))
+         (doc-params directory id (:format e))
          (doc-hdrs directory id (get-in e [:codex :headers])))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
@@ -197,7 +202,8 @@
 
 (defmethod analyse :doc [_ corpus codices result]
   (hlg "analysing probe data")
-  (println "documentation has been produced at the location you specified"))
+  (println "documentation has been produced at" (.getAbsolutePath (file (:directory corpus))))
+  (println "Now you can produce HTML via Silk.")) ; TODO can we integrate with Silk directly?
 
 (defn- get? [m] (= m 'client/get))
 
