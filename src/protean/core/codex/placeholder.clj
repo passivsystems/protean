@@ -32,7 +32,7 @@
       :Uuid (.toString (UUID/randomUUID))
       :Date (generate date)
       :DateTime (generate (str date "T" time timezone))
-      :String (generate "[ -~]*") ; all ASCII chars between space and tilde are the printable chars.
+      :String (generate "[ -~]*") ; space - tilde represents printable ASCII
     (generate v))))
 
 (defn- qp? [type] (= type :query-params))
