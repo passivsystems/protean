@@ -4,13 +4,11 @@
 
 {
   "sample" {
-    :paths {
-      "simple" {
-        :get {
-          :rsp {
-            :body {"t1key" "t1val"}
-            :errors {:status [500] :probability 100}
-          }
+    "simple" {
+      :get {
+        :rsp {
+          :body {"t1key" "t1val"}
+          :errors {:status [500] :probability 100}
         }
       }
     }

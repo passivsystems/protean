@@ -18,7 +18,8 @@
       :spec {:doc Simplest example of a resource - doc is optional}
     }
   "
-  (:require [clojure.string :as stg]))
+  (:require [clojure.string :as stg]
+            [protean.core.codex.document :as d]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -34,12 +35,12 @@
 (defn- combi-paths [codices combi]
   (let [svc (first combi)
         paths-loc (rest combi)
-        paths (map #(hash-map % (get-in codices [svc :paths %])) paths-loc)
+        paths (map #(hash-map % (get-in codices [svc %])) paths-loc)
         codex (get-in codices [svc :req])]
     (map #(methods-range svc % codex) paths)))
 
 (defn- svc-paths [codices svc]
-  (let [paths-raw (get-in codices [svc :paths])
+  (let [paths-raw (d/custom-entries (get-in codices [svc]))
         paths (map #(hash-map (first %) (last %)) paths-raw)
         codex (get-in codices [svc :req])] ; TODO review this - codex is always nil?
     (map #(methods-range svc % codex) paths)))
@@ -56,7 +57,6 @@
         svc-paths (proc-group codices (first groups) svc-paths (first groups))]
     (concat combi-paths svc-paths)))
 
-
 ;; =============================================================================
 ;; Path calculation functions
 ;; =============================================================================
@@ -64,4 +64,6 @@
 (defn paths->
   "Get all service paths or specified combinations of service/path | service."
   [codices locs]
-  (locs-range codices locs))
+  (def res (locs-range codices locs))
+  (if (empty? res) (println "WARNING locs" locs "did not resolve to any path"))
+  res)

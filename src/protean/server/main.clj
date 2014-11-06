@@ -37,7 +37,7 @@
   (let [fs (files c-dir)]
     (doseq [f fs]
       (reset! pipe/state (merge @pipe/state (r/read-codex f)))))
-  (d/locs @pipe/state))
+  (d/custom-keys @pipe/state))
 
 
 ;; =============================================================================

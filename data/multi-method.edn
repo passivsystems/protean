@@ -4,12 +4,10 @@
 
 {
   "sample" {
-    :paths {
-      "homes/1" {
-        :get {:doc "Test get"}
-        :put {:doc "Test put"}
-        :delete {:doc "Test delete"}
-      }
+    "homes/1" {
+      :get {:doc "Test get"}
+      :put {:doc "Test put"}
+      :delete {:doc "Test delete"}
     }
   }
 }

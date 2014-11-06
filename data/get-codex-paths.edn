@@ -4,9 +4,7 @@
 
 {
   "sample" {
-    :paths {
-      "simple" {:get {}}
-      "test" {:get {}}
-    }
+    "simple" {:get {}}
+    "test" {:get {}}
   }
 }

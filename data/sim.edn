@@ -4,79 +4,78 @@
 
 {
   "sim" {
-    :paths {
-      "path1" {
-        :get {
-          :rsp {
-            :body {
-              "k1" "v1"
-              "k2" "v2"
-            }
+
+    "path1" {
+      :get {
+        :rsp {
+          :body {
+            "k1" "v1"
+            "k2" "v2"
           }
         }
       }
+    }
 
-      "path-txt" {
-        :get {
-          :rsp {
-            :headers {"Content-Type" "text/plain"}
-            :body "plain text response"
+    "path-txt" {
+      :get {
+        :rsp {
+          :headers {"Content-Type" "text/plain"}
+          :body "plain text response"
+        }
+      }
+    }
+
+    "path-xml" {
+      :get {
+        :rsp {
+          :headers {"Content-Type" "text/xml"}
+          :body [:parent [:child {:type "xml"}]]
+        }
+      }
+    }
+
+    "status-override" {
+      :get {
+        :rsp {:status 204}
+      }
+    }
+
+    "wild/*" {
+      :get {
+        :rsp {
+          :body {
+            "k1" "v1"
+            "k2" "v2"
           }
         }
       }
+    }
 
-      "path-xml" {
-        :get {
-          :rsp {
-            :headers {"Content-Type" "text/xml"}
-            :body [:parent [:child {:type "xml"}]]
+    "full/query-params" {
+      :get {
+        :req {
+          :headers {"Authorization" "token"}
+          :query-params {:required {"blurb" "flibble"}}
+        }
+        :rsp {
+          :body {
+            "k1" "v1"
+            "k2" "v2"
           }
         }
       }
+    }
 
-      "status-override" {
-        :get {
-          :rsp {:status 204}
+    "full/form-params" {
+      :post {
+        :req {
+          :headers {"Authorization" "token"}
+          :form-params {"k1" "v1"}
         }
-      }
-
-      "wild/*" {
-        :get {
-          :rsp {
-            :body {
-              "k1" "v1"
-              "k2" "v2"
-            }
-          }
-        }
-      }
-
-      "full/query-params" {
-        :get {
-          :req {
-            :headers {"Authorization" "token"}
-            :query-params {:required {"blurb" "flibble"}}
-          }
-          :rsp {
-            :body {
-              "k1" "v1"
-              "k2" "v2"
-            }
-          }
-        }
-      }
-
-      "full/form-params" {
-        :post {
-          :req {
-            :headers {"Authorization" "token"}
-            :form-params {"k1" "v1"}
-          }
-          :rsp {
-            :body {
-              "k1" "v1"
-              "k2" "v2"
-            }
+        :rsp {
+          :body {
+            "k1" "v1"
+            "k2" "v2"
           }
         }
       }

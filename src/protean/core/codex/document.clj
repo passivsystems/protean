@@ -1,7 +1,13 @@
 (ns protean.core.codex.document
   (:require [protean.core.protocol.http :as h]))
 
-(defn locs [c]  (seq (remove keyword? (keys c))))
+(defn custom-keys
+  "returns only keys which are not keywords"
+  [c]  (seq (remove keyword? (keys c))))
+
+(defn custom-entries
+  "returns only entries where the keys are not keywords"
+  [c] (remove #(keyword? (key %)) c))
 
 ;; =============================================================================
 ;; Codex request

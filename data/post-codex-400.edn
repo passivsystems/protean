@@ -4,11 +4,9 @@
 
 {
   "sample" {
-    :paths {
-      "simple" {
-        :post {
-          :req {:body {"k1" "v1" "k2" "v2"}}
-        }
+    "simple" {
+      :post {
+        :req {:body {"k1" "v1" "k2" "v2"}}
       }
     }
   }
