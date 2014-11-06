@@ -39,7 +39,7 @@
 (defn- service-path? [codices srv k]
   (or (get-in codices [srv k])
       (get-in codices [srv (wild-path? k
-    (filter #(.contains % "*") (keys (get-in codices [srv]))))])))
+    (filter #(.contains % "*") (d/custom-keys (get-in codices [srv]))))])))
 
 (defn req-> [{:keys [request-method headers query-params form-params body]}]
   {:method request-method :hdrs headers :q-params query-params
