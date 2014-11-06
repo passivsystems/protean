@@ -69,8 +69,8 @@
     (bomb "please provide \"directory\" config to generate docs")
     (if (d/exists-dir? directory)
       (do (d/delete-directory (file directory))
-          (.mkdirs (file directory)))
-      (.mkdirs (file directory)))))
+          (.mkdirs (file (str directory "/api"))))
+      (.mkdirs (file (str directory "/api"))))))
 
 
 ;; =============================================================================
@@ -134,7 +134,7 @@
                          :error-codes (str errors)
                          :curl (cod/url-decode (c/curly-> e))
                          :sample-response body)]
-         (spit (str directory "/" id ".edn") (pr-str (update-in full [:method] name)))
+         (spit (str directory "/api/" id ".edn") (pr-str (update-in full [:method] name)))
          (doc-params directory id (:format e))
          (doc-hdrs directory id (get-in e [:codex :headers])))))])
 
