@@ -3,7 +3,7 @@
 ;; Test more complex path structures
 
 {
-  :sample {
+  "sample" {
     :paths {
       "v/1/users/*/items/*/status" {
         :put {:rsp {:status 200}}

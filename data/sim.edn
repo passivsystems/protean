@@ -3,7 +3,7 @@
 ;; Illustrates response body etc
 
 {
-  :sim {
+  "sim" {
     :paths {
       "path1" {
         :get {

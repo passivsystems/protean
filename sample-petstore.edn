@@ -6,7 +6,7 @@
 ;;
 
 {
-  :petstore {
+  "petstore" {
     :paths {
 
       "api/pet" {
@@ -49,12 +49,12 @@
         :delete {
           :doc "Deletes a pet"
           :req {
-            :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "Pet id to delete"}}
+            :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be deleted"}}
           }
         }
 
         :patch {
-          :doc "parital updates to a pet"
+          :doc "Partial updates to a pet"
           :req {
             :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be patched"}}
           }
@@ -64,14 +64,14 @@
 
       "api/pet/findByStatus" {
         :get {
-          :doc "Finds pet by status"
+          :doc "Finds pets by status"
           :query-params {:optional {"status" {:type "(available|pending|sold)" :doc "Status values that need to be considered for filter. available is default."}}}
         }
       }
 
       "api/pet/findByTags" {
         :get {
-          :doc "Finds Pets by tags"
+          :doc "Finds pets by tags"
           :query-params {:required {"tags" {:type :String :doc "Tags to filter by"}}}
         }
       }
@@ -85,8 +85,5 @@
         }
       }
     }
-
- ;   :errors {:status [500 503] :probability 25}
- ;   :rsp {:headers {"X-Powered-By" "Protean"}}
   }
 }

@@ -3,7 +3,7 @@
 ;; Demonstrates handling multiple methods for a given uri
 
 {
-  :sample {
+  "sample" {
     :paths {
       "homes/1" {
         :get {:doc "Test get"}

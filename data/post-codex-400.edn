@@ -3,7 +3,7 @@
 ;; Represents the simplest possible example of a codex service/path
 
 {
-  :sample {
+  "sample" {
     :paths {
       "simple" {
         :post {

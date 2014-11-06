@@ -35,7 +35,7 @@
   [f & handlers]
   (reduce (fn [handled h] (partial h handled)) f (reverse handlers)))
 
-(defn handle-proj-del-error
+(defn handle-service-del-error
   [f & args]
   (try
     (apply f args)
@@ -65,17 +65,17 @@
 
 (defn services []  (assoc json :body (co/js (sort (keys @state)))))
 
-(defn service [id] (assoc json :body (co/js ((keyword id) @state))))
+(defn service [id] (assoc json :body (co/js (get-in @state [id]))))
 
 (defn service-usage [id host]
   (assoc json :body (co/js (txc/curly-analysis-> host (c/sim-port) @state id))))
 
-(defn del-proj [id]
-  (reset! state (dissoc @state (keyword id)))
-  (delete-file (str id ".edn"))
+(defn del-service [svc]
+  (reset! state (ib/dissoc-in @state [svc]))
+  (delete-file (str svc ".edn"))
   {:status 204})
 
-(def del-proj-handled (handler del-proj handle-proj-del-error))
+(def del-service-handled (handler del-service handle-service-del-error))
 
 (defn put-services [req]
   (let [file ((:params req) "file")
@@ -85,21 +85,21 @@
       (spit (str (name (key d)) ".edn") (pr-str {(key d) (val d)})))
     (services)))
 
-(defn service-errors [id]
-  (assoc json :body (co/js (get-in @state [(keyword id) :errors :status]))))
+(defn service-errors [svc]
+  (assoc json :body (co/js (get-in @state [svc :errors :status]))))
 
-(defn delete-proj-errors [service]
-  (reset! state (ib/dissoc-in @state [(keyword service) :errors :status]))
+(defn delete-service-errors [svc]
+  (reset! state (ib/dissoc-in @state [svc :errors :status]))
   {:status 204})
 
-(defn put-proj-error [proj err]
+(defn put-service-error [svc err]
   (reset! state
-    (update-in @state [(keyword proj) :errors :status] conj (co/int err)))
+    (update-in @state [svc :errors :status] conj (co/int err)))
   {:status 204})
 
-(defn put-proj-error-prob [proj prob]
+(defn put-service-error-prob [svc prob]
   (reset! state
-    (assoc-in @state [(keyword proj) :errors :probability] (co/int prob)))
+    (assoc-in @state [svc :errors :probability] (co/int prob)))
   {:status 204})
 
 

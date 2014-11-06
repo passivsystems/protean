@@ -5,7 +5,7 @@
 ;; with Protean
 
 {
-  :sample {
+  "sample" {
     :paths {
       "simple" {
         :get { :doc "A get on sample/simple - doc is optional" }

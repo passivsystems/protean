@@ -1,6 +1,8 @@
 (ns protean.core.codex.document
   (:require [protean.core.protocol.http :as h]))
 
+(defn locs [c]  (seq (remove keyword? (keys c))))
+
 ;; =============================================================================
 ;; Codex request
 ;; =============================================================================

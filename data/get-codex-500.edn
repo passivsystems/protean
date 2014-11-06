@@ -3,7 +3,7 @@
 ;; Demonstrates a guaranteed 500 response
 
 {
-  :sample {
+  "sample" {
     :paths {
       "simple" {
         :get {

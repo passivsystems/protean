@@ -33,7 +33,7 @@
 
 (defn- analyse
   "Analyse a probe data."
-  [{:keys [locs] :as corpus} codices results command]
+  [corpus codices results command]
   (pr/analyse command corpus codices results))
 
 (defn visit

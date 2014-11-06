@@ -32,16 +32,17 @@
   (map #(encode svc (first (keys paths)) (key %) (val %) codex) (first (vals paths))))
 
 (defn- combi-paths [codices combi]
-  (let [svc (keyword (first combi)) paths-loc (rest combi)
+  (let [svc (first combi)
+        paths-loc (rest combi)
         paths (map #(hash-map % (get-in codices [svc :paths %])) paths-loc)
-        codex (:req (svc codices))]
+        codex (get-in codices [svc :req])]
     (map #(methods-range svc % codex) paths)))
 
 (defn- svc-paths [codices svc]
-  (let [paths-raw (get-in codices [(keyword svc) :paths])
+  (let [paths-raw (get-in codices [svc :paths])
         paths (map #(hash-map (first %) (last %)) paths-raw)
-        codex (:req ((keyword svc) codices))]
-    (map #(methods-range (keyword svc) % codex) paths)))
+        codex (get-in codices [svc :req])] ; TODO review this - codex is always nil?
+    (map #(methods-range svc % codex) paths)))
 
 (defn- proc-group [codices group path-fn coll]
   (if (seq group)

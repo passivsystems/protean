@@ -13,7 +13,8 @@
             [protean.server.pipeline :as pipe]
             [protean.core.transformation.coerce :as co]
             [protean.server.docs :as pdoc]
-            [protean.core.codex.reader :as r])
+            [protean.core.codex.reader :as r]
+            [protean.core.codex.document :as d])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File)
   (:gen-class))
@@ -36,7 +37,7 @@
   (let [fs (files c-dir)]
     (doseq [f fs]
       (reset! pipe/state (merge @pipe/state (r/read-codex f)))))
-  (keys @pipe/state))
+  (d/locs @pipe/state))
 
 
 ;; =============================================================================
@@ -52,16 +53,16 @@
   (GET    "/documentation" [] (pipe/service-documentation))
   (GET    "/roadmap" [] (pipe/service-road))
   (GET    "/services/:id/errors" [id] (pipe/service-errors id))
-  (DELETE "/services/:id/errors" [id] (pipe/delete-proj-errors id))
+  (DELETE "/services/:id/errors" [id] (pipe/delete-service-errors id))
   (PUT    "/services/:id/errors/status/:err" [id err]
-    (pipe/put-proj-error id err))
+    (pipe/put-service-error id err))
   (PUT    "/services/:id/errors/probability/:prob" [id prob]
-    (pipe/put-proj-error-prob id prob))
+    (pipe/put-service-error-prob id prob))
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
   (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
   (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
-  (DELETE "/services/:id" [id] (pipe/del-proj-handled id))
+  (DELETE "/services/:id" [id] (pipe/del-service-handled id))
   (GET    "/status" [] (pipe/status)))
 
 (defroutes api-routes

@@ -3,7 +3,7 @@
 ;; Enables testing over the 'service' locs mechanism
 
 {
-  :sample {
+  "sample" {
     :paths {
       "simple" {:get {}}
       "test" {:get {}}

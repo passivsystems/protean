@@ -3,7 +3,7 @@
 ;; Illustrates response body etc
 
 {
-  :curly {
+  "curly" {
     :paths {
       "query-params" {
         :get {
