@@ -5,6 +5,7 @@
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
             [protean.config :as c]
+            [protean.core.codex.document :as d]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.sim :as txsim]
             [protean.core.transformation.coerce :as co]
@@ -63,7 +64,7 @@
 ;; services
 ;;;;;;;;;;;
 
-(defn services []  (assoc json :body (co/js (sort (keys @state)))))
+(defn services [] (assoc json :body (co/js (sort (d/custom-keys @state)))))
 
 (defn service [id] (assoc json :body (co/js (get-in @state [id]))))
 
