@@ -12,7 +12,8 @@
             [protean.config :as c]
             [protean.server.pipeline :as pipe]
             [protean.core.transformation.coerce :as co]
-            [protean.server.docs :as pdoc])
+            [protean.server.docs :as pdoc]
+            [protean.core.codex.reader :as r])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File)
   (:gen-class))
@@ -34,7 +35,7 @@
   [c-dir]
   (let [fs (files c-dir)]
     (doseq [f fs]
-      (reset! pipe/state (merge @pipe/state (edn/read-string (slurp f))))))
+      (reset! pipe/state (merge @pipe/state (r/read-codex f)))))
   (keys @pipe/state))
 
 

@@ -10,7 +10,8 @@
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.analysis :as txan]
             [protean.core.transformation.curly :as txc]
-            [protean.server.docs :as txdocs])
+            [protean.server.docs :as txdocs]
+            [protean.core.codex.reader :as r])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
@@ -78,7 +79,7 @@
 
 (defn put-services [req]
   (let [file ((:params req) "file")
-        data (edn/read-string (slurp (:tempfile file)))]
+        data (r/read-codex (:tempfile file))]
     (reset! state (merge @state data))
     (doseq [d data]
       (spit (str (name (key d)) ".edn") (pr-str {(key d) (val d)})))
