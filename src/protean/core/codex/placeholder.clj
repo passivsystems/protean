@@ -24,20 +24,24 @@
     (.init generator (DefaultBeneratorContext.))
     (.generate generator)))
 
-(defn- g-val [v]
-  (let [date "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))"
-        time "([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
-        timezone "(Z|\\+[0-1][0-9]:[03]0)"]
-    (case v
-      :Int (Math/abs (.nextInt rnd))
-      :Long (Math/abs (.nextLong rnd))
-      :Double (.nextDouble rnd)
-      :Boolean (.nextBoolean rnd)
-      :Uuid (.toString (UUID/randomUUID))
-      :Date (generate date)
-      :DateTime (generate (str date "T" time timezone))
-      :String (generate "[ -~]*") ; space - tilde represents printable ASCII
-    (generate v))))
+(defn resolve-config [tree v]
+  (println "looking up" v "in")
+  (clojure.pprint/pprint tree)
+  (let [x (first (map #(get-in % [:types v])))]
+    (println "found" x)
+    x))
+
+(defn- g-val [v tree]
+  (let [regex (resolve-config tree [:types v])]
+    (if regex
+      (generate regex)
+      (case v
+        :Int (Math/abs (.nextInt rnd))
+        :Long (Math/abs (.nextLong rnd))
+        :Double (.nextDouble rnd)
+        :Boolean (.nextBoolean rnd)
+        :Uuid (.toString (UUID/randomUUID))
+      (generate v)))))
 
 (defn- qp? [type] (= type :query-params))
 
@@ -91,9 +95,9 @@
   "Encode body items as clojure, they are Json initially."
   [k x] (if (= k :body) (c/clj x) x))
 
-(defn holder-swap-uri [v [method uri mp :as payload]]
+(defn holder-swap-uri [v [method uri mp :as payload] tree]
   (if-let [sv (get-in mp [:vars v :type])]
-    (let [gv (g-val sv)
+    (let [gv (g-val sv tree)
           raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
           ph-map (update-in raw-map [:codex :ph-swaps] vec)]
       (list method (stg/replace uri psv (str gv)) ph-map))
@@ -108,19 +112,19 @@
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
-  [k v mp]
+  [k v mp tree]
   (if (holder? v)
-    (if-let [x (get-in mp [:vars k :type])] [(g-val x) "format"] [v "idn"])
+    (if-let [x (get-in mp [:vars k :type])] [(g-val x tree) "format"] [v "idn"])
     [v "idn"]))
 
 (defn- json-qp? [m p]
   (if (empty? p) false (and (d/qp-json? m) (map? (first (vals p))))))
 
-(defn- swap-qp [swp-fn m p]
+(defn- swap-qp [swp-fn m p t]
   (let [c (if (json-qp? m p) (first (vals p)) p)]
-    (for [[k v] c] [k (swp-fn k v m)])))
+    (for [[k v] c] [k (swp-fn k v m t)])))
 
-(defn- swap-body [swp-fn m p] (for [[k v] p] [k (swp-fn k v m)]))
+(defn- swap-body [swp-fn m p t] (for [[k v] p] [k (swp-fn k v m t)]))
 
 (defn- mapify-swapped [raw m p type ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
@@ -131,9 +135,9 @@
 
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."
-  [ph swp-fn m type ph-op]
+  [ph swp-fn m type ph-op t]
   (let [p (if (vector? ph) (first ph) ph)
-        raw (if (qp? type) (swap-qp swp-fn m p) (swap-body swp-fn m p))
+        raw (if (qp? type) (swap-qp swp-fn m p t) (swap-body swp-fn m p t))
         swapped (mapify-swapped raw m p type ph-op)
         sts (for [[k [sval stype :as v]] raw] stype)
         swap-type (cond

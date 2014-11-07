@@ -6,7 +6,14 @@
 ;;
 
 {
-  :includes [ "defaults.edn" ]
+  :rsp {:headers {"X-Powered-By" "Protean"}}
+  :types {
+    :String "[ -~]*" ; all ASCII chars between space and tilde are the printable chars.
+    :Date "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))"
+    :Time "([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+    :DateTime "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](Z|\\+[0-1][0-9]:[03]0)"
+    :Ip "((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+  }
 
   "petstore" {
 
@@ -26,12 +33,16 @@
   
     "api/pet/*" {
 
+      :types {
+        :PetId "[0-9a-zA-Z]{3,7}"
+      }
+
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
           :query-params {:required {"name" "psv+name" "status" "psv+status"}}
           :vars {
-            "pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be updated"}
+            "pet/psv+" {:type :PetId :doc "ID of pet that needs to be updated"}
             "name" {:type :String, :doc "Updated name of the pet"}
             "status" {:type "(available|pending|sold)", :doc "Updated status of the pet"}
           }

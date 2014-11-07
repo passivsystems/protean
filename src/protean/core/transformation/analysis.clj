@@ -66,7 +66,7 @@
      :headers (get-in resource [:spec :rsp :headers])}))
 
 (defn analyse-> [resource host port]
-  (->> (method-> resource)
+  (let [res (->> (method-> resource)
        (assoc-tx-> resource :headers :headers)
        (assoc-tx-> resource :form-params :form-params)
        (assoc-tx-> resource :body :body-keys)
@@ -75,7 +75,8 @@
        (assoc-tx-> resource :query-params :query-params)
        (doc-> resource)
        (desc-> resource)
-       (codex-rsp-> resource)))
+       (codex-rsp-> resource))] ;TODO do we need to transform the resource into payload now we have made :tree available to look things up from?
+    (assoc res :tree (:tree resource)))) ; TODO for now preserve :tree as an alternative for looking things up in..
 
 
 ;; =============================================================================
