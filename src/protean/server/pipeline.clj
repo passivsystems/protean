@@ -5,12 +5,14 @@
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
             [protean.config :as c]
+            [protean.core.codex.document :as d]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.sim :as txsim]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.analysis :as txan]
             [protean.core.transformation.curly :as txc]
-            [protean.server.docs :as txdocs])
+            [protean.server.docs :as txdocs]
+            [protean.core.codex.reader :as r])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
@@ -34,7 +36,7 @@
   [f & handlers]
   (reduce (fn [handled h] (partial h handled)) f (reverse handlers)))
 
-(defn handle-proj-del-error
+(defn handle-service-del-error
   [f & args]
   (try
     (apply f args)
@@ -62,43 +64,43 @@
 ;; services
 ;;;;;;;;;;;
 
-(defn services []  (assoc json :body (co/js (sort (keys @state)))))
+(defn services [] (assoc json :body (co/js (sort (d/custom-keys @state)))))
 
-(defn service [id] (assoc json :body (co/js ((keyword id) @state))))
+(defn service [id] (assoc json :body (co/js (get-in @state [id]))))
 
 (defn service-usage [id host]
   (assoc json :body (co/js (txc/curly-analysis-> host (c/sim-port) @state id))))
 
-(defn del-proj [id]
-  (reset! state (dissoc @state (keyword id)))
-  (delete-file (str id ".edn"))
+(defn del-service [svc]
+  (reset! state (ib/dissoc-in @state [svc]))
+  (delete-file (str svc ".edn"))
   {:status 204})
 
-(def del-proj-handled (handler del-proj handle-proj-del-error))
+(def del-service-handled (handler del-service handle-service-del-error))
 
 (defn put-services [req]
   (let [file ((:params req) "file")
-        data (edn/read-string (slurp (:tempfile file)))]
+        data (r/read-codex (:tempfile file))]
     (reset! state (merge @state data))
     (doseq [d data]
       (spit (str (name (key d)) ".edn") (pr-str {(key d) (val d)})))
     (services)))
 
-(defn service-errors [id]
-  (assoc json :body (co/js (get-in @state [(keyword id) :errors :status]))))
+(defn service-errors [svc]
+  (assoc json :body (co/js (get-in @state [svc :errors :status]))))
 
-(defn delete-proj-errors [service]
-  (reset! state (ib/dissoc-in @state [(keyword service) :errors :status]))
+(defn delete-service-errors [svc]
+  (reset! state (ib/dissoc-in @state [svc :errors :status]))
   {:status 204})
 
-(defn put-proj-error [proj err]
+(defn put-service-error [svc err]
   (reset! state
-    (update-in @state [(keyword proj) :errors :status] conj (co/int err)))
+    (update-in @state [svc :errors :status] conj (co/int err)))
   {:status 204})
 
-(defn put-proj-error-prob [proj prob]
+(defn put-service-error-prob [svc prob]
   (reset! state
-    (assoc-in @state [(keyword proj) :errors :probability] (co/int prob)))
+    (assoc-in @state [svc :errors :probability] (co/int prob)))
   {:status 204})
 
 

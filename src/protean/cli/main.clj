@@ -3,11 +3,12 @@
   (:require [clojure.string :as s]
             [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
-  	        [clojure.tools.cli :refer [parse-opts]]
+            [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
             [protean.cli.interface :as i]
             [protean.core.transformation.coerce :as c]
-            [protean.core.command.bridge :as b])
+            [protean.core.command.bridge :as b]
+            [protean.core.codex.reader :as r])
   (:use protean.cli.simadmin)
   (:import java.net.URI)
   (:gen-class))
@@ -95,7 +96,7 @@
   ; TODO fail if b has no commands?
   (let [b (sane-corpus (c/clj body))]
     (println (aa/bold-green "Exploring quadrant..."))
-    (let [codices (edn/read-string (slurp file))]
+    (let [codices (r/read-codex file)]
       (b/visit b codices)
       (println (aa/bold-green "...finished exploring quadrant")))))
 

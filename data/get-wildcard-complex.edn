@@ -3,15 +3,13 @@
 ;; Test more complex path structures
 
 {
-  :sample {
-    :paths {
-      "v/1/users/*/items/*/status" {
-        :put {:rsp {:status 200}}
-      }
-
-      "v/1/users/*/items/*" {:get {}}
-
-      "v/1/users/*/items" {:post {}}
+  "sample" {
+    "v/1/users/*/items/*/status" {
+      :put {:rsp {:status 200}}
     }
+
+    "v/1/users/*/items/*" {:get {}}
+
+    "v/1/users/*/items" {:post {}}
   }
 }

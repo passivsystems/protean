@@ -2,4 +2,4 @@
 ;;
 ;; Represents the simplest possible example of a codex service/path
 
-{:sample {:paths {"simple" {:get {}}}}}
+{"sample" {"simple" {:get {}}}}

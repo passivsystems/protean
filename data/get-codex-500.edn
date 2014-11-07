@@ -3,14 +3,12 @@
 ;; Demonstrates a guaranteed 500 response
 
 {
-  :sample {
-    :paths {
-      "simple" {
-        :get {
-          :rsp {
-            :body {"t1key" "t1val"}
-            :errors {:status [500] :probability 100}
-          }
+  "sample" {
+    "simple" {
+      :get {
+        :rsp {
+          :body {"t1key" "t1val"}
+          :errors {:status [500] :probability 100}
         }
       }
     }

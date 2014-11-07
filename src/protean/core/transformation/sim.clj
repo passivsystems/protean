@@ -36,10 +36,10 @@
       (first x)
       nil)))
 
-(defn- service-path? [codices proj k]
-  (or (get-in codices [proj :paths k])
-      (get-in codices [proj :paths (wild-path? k
-    (filter #(.contains % "*") (keys (get-in codices [proj :paths]))))])))
+(defn- service-path? [codices srv k]
+  (or (get-in codices [srv k])
+      (get-in codices [srv (wild-path? k
+    (filter #(.contains % "*") (d/custom-keys (get-in codices [srv]))))])))
 
 (defn req-> [{:keys [request-method headers query-params form-params body]}]
   {:method request-method :hdrs headers :q-params query-params
@@ -57,13 +57,13 @@
         (if k (st/rename-keys hdrs {k (str k "mutated")}) hdrs))
       hdrs)))
 
-(defn- proj-2-status [{:keys [rsp]} payload]
+(defn- srv-2-status [{:keys [rsp]} payload]
   (if-let [status (:status rsp)]
     (assoc payload :status status)
     payload))
 
-(defn- err-2-status [codex proj-errs prob payload]
-  (let [estatus (or (d/err-status codex) proj-errs)
+(defn- err-2-status [codex srv-errs prob payload]
+  (let [estatus (or (d/err-status codex) srv-errs)
         eprob (or (d/err-prob codex) prob)]
     (if (and
           (and estatus (percentage? eprob))
@@ -132,14 +132,14 @@
        (verify-form req codex)
        (verify-body req codex)))
 
-(defn- status [req codex proj-errs prob]
+(defn- status [req codex srv-errs prob]
   (->> (h/status (:method req))
-       (proj-2-status codex)
+       (srv-2-status codex)
        (verify-2-status req codex)
-       (err-2-status codex proj-errs prob)))
+       (err-2-status codex srv-errs prob)))
 
-(defn- headers [codex proj-errs svc-rsp prob payload]
-  (if-let [hdrs (mod-1st-hdr codex proj-errs svc-rsp prob)]
+(defn- headers [codex srv-errs svc-rsp prob payload]
+  (if-let [hdrs (mod-1st-hdr codex srv-errs svc-rsp prob)]
     (if (err-status? payload) payload (assoc payload :headers hdrs))
     payload))
 
@@ -164,16 +164,16 @@
 ;; =============================================================================
 
 (defn sim-rsp-> [{:keys [uri] :as req} codices]
-  (let [proj (keyword (second (s/split uri #"/")))
-        k (second (s/split uri (re-pattern (str "/" (name proj) "/"))))
-        proj-errors (get (get-in codices [proj :errors]) :status)
-        svc-rsp (:rsp (proj codices))
-        prob (or (get (get-in codices [proj :errors]) :probability) 0)
+  (let [srv (second (s/split uri #"/"))
+        k (second (s/split uri (re-pattern (str "/" (name srv) "/"))))
+        srv-errors (get (get-in codices [srv :errors]) :status)
+        svc-rsp (get-in codices [srv :rsp])
+        prob (or (get (get-in codices [srv :errors]) :probability) 0)
         req (req-> req)]
-    (if-let [codex (service-path? codices proj k)]
+    (if-let [codex (service-path? codices srv k)]
       (if ((:method req) codex)
-        (->> (status req ((:method req) codex) proj-errors prob)
-             (headers ((:method req) codex) proj-errors svc-rsp prob)
+        (->> (status req ((:method req) codex) srv-errors prob)
+             (headers ((:method req) codex) srv-errors svc-rsp prob)
              (body ((:method req) codex)))
         {:status 405})
       {:status 404})))

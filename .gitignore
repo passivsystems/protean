@@ -11,3 +11,5 @@ pom.xml.asc
 *.log
 /*.edn
 !sample-codex.edn
+!sample-petstore.edn
+!defaults.edn

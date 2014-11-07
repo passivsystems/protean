@@ -3,13 +3,11 @@
 ;; Demonstrates handling multiple methods for a given uri
 
 {
-  :sample {
-    :paths {
-      "homes/1" {
-        :get {:doc "Test get"}
-        :put {:doc "Test put"}
-        :delete {:doc "Test delete"}
-      }
+  "sample" {
+    "homes/1" {
+      :get {:doc "Test get"}
+      :put {:doc "Test put"}
+      :delete {:doc "Test delete"}
     }
   }
 }
