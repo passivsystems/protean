@@ -135,7 +135,7 @@
                          :curl (cod/url-decode (c/curly-> e))
                          :sample-response body)]
          (spit (str directory "/api/" id ".edn") (pr-str (update-in full [:method] name)))
-         (doc-params directory id (:format e))
+         (doc-params directory id (:vars e))
          (doc-hdrs directory id (get-in e [:codex :headers])))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]

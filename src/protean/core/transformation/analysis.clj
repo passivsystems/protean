@@ -70,7 +70,7 @@
        (assoc-tx-> resource :headers :headers)
        (assoc-tx-> resource :form-params :form-params)
        (assoc-tx-> resource :body :body-keys)
-       (assoc-tx-> resource :format :format)
+       (assoc-tx-> resource :vars :vars)
        (uri-> resource host port)
        (assoc-tx-> resource :query-params :query-params)
        (doc-> resource)

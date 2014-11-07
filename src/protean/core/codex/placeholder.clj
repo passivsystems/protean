@@ -92,7 +92,7 @@
   [k x] (if (= k :body) (c/clj x) x))
 
 (defn holder-swap-uri [v [method uri mp :as payload]]
-  (if-let [sv (get-in mp [:format v :type])]
+  (if-let [sv (get-in mp [:vars v :type])]
     (let [gv (g-val sv)
           raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
           ph-map (update-in raw-map [:codex :ph-swaps] vec)]
@@ -103,14 +103,14 @@
   "Swap codex example values in for placeholders."
   [k v m]
   (if (holder? v)
-    (if-let [x (get-in m [:format k :examples])] [(first x) "exp"] [v "idn"])
+    (if-let [x (get-in m [:vars k :examples])] [(first x) "exp"] [v "idn"])
     [v "idn"]))
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
   [k v mp]
   (if (holder? v)
-    (if-let [x (get-in mp [:format k :type])] [(g-val x) "format"] [v "idn"])
+    (if-let [x (get-in mp [:vars k :type])] [(g-val x) "format"] [v "idn"])
     [v "idn"]))
 
 (defn- json-qp? [m p]
@@ -124,7 +124,7 @@
 
 (defn- mapify-swapped [raw m p type ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
-        v-res (if (and (qp? type) (= ph-op :format) (json-qp? m p)) (c/js mapified) mapified)]
+        v-res (if (and (qp? type) (= ph-op :vars) (json-qp? m p)) (c/js mapified) mapified)]
     (if (json-qp? m p)
       {(first (keys p)) v-res}
       v-res)))
