@@ -24,24 +24,16 @@
     (.init generator (DefaultBeneratorContext.))
     (.generate generator)))
 
-(defn resolve-config [tree v]
-  (println "looking up" v "in")
-  (clojure.pprint/pprint tree)
-  (let [x (first (map #(get-in % [:types v])))]
-    (println "found" x)
-    x))
-
 (defn- g-val [v tree]
-  (let [regex (resolve-config tree [:types v])]
-    (if regex
-      (generate regex)
-      (case v
-        :Int (Math/abs (.nextInt rnd))
-        :Long (Math/abs (.nextLong rnd))
-        :Double (.nextDouble rnd)
-        :Boolean (.nextBoolean rnd)
-        :Uuid (.toString (UUID/randomUUID))
-      (generate v)))))
+  (if-let [regex (some #(get-in % [:types v]) tree)]
+    (generate regex)
+    (case v
+      :Int (Math/abs (.nextInt rnd))
+      :Long (Math/abs (.nextLong rnd))
+      :Double (.nextDouble rnd)
+      :Boolean (.nextBoolean rnd)
+      :Uuid (.toString (UUID/randomUUID))
+    (generate v))))
 
 (defn- qp? [type] (= type :query-params))
 
@@ -105,7 +97,7 @@
 
 (defn holder-swap-exp
   "Swap codex example values in for placeholders."
-  [k v m]
+  [k v m tree]
   (if (holder? v)
     (if-let [x (get-in m [:vars k :examples])] [(first x) "exp"] [v "idn"])
     [v "idn"]))

@@ -53,18 +53,18 @@
 
 (defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
-(defn- translate [phs entry k]
+(defn- translate [phs entry k tree]
   (if phs
     (let [res
           (-> phs
-              (p/holders-swap p/holder-swap-exp entry k :exp)
-              (p/holders-swap p/holder-swap-gen entry k :vars))]
+              (p/holders-swap p/holder-swap-exp entry k :exp tree)
+              (p/holders-swap p/holder-swap-gen entry k :vars tree))]
       (if (vector? res) (first res) res))
     nil))
 
-(defn curly-query-params-> [{:keys [query-params] :as entry} payload]
+(defn curly-query-params-> [{:keys [query-params tree] :as entry} payload]
   (let [phs (:required query-params)]
-    (if-let [rp (translate phs entry :query-params)]
+    (if-let [rp (translate phs entry :query-params tree)]
       (if (empty? rp)
         (str payload "'")
         (if (d/qp-json? entry)

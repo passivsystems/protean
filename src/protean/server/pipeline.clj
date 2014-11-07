@@ -108,7 +108,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn services-docs [] (txdocs/services-template (sort (keys @state))))
+(defn services-docs []
+  (txdocs/services-template (sort (d/custom-keys @state))))
 
 (defn- html [f] (str (c/html-dir) f))
 

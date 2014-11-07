@@ -36,7 +36,7 @@
     (first (filter #(substr? % (str ns "/")) (get-in seed ["bag"])))))
 
 ; first search in first class seed items, then in the bag
-(defn- holder-swap [k v seed]
+(defn- holder-swap [k v seed tree]
   (if (p/holder? v)
     (if-let [sv (get-in seed [(last (.split v PSV-EXP))])]
       [sv :seed]
@@ -49,10 +49,10 @@
       (update-in [:codex :ph-swaps] conj (second res))
       (update-in [:codex :ph-swaps] vec)))
 
-(defn- swap-placeholders [k seed [method uri mp :as payload]]
+(defn- swap-placeholders [k seed [method uri mp options :as payload]]
   (if-let [phs (p/encode-value k (k mp))]
     (let [swap-mp (merge seed mp)
-          swapped (p/holders-swap phs holder-swap swap-mp k :seed)]
+          swapped (p/holders-swap phs holder-swap swap-mp k :seed (:tree options))]
       (list method uri (tx-payload-map k mp swapped)))
     payload))
 

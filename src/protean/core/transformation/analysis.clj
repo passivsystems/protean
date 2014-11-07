@@ -65,8 +65,11 @@
      :content-type (get-in resource [:spec :rsp :headers "Content-Type"])
      :headers (get-in resource [:spec :rsp :headers])}))
 
+(defn tree-> [{:keys [tree]} payload] (assoc payload :tree tree))
+
+ ;TODO do we need to transform the resource into payload now we have made :tree available to look things up from?
 (defn analyse-> [resource host port]
-  (let [res (->> (method-> resource)
+  (->> (method-> resource)
        (assoc-tx-> resource :headers :headers)
        (assoc-tx-> resource :form-params :form-params)
        (assoc-tx-> resource :body :body-keys)
@@ -75,8 +78,8 @@
        (assoc-tx-> resource :query-params :query-params)
        (doc-> resource)
        (desc-> resource)
-       (codex-rsp-> resource))] ;TODO do we need to transform the resource into payload now we have made :tree available to look things up from?
-    (assoc res :tree (:tree resource)))) ; TODO for now preserve :tree as an alternative for looking things up in..
+       (codex-rsp-> resource)
+       (tree-> resource))) ; TODO for now preserve :tree as an alternative for looking things up in..
 
 
 ;; =============================================================================

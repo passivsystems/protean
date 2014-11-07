@@ -29,11 +29,11 @@
         (p/holder-swap-uri v payload tree))
       payload)))
 
-(defn- generate [test codices]
+(defn- generate [[_ _ {tree :tree} :as test] codices]
   (->> test
-       (swap-placeholders :query-params (:tree (last test)))
-       (swap-placeholders :body (:tree (last test)))
-       (uri codices (:tree (last test)))))
+       (swap-placeholders :query-params tree)
+       (swap-placeholders :body tree)
+       (uri codices tree)))
 
 (defn generations [codices tests]
   (map #(generate % codices) tests))

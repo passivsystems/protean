@@ -41,7 +41,6 @@
   "Prefer seed items in placeholder translation then codex examples then
    generated values."
   [tests {:keys [seed] :as corpus} codices]
-  (println "tl-testdoc:tree:" (:tree (last (first tests))))
   (->> (s/seeds tests seed)
        (e/examples codices :required)
        (g/generations codices)))
@@ -49,7 +48,6 @@
 (defn- translate
   "Translate placeholders when visiting real nodes."
   [tests command corpus codices]
-  (println "translate:" "\ntranslate:tests:" tests "\ntranslate:command:" command "\ntranslate:corpus:" corpus "\ntranslate:codices:" codices)
   (if (some #{:doc :test} (list command))
     (tl-testdoc tests corpus codices)
     (tl-negotiation tests corpus codices)))
