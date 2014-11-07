@@ -5,9 +5,9 @@
 ;; with Protean
 
 {
-  :includes [ "defaults.edn" ]
+   "sample" {
 
-  "sample" {
+    :includes [ "defaults.edn" ]
 
     "simple" {
       :get { :doc "A get on sample/simple - doc is optional" }
@@ -121,8 +121,7 @@
         :rsp {:time 2}
       }
     }
-  }
 
-  :errors {:status [500 503] :probability 25}
-  :rsp {:headers {"X-Powered-By" "Protean"}}
+    :errors {:status [500 503] :probability 25}
+  }
 }

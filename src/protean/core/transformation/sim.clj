@@ -48,9 +48,9 @@
 (defn- mod-1st-hdr
   "If a based on a probability defined in the codex optionally mutate the first
    response header."
-  [codex errs svc-rsp prob]
+  [codex errs {:keys [headers]} prob]
   (let [path-hdrs (d/hdrs-rsp codex)
-        hdrs (if-let [r-hdrs (:headers svc-rsp)] (merge path-hdrs r-hdrs) path-hdrs)
+        hdrs (if-let [r-hdrs headers] (merge path-hdrs r-hdrs) path-hdrs)
         estatus (or (d/err-status codex) errs)]
     (if (and estatus (percentage? (or (d/err-prob codex) prob)))
       (let [k (first (keys hdrs))]
