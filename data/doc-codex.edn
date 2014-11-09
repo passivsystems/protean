@@ -1,0 +1,60 @@
+{
+  "doc" {
+    "simple" {
+      :get {
+        :req {
+          :doc "Test new response structure"
+        }
+
+        ;; example with all bespoke method level settings
+        :rsp {
+          ;; not specifying a success code here will assume 200 no body
+          ;; a body cannot be guessed
+          :200 {
+            ;; no need for a header, it is computed form the body file
+            :body "file:///Users/rossputin/Projects/protean/protean/data/content/doc/responses/simple/get-200-ref.json"
+          }
+
+          ;; HTTP API problems based response
+          :400 {
+            ;; override the content type calculated from the file extension
+            :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
+            :body "file:///Users/rossputin/Projects/protean/proten/data/content/doc/responses/simple/get-400.json"
+          }
+
+          ;; HTTP API problems based response
+          :412 {
+            :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
+            :body "file:///Users/rossputin/Projects/protean/protean/data/content/doc/responses/simple/get-412.json"
+          }
+
+          ;; standard 503 implicit
+          :503 {}
+        }
+      }
+    }
+
+    "simple" {
+      :get {
+        :req {
+          :doc "Test new response structure"
+        }
+
+        ;; example with all bespoke method level settings
+        :rsp {
+          ;; not specifying a success code here will assume 200 no body
+
+          :400 {
+            ;; override the content type calculated from the file extension
+            :headers {"Content-Type" "application/problem+json"}
+            ;assume an absolute uri
+            :body "file:///path/content/sample/responses/end-1/get/400/ref.json"
+          }
+
+          ;; standard 503 implicit
+          :503 {}
+        }
+      }
+    }
+  }
+}

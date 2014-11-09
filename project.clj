@@ -18,6 +18,7 @@
                  [com.taoensso/timbre "3.3.1"]
                  [clj-http "1.0.0"]
                  [io.aviso/pretty "0.1.12"]
+                 [com.novemberain/pantomime "2.3.0"]
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
                  [me.rossputin/diskops "0.2.0"]

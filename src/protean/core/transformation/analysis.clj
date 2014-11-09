@@ -55,9 +55,11 @@
     (assoc payload :uri uri)))
 
 (defn codex-rsp-> [resource payload]
+  (println "resource : " resource)
   (assoc payload :codex
     {:q-params-type (get-in resource [:spec :req :query-params-type])
      :body (get-in resource [:spec :rsp :body])
+     :rsp (get-in resource [:spec :rsp])
      :body-res (get-in resource [:spec :rsp :body-res])
      :success-code (get-in resource [:spec :rsp :status])
      :errors (get-in resource [:spec :rsp :errors :status])
