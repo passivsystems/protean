@@ -10,6 +10,16 @@
 
   "petstore" {
 
+    :types {
+      :Status "(available|pending|sold)"
+    }
+    :req {
+      :vars {
+        "status" {:type :Status :doc "Updated status of the pet"}
+      }
+    }
+
+
     "api/pet" {
 
       :put {
@@ -26,14 +36,22 @@
   
     "api/pet/*" {
 
+      :types {
+        :PetId "[0-9a-zA-Z]{3,7}"
+      }
+      :req {
+        :vars {
+          "pet/psv+" {:type :PetId :doc "ID of pet"}
+        }
+      }
+
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
           :query-params {:required {"name" "psv+name" "status" "psv+status"}}
-          :format {
-            "pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be updated"}
-            "name" {:type :String, :doc "Updated name of the pet"}
-            "status" {:type "(available|pending|sold)", :doc "Updated status of the pet"}
+          :vars {
+            "name" {:type :String :doc "Updated name of the pet"}
+            "status" {:type :Status :doc "Updated status of the pet"}
           }
         }
         :errors {:status [405]}
@@ -41,24 +59,15 @@
 
       :get {
         :doc "Find a pet by ID"
-        :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be fetched"}}
-        }
         :errors {:status [400 404]}
       }
 
       :delete {
         :doc "Deletes a pet"
-        :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be deleted"}}
-        }
       }
 
       :patch {
         :doc "Partial updates to a pet"
-        :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be patched"}}
-        }
       }
 
     }
@@ -66,22 +75,29 @@
     "api/pet/findByStatus" {
       :get {
         :doc "Finds pets by status"
-        :query-params {:optional {"status" {:type "(available|pending|sold)" :doc "Status values that need to be considered for filter. available is default."}}}
+        :req {
+          :query-params {:optional {"status" "psv+status"}}
+        }
       }
     }
 
     "api/pet/findByTags" {
       :get {
         :doc "Finds pets by tags"
-        :query-params {:required {"tags" {:type :String :doc "Tags to filter by"}}}
+        :req {
+          :query-params {:required {"tags" "psv+tags"}}
+          :vars {"tags" {:type :String :doc "Tags to filter by"}}
+        }
       }
     }
 
     "api/pet/uploadImage" {
       :post {
         :doc "uploads an image"
-        :query-params {:required {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
+        :req {
+          :query-params {:required {"additionalMetadata" "psv+additionalMetadata"}}
 ;           {"file" {:type :File}} ; Binary?; Multipart?
+          :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
         }
       }
     }

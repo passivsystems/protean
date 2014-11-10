@@ -25,25 +25,35 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- encode [svc path md sp codex]
-  (let [merged (update-in sp [:req :headers] merge (:headers codex))]
-    {:svc svc :path path :method md :spec merged}))
+(defn to-seq [codices svc path method]
+  "creates a sequence that can be traversed to resolve required references in scope"
+  [(get-in codices [svc path method])
+   (get-in codices [svc path])
+   (get-in codices [svc])
+   codices]
+)
 
-(defn- methods-range [svc paths codex]
-  (map #(encode svc (first (keys paths)) (key %) (val %) codex) (first (vals paths))))
+(defn- encode [svc path method codex]
+  {:svc svc :path path :method method :tree (to-seq codex svc path method)})
+
+(defn- is-http-method? [c]
+  (some #{c} #{:get :post :put :delete :patch :head}))
+
+(defn- methods-range [svc paths codices]
+  (let [endpoints (first (vals paths))
+        http-methods (filter is-http-method? (map #(key %) endpoints))]
+    (map #(encode svc (first (keys paths)) % codices) http-methods)))
 
 (defn- combi-paths [codices combi]
   (let [svc (first combi)
         paths-loc (rest combi)
-        paths (map #(hash-map % (get-in codices [svc %])) paths-loc)
-        codex (get-in codices [svc :req])]
-    (map #(methods-range svc % codex) paths)))
+        paths (map #(hash-map % (get-in codices [svc %])) paths-loc)]
+    (map #(methods-range svc % codices) paths)))
 
 (defn- svc-paths [codices svc]
   (let [paths-raw (d/custom-entries (get-in codices [svc]))
-        paths (map #(hash-map (first %) (last %)) paths-raw)
-        codex (get-in codices [svc :req])] ; TODO review this - codex is always nil?
-    (map #(methods-range svc % codex) paths)))
+        paths (map #(hash-map (first %) (last %)) paths-raw)]
+    (map #(methods-range svc % codices) paths)))
 
 (defn- proc-group [codices group path-fn coll]
   (if (seq group)

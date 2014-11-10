@@ -10,6 +10,26 @@
   "returns only entries where the keys are not keywords"
   [c] (remove #(keyword? (key %)) c))
 
+(defn get-in-tree
+  "returns the first result for given sequence of keys from a tree (scope)"
+  [tree ks]
+  (some identity (map #(get-in % ks) tree)))
+
+(defn assoc-tree-item->
+  "Extracts first out-ks in tree and assocs to target as in-k."
+  [tree out-ks in-ks target]
+  (if-let [v (get-in-tree tree out-ks)]
+    (if (empty? v) target (assoc-in target in-ks v)) ; TODO confirm is (empty?) - only applies to payload, not analysis?
+    target))
+
+(defn assoc-item->
+  "Extracts out-ks in source and assocs to target as in-ks."
+  [source out-ks in-ks target]
+  (if-let [v (get-in source out-ks)]
+    (if (empty? v) target (assoc-in target in-ks v))
+    target))
+
+
 ;; =============================================================================
 ;; Codex request
 ;; =============================================================================

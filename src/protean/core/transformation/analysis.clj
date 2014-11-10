@@ -22,62 +22,47 @@
        :method :get
      }
   "
-  (:require [protean.core.transformation.paths :as p]))
+  (:require [protean.core.transformation.paths :as p]
+            [protean.core.codex.document :as d]
+            [clojure.pprint]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn method-> [resource]
+(defn- method-> [resource]
   (if-let [method (:method resource)]
     {:method method}
     {:method :get}))
 
-(defn assoc-tx->
-  "Extracts out-k out of path and assocs to payload as in-k."
-  [resource out-k in-k payload]
-  (if-let [ext-out (out-k (:req (:spec resource)))]
-    (assoc payload in-k ext-out)
-    payload))
-
-(defn doc-> [resource payload]
-  (if-let [doc (:doc (:spec resource))]
-    (assoc payload :doc doc)
-    payload))
-
-(defn desc-> [resource payload]
-  (if-let [desc (:description (:spec resource))]
-    (assoc payload :desc desc)
-    payload))
-
-(defn uri-> [{:keys [svc path]} host port payload]
+(defn- uri-> [{:keys [svc path]} host port payload]
   (let [uri (str "http://" host ":" port "/" (name svc) "/" path)]
     (assoc payload :uri uri)))
 
-(defn codex-rsp-> [resource payload]
-  (println "resource : " resource)
-  (assoc payload :codex
-    {:q-params-type (get-in resource [:spec :req :query-params-type])
-     :body (get-in resource [:spec :rsp :body])
-     :rsp (get-in resource [:spec :rsp])
-     :body-res (get-in resource [:spec :rsp :body-res])
-     :success-code (get-in resource [:spec :rsp :status])
-     :errors (get-in resource [:spec :rsp :errors :status])
-     :content-type-req (get-in resource [:spec :req :headers "Content-Type"])
-     :content-type (get-in resource [:spec :rsp :headers "Content-Type"])
-     :headers (get-in resource [:spec :rsp :headers])}))
-
-(defn analyse-> [resource host port]
-  (->> (method-> resource)
-       (assoc-tx-> resource :headers :headers)
-       (assoc-tx-> resource :form-params :form-params)
-       (assoc-tx-> resource :body :body-keys)
-       (assoc-tx-> resource :format :format)
-       (uri-> resource host port)
-       (assoc-tx-> resource :query-params :query-params)
-       (doc-> resource)
-       (desc-> resource)
-       (codex-rsp-> resource)))
+;TODO since tree has everything we need, we should just read from that directly (using codex fully qualified path).
+;For now, adding tree to analysis result so available further down the pipeline
+(defn analyse-> [{:keys [tree] :as entry} host port]
+  (->> (method-> entry)
+       (uri-> entry host port)
+       (d/assoc-tree-item-> tree [:req :headers] [:headers])
+       (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
+       (d/assoc-tree-item-> tree [:req :body] [:body-keys])
+       (d/assoc-tree-item-> tree [:req :vars] [:vars])
+       (d/assoc-tree-item-> tree [:req :query-params] [:query-params])
+       (d/assoc-tree-item-> tree [:doc] [:doc])
+       (d/assoc-tree-item-> tree [:description] [:desc]) ; (not used internally - required by silk? Should move to probe's pre-silk adjustments?) (input: tree, output -> silk done there?)
+       ; codex-resp:
+       (d/assoc-tree-item-> tree [:req :query-params-type] [:codex :q-params-type])
+       (d/assoc-tree-item-> tree [:rsp :body] [:codex :body])
+       (d/assoc-tree-item-> tree [:rsp :body-res] [:codex :body-res])
+       (d/assoc-tree-item-> tree [:rsp :status] [:codex :success-code])
+       (d/assoc-tree-item-> tree [:rsp :errors :status] [:codex :errors])
+       (d/assoc-tree-item-> tree [:req :headers "Content-Type"] [:codex :content-type-req])
+       (d/assoc-tree-item-> tree [:rsp :headers "Content-Type"] [:codex :content-type])
+       (d/assoc-tree-item-> tree [:rsp :headers] [:codex :headers])
+       ; and preserve tree..
+       (d/assoc-item-> entry [:tree] [:tree])))
+; Note: probe dumps this result (with a few adjustments) to file for feeding into silk - includes tree...
 
 
 ;; =============================================================================
