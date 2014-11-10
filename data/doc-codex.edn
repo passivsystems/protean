@@ -1,31 +1,31 @@
 {
-  "doc" {
-    "simple" {
-      :get {
+  "codex" {
+    "examples" {
+      :post {
         :req {
-          :doc "Test new response structure"
+          :doc "Demonstrates encoding a simple post example"
         }
 
         ;; example with all bespoke method level settings
         :rsp {
-          ;; not specifying a success code here will assume 200 no body
+          ;; not specifying a success code here will assume 201 no body
           ;; a body cannot be guessed
-          :200 {
+          :202 {
             ;; no need for a header, it is computed form the body file
-            :body "file:///Users/rossputin/Projects/protean/protean/data/content/doc/responses/simple/get-200-ref.json"
+            :body "file:///Users/rossputin/Projects/protean/protean/data/content/doc/responses/simple/202-ref.json"
           }
 
           ;; HTTP API problems based response
           :400 {
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "file:///Users/rossputin/Projects/protean/proten/data/content/doc/responses/simple/get-400.json"
+            :body "file:///Users/rossputin/Projects/protean/proten/data/content/problems/bad-custom-domain-field.json"
           }
 
           ;; HTTP API problems based response
           :412 {
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "file:///Users/rossputin/Projects/protean/protean/data/content/doc/responses/simple/get-412.json"
+            :body "file:///Users/rossputin/Projects/protean/protean/data/content/problems/asynchronous-custom-computation-failure.json"
           }
 
           ;; standard 503 implicit
