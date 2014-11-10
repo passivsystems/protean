@@ -39,33 +39,30 @@
   (let [uri (str "http://" host ":" port "/" (name svc) "/" path)]
     (assoc payload :uri uri)))
 
-(defn- codex-rsp-> [tree payload]
-  (->> payload
-    (d/assoc-item-> tree [:req :query-params-type] [:codex :q-params-type])
-    (d/assoc-item-> tree [:rsp :body] [:codex :body])
-    (d/assoc-item-> tree [:rsp :body-res] [:codex :body-res])
-    (d/assoc-item-> tree [:rsp :status] [:codex :success-code])
-    (d/assoc-item-> tree [:rsp :errors :status] [:codex :errors])
-    (d/assoc-item-> tree [:req :headers "Content-Type"] [:codex :content-type-req])
-    (d/assoc-item-> tree [:rsp :headers "Content-Type"] [:codex :content-type])
-    (d/assoc-item-> tree [:rsp :headers] [:codex :headers])))
-
-(defn- tree-> [tree payload] (assoc payload :tree tree))
-
 ;TODO since tree has everything we need, we should just read from that directly (using codex fully qualified path).
 ;For now, adding tree to analysis result so available further down the pipeline
 (defn analyse-> [{:keys [tree] :as entry} host port]
   (->> (method-> entry)
        (uri-> entry host port)
-       (d/assoc-item-> tree [:req :headers] [:headers])
-       (d/assoc-item-> tree [:req :form-params] [:form-params])
-       (d/assoc-item-> tree [:req :body] [:body-keys])
-       (d/assoc-item-> tree [:req :vars] [:vars])
-       (d/assoc-item-> tree [:req :query-params] [:query-params])
-       (d/assoc-item-> tree [:doc] [:doc])
-       (d/assoc-item-> tree [:description] [:desc])
-       (codex-rsp-> tree)
-       (tree-> tree)))
+       (d/assoc-tree-item-> tree [:req :headers] [:headers])
+       (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
+       (d/assoc-tree-item-> tree [:req :body] [:body-keys])
+       (d/assoc-tree-item-> tree [:req :vars] [:vars])
+       (d/assoc-tree-item-> tree [:req :query-params] [:query-params])
+       (d/assoc-tree-item-> tree [:doc] [:doc])
+       (d/assoc-tree-item-> tree [:description] [:desc]) ; (not used internally - required by silk? Should move to probe's pre-silk adjustments?) (input: tree, output -> silk done there?)
+       ; codex-resp:
+       (d/assoc-tree-item-> tree [:req :query-params-type] [:codex :q-params-type])
+       (d/assoc-tree-item-> tree [:rsp :body] [:codex :body])
+       (d/assoc-tree-item-> tree [:rsp :body-res] [:codex :body-res])
+       (d/assoc-tree-item-> tree [:rsp :status] [:codex :success-code])
+       (d/assoc-tree-item-> tree [:rsp :errors :status] [:codex :errors])
+       (d/assoc-tree-item-> tree [:req :headers "Content-Type"] [:codex :content-type-req])
+       (d/assoc-tree-item-> tree [:rsp :headers "Content-Type"] [:codex :content-type])
+       (d/assoc-tree-item-> tree [:rsp :headers] [:codex :headers])
+       ; and preserve tree..
+       (d/assoc-item-> entry [:tree] [:tree])))
+; Note: probe dumps this result (with a few adjustments) to file for feeding into silk - includes tree...
 
 
 ;; =============================================================================

@@ -129,7 +129,8 @@
              body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
              success (or (get-in e [:codex :success-code]) (:status (pth/status (:method e))))
              errors (get-in e [:codex :errors])
-             full (assoc e :id id :path (subs uri-path 1)
+             full (assoc e :id id
+                         :path (subs uri-path 1)
                          :success-code (str success)
                          :error-codes (str errors)
                          :curl (cod/url-decode (c/curly-> e))

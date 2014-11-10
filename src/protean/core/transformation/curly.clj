@@ -15,22 +15,22 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn curly-method-> [entry payload]
+(defn- curly-method-> [entry payload]
   (if (= (:method entry) :get)
     payload
     (str payload " -X " (stg/upper-case (name (:method entry))))))
 
-(defn curly-headers-> [entry payload]
+(defn- curly-headers-> [entry payload]
   (let [hstr (map #(str " -H '" (key %) ": " (val %) "'") (:headers entry))]
     (str payload (apply str hstr))))
 
-(defn curly-form-> [entry payload]
+(defn- curly-form-> [entry payload]
   (if-let [f (:form-params entry)]
     (str payload " --data '" (stg/join "&" (map #(str (key %) "=" (val %)) f))
       "'")
     payload))
 
-(defn curly-body-> [entry payload]
+(defn- curly-body-> [entry payload]
   (cond
     (= (get-in entry [:codex :content-type-req]) h/xml)
       (if-let [b (:body-keys entry)]
@@ -51,7 +51,7 @@
              (jsn/generate-string (first b)) "'")
         payload)))
 
-(defn curly-uri-> [entry payload] (str payload " '" (:uri entry)))
+(defn- curly-uri-> [entry payload] (str payload " '" (:uri entry)))
 
 (defn- translate [phs entry k tree]
   (if phs
@@ -62,7 +62,7 @@
       (if (vector? res) (first res) res))
     nil))
 
-(defn curly-query-params-> [{:keys [query-params tree] :as entry} payload]
+(defn- curly-query-params-> [{:keys [query-params tree] :as entry} payload]
   (let [phs (:required query-params)]
     (if-let [rp (translate phs entry :query-params tree)]
       (if (empty? rp)
@@ -74,9 +74,9 @@
                (map #(str (key %) "=" (e/form-encode (val %))) rp)) "'")))
       (str payload "'"))))
 
-(defn curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
+(defn- curly-postprocess-> [s1 s2 payload] (stg/replace payload s1 s2))
 
-(defn curly-> [entry]
+(defn curly-> [{:keys [tree] :as entry}]
   (->> "curl -v"
        (curly-method-> entry)
        (curly-headers-> entry)

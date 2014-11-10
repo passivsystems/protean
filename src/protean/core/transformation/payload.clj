@@ -35,8 +35,6 @@
     (assoc payload :body (c/js (:body-keys entry)))
     payload))
 
-(defn- codex-rsp [entry payload] (assoc payload :codex (:codex entry)))
-
 ;; add json ctype to request headers if there is no ctype and we are post or put
 (defn- postprocess [entry payload]
   (if (and (some #{(:method entry)} [:post :put])
@@ -47,13 +45,13 @@
 (defn- options [{:keys [tree] :as entry} corpus payload]
   (assoc payload :options
          (->> {}
-              (d/assoc-item-> tree [:req :headers] [:headers])
-              (d/assoc-item-> tree [:req :query-params :required] [:query-params])
-              (d/assoc-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
-              (d/assoc-item-> tree [:req :form-params] [:form-params])
-              (d/assoc-item-> tree [:req :vars] [:vars])
+              (d/assoc-tree-item-> tree [:req :headers] [:headers])
+              (d/assoc-tree-item-> tree [:req :query-params :required] [:query-params])
+              (d/assoc-tree-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
+              (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
+              (d/assoc-tree-item-> tree [:req :vars] [:vars])
               (body entry)
-              (codex-rsp entry)
+              (d/assoc-item-> entry [:codex] [:codex])
               (postprocess entry))))
 
 (defn- payload [entry corpus]

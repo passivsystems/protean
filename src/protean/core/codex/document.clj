@@ -15,12 +15,20 @@
   [tree ks]
   (some identity (map #(get-in % ks) tree)))
 
-(defn assoc-item->
-  "Extracts first out-ks in tree and assocs to payload as in-k."
-  [tree out-ks in-ks payload]
+(defn assoc-tree-item->
+  "Extracts first out-ks in tree and assocs to target as in-k."
+  [tree out-ks in-ks target]
   (if-let [v (get-in-tree tree out-ks)]
-    (if (empty? v) payload (assoc-in payload in-ks v)) ; TODO confirm is (empty?) - only applies to payload, not analysis?
-    payload))
+    (if (empty? v) target (assoc-in target in-ks v)) ; TODO confirm is (empty?) - only applies to payload, not analysis?
+    target))
+
+(defn assoc-item->
+  "Extracts out-ks in source and assocs to target as in-ks."
+  [source out-ks in-ks target]
+  (if-let [v (get-in source out-ks)]
+    (if (empty? v) target (assoc-in target in-ks v))
+    target))
+
 
 ;; =============================================================================
 ;; Codex request
