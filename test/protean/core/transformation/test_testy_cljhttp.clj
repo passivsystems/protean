@@ -18,9 +18,9 @@
 (deftest sim-full-queryparams-payload
   "We always pass through a codex item even if its contents are nil values."
   (let [p (cljhttp-item "sim full/query-params" "sim.edn")]
-    (is (= (count (last p)) 4))))
+    (is (= (count (last p)) 5))))
 
 (deftest sim-full-formparams-payload
   "We always pass through a codex item even if its contents are nil values."
   (let [p (cljhttp-item "sim full/form-params" "sim.edn")]
-    (is (= (count (last p)) 4))))
+    (is (= (count (last p)) 5))))
