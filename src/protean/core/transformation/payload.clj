@@ -17,7 +17,8 @@
   (:require [clojure.string :as s]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.analysis :as a]
-            [protean.core.transformation.coerce :as c]))
+            [protean.core.transformation.coerce :as c]
+            [protean.core.codex.document :as d]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -30,10 +31,10 @@
   (s/replace s "*" "psv+"))
 
 (defn assoc-item
-  "Extracts out-k out of entry and assocs to payload as in-k."
-  [entry out-k in-k corpus payload]
-  (if-let [v (out-k entry)]
-    (if (empty? v) payload (assoc payload in-k v))
+  "Extracts first out-k in tree and assocs to payload as in-k."
+  [tree out-ks in-ks corpus payload]
+  (if-let [v (d/get-in-tree tree out-ks)]
+    (if (empty? v) payload (assoc-in payload in-ks v))
     payload))
 
 (defn- body [entry payload]
@@ -50,13 +51,14 @@
     (assoc-in payload [:headers h/ctype]  h/jsn-simple )
     payload))
 
-(defn- options [entry corpus payload]
+(defn- options [{:keys [tree] :as entry} corpus payload]
   (assoc payload :options
          (->> {}
-              (assoc-item entry :headers :headers corpus)
-              (assoc-item entry :query-params :query-params corpus)
-              (assoc-item entry :form-params :form-params corpus)
-              (assoc-item entry :vars :vars corpus)
+              (assoc-item tree [:req :headers] [:headers] corpus)
+              (assoc-item tree [:req :query-params :required] [:query-params] corpus)
+              (assoc-item tree [:req :query-params :optional] [:query-params] corpus) ; TODO only include when test level is 2?
+              (assoc-item tree [:req :form-params] [:form-params] corpus)
+              (assoc-item tree [:req :vars] [:vars] corpus)
               (body entry)
               (codex-rsp entry)
               (postprocess entry))))

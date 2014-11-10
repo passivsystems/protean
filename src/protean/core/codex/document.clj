@@ -10,6 +10,11 @@
   "returns only entries where the keys are not keywords"
   [c] (remove #(keyword? (key %)) c))
 
+(defn get-in-tree
+  "returns the first result for given sequence of keys from a tree (scope)"
+  [tree ks]
+  (some identity (map #(get-in % ks) tree)))
+
 ;; =============================================================================
 ;; Codex request
 ;; =============================================================================

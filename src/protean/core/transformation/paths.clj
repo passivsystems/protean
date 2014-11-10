@@ -34,10 +34,6 @@
 )
 
 (defn- encode [svc path method spec codex]
-; TODO modify lookup of headers to find within :tree
-;  (let [merged (update-in sp [:req :headers] merge (:headers codex))]
-;    {:svc svc :path path :method md :spec merged}))
-
   {:svc svc :path path :method method :spec spec :tree (to-seq codex svc path method)}) ; TODO is :spec still required with :tree?
 
 (defn- methods-range [svc paths codices]
