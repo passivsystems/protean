@@ -36,8 +36,13 @@
 (defn- encode [svc path method codex]
   {:svc svc :path path :method method :tree (to-seq codex svc path method)})
 
+(defn- is-http-method? [c]
+  (some #{c} #{:get :post :put :delete :patch :head}))
+
 (defn- methods-range [svc paths codices]
-  (map #(encode svc (first (keys paths)) (key %) codices) (first (vals paths))))
+  (let [endpoints (first (vals paths))
+        http-methods (filter is-http-method? (map #(key %) endpoints))]
+    (map #(encode svc (first (keys paths)) % codices) http-methods)))
 
 (defn- combi-paths [codices combi]
   (let [svc (first combi)
