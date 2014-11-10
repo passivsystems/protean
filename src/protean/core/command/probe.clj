@@ -64,7 +64,7 @@
   (println (aa/red msg))
     (System/exit 0))
 
-(defn prep-docs [{:keys [directory]}]
+(defn- prep-docs [{:keys [directory]}]
   (if (not directory)
     (bomb "please provide \"directory\" config to generate docs")
     (if (d/exists-dir? directory)
@@ -158,9 +158,9 @@
 ;; Probe result handlers
 ;; =============================================================================
 
-(defn res-simple! [result] (println "doing nothing"))
+(defn- res-simple! [result] (println "doing nothing"))
 
-(defn res-persist!
+(defn- res-persist!
   "Persist result in its interim state to a store.
    In this protoype the store is the disk."
   [result]

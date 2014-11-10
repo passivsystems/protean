@@ -22,64 +22,50 @@
        :method :get
      }
   "
-  (:require [protean.core.transformation.paths :as p]))
+  (:require [protean.core.transformation.paths :as p]
+            [protean.core.codex.document :as d]
+            [clojure.pprint]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn method-> [resource]
+(defn- method-> [resource]
   (if-let [method (:method resource)]
     {:method method}
     {:method :get}))
 
-(defn assoc-tx->
-  "Extracts out-k out of path and assocs to payload as in-k."
-  [resource out-k in-k payload]
-  (if-let [ext-out (out-k (:req (:spec resource)))]
-    (assoc payload in-k ext-out)
-    payload))
-
-(defn doc-> [resource payload]
-  (if-let [doc (:doc (:spec resource))]
-    (assoc payload :doc doc)
-    payload))
-
-(defn desc-> [resource payload]
-  (if-let [desc (:description (:spec resource))]
-    (assoc payload :desc desc)
-    payload))
-
-(defn uri-> [{:keys [svc path]} host port payload]
+(defn- uri-> [{:keys [svc path]} host port payload]
   (let [uri (str "http://" host ":" port "/" (name svc) "/" path)]
     (assoc payload :uri uri)))
 
-(defn codex-rsp-> [resource payload]
-  (assoc payload :codex
-    {:q-params-type (get-in resource [:spec :req :query-params-type])
-     :body (get-in resource [:spec :rsp :body])
-     :body-res (get-in resource [:spec :rsp :body-res])
-     :success-code (get-in resource [:spec :rsp :status])
-     :errors (get-in resource [:spec :rsp :errors :status])
-     :content-type-req (get-in resource [:spec :req :headers "Content-Type"])
-     :content-type (get-in resource [:spec :rsp :headers "Content-Type"])
-     :headers (get-in resource [:spec :rsp :headers])}))
+(defn- codex-rsp-> [tree payload]
+  (->> payload
+    (d/assoc-item-> tree [:req :query-params-type] [:codex :q-params-type])
+    (d/assoc-item-> tree [:rsp :body] [:codex :body])
+    (d/assoc-item-> tree [:rsp :body-res] [:codex :body-res])
+    (d/assoc-item-> tree [:rsp :status] [:codex :success-code])
+    (d/assoc-item-> tree [:rsp :errors :status] [:codex :errors])
+    (d/assoc-item-> tree [:req :headers "Content-Type"] [:codex :content-type-req])
+    (d/assoc-item-> tree [:rsp :headers "Content-Type"] [:codex :content-type])
+    (d/assoc-item-> tree [:rsp :headers] [:codex :headers])))
 
-(defn tree-> [{:keys [tree]} payload] (assoc payload :tree tree))
+(defn- tree-> [tree payload] (assoc payload :tree tree))
 
- ;TODO do we need to transform the resource into payload now we have made :tree available to look things up from?
-(defn analyse-> [resource host port]
-  (->> (method-> resource)
-       (assoc-tx-> resource :headers :headers)
-       (assoc-tx-> resource :form-params :form-params)
-       (assoc-tx-> resource :body :body-keys)
-       (assoc-tx-> resource :vars :vars)
-       (uri-> resource host port)
-       (assoc-tx-> resource :query-params :query-params)
-       (doc-> resource)
-       (desc-> resource)
-       (codex-rsp-> resource)
-       (tree-> resource))) ; TODO for now preserve :tree as an alternative for looking things up in..
+;TODO since tree has everything we need, we should just read from that directly (using codex fully qualified path).
+;For now, adding tree to analysis result so available further down the pipeline
+(defn analyse-> [{:keys [tree] :as entry} host port]
+  (->> (method-> entry)
+       (uri-> entry host port)
+       (d/assoc-item-> tree [:req :headers] [:headers])
+       (d/assoc-item-> tree [:req :form-params] [:form-params])
+       (d/assoc-item-> tree [:req :body] [:body-keys])
+       (d/assoc-item-> tree [:req :vars] [:vars])
+       (d/assoc-item-> tree [:req :query-params] [:query-params])
+       (d/assoc-item-> tree [:doc] [:doc])
+       (d/assoc-item-> tree [:description] [:desc])
+       (codex-rsp-> tree)
+       (tree-> tree)))
 
 
 ;; =============================================================================

@@ -30,13 +30,6 @@
   [s]
   (s/replace s "*" "psv+"))
 
-(defn assoc-item
-  "Extracts first out-k in tree and assocs to payload as in-k."
-  [tree out-ks in-ks corpus payload]
-  (if-let [v (d/get-in-tree tree out-ks)]
-    (if (empty? v) payload (assoc-in payload in-ks v))
-    payload))
-
 (defn- body [entry payload]
   (if (:body-keys entry)
     (assoc payload :body (c/js (:body-keys entry)))
@@ -54,17 +47,18 @@
 (defn- options [{:keys [tree] :as entry} corpus payload]
   (assoc payload :options
          (->> {}
-              (assoc-item tree [:req :headers] [:headers] corpus)
-              (assoc-item tree [:req :query-params :required] [:query-params] corpus)
-              (assoc-item tree [:req :query-params :optional] [:query-params] corpus) ; TODO only include when test level is 2?
-              (assoc-item tree [:req :form-params] [:form-params] corpus)
-              (assoc-item tree [:req :vars] [:vars] corpus)
+              (d/assoc-item-> tree [:req :headers] [:headers])
+              (d/assoc-item-> tree [:req :query-params :required] [:query-params])
+              (d/assoc-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
+              (d/assoc-item-> tree [:req :form-params] [:form-params])
+              (d/assoc-item-> tree [:req :vars] [:vars])
               (body entry)
               (codex-rsp entry)
               (postprocess entry))))
 
 (defn- payload [entry corpus]
-  (->> (update-in entry [:uri] uri) (options entry corpus)))
+  (->> (update-in entry [:uri] uri)
+       (options entry corpus)))
 
 
 ;; =============================================================================

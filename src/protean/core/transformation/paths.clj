@@ -33,11 +33,11 @@
    codices]
 )
 
-(defn- encode [svc path method spec codex]
-  {:svc svc :path path :method method :spec spec :tree (to-seq codex svc path method)}) ; TODO is :spec still required with :tree?
+(defn- encode [svc path method codex]
+  {:svc svc :path path :method method :tree (to-seq codex svc path method)})
 
 (defn- methods-range [svc paths codices]
-  (map #(encode svc (first (keys paths)) (key %) (val %) codices) (first (vals paths))))
+  (map #(encode svc (first (keys paths)) (key %) codices) (first (vals paths))))
 
 (defn- combi-paths [codices combi]
   (let [svc (first combi)

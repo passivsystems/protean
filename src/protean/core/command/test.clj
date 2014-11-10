@@ -1,17 +1,22 @@
 (ns protean.core.command.test
   "Launch tests and do some basic formatting of results.
 
-   N.B. currently locked in with clj-http."
-  (:require [protean.core.transformation.payload :as p]))
+   N.B. currently locked in with clj-http.")
 
 (defn- res-location [res payload]
   (if-let [loc (get-in res [:headers "Location"])]
     (assoc payload :location loc)
     payload))
 
+
+(defn- body-> [res payload]
+  (if-let [v (:body res)]
+    (if (empty? v) payload (assoc payload :body v))
+    payload))
+
 (defn- result [res]
   (->> {:status (:status res)}
-       (p/assoc-item [res] [:body] [:body] nil)
+       (body-> res)
        (res-location res)))
 
 (defn test! [[t1 t2 t3 :as t]]
