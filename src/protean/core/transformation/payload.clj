@@ -29,17 +29,10 @@
   [s]
   (s/replace s "*" "psv+"))
 
-(defn- rp-build [entry out-k corpus]
-  (if (= (get-in corpus [:config "test-level"]) (int 1))
-    (get-in entry [out-k :required])
-    (merge (get-in entry [out-k :required]) (get-in entry [out-k :optional]))))
-
 (defn assoc-item
   "Extracts out-k out of entry and assocs to payload as in-k."
   [entry out-k in-k corpus payload]
-  (if-let [v (if (= out-k :query-params)
-               (rp-build entry out-k corpus)
-               (out-k entry))]
+  (if-let [v (out-k entry)]
     (if (empty? v) payload (assoc payload in-k v))
     payload))
 
