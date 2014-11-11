@@ -114,16 +114,16 @@
 (defn- json-qp? [m p]
   (if (empty? p) false (and (d/qp-json? m) (map? (first (vals p))))))
 
-(defn- swap-qp [swp-fn m p t]
-  (let [c (if (json-qp? m p) (first (vals p)) p)]
+(defn- swap-qp [swp-fn m p is-json-qp t]
+  (let [c (if is-json-qp (first (vals p)) p)]
     (for [[k v] c] [k (swp-fn k v m t)])))
 
 (defn- swap-body [swp-fn m p t] (for [[k v] p] [k (swp-fn k v m t)]))
 
-(defn- mapify-swapped [raw m p type ph-op]
+(defn- mapify-swapped [raw p is-qp is-json-qp ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
-        v-res (if (and (qp? type) (= ph-op :vars) (json-qp? m p)) (c/js mapified) mapified)]
-    (if (json-qp? m p)
+        v-res (if (and is-qp (= ph-op :vars) is-json-qp) (c/js mapified) mapified)]
+    (if is-json-qp
       {(first (keys p)) v-res}
       v-res)))
 
@@ -131,8 +131,10 @@
   "Swap all placeholders with available seed, example or generated substitutes."
   [ph swp-fn m type ph-op t]
   (let [p (if (vector? ph) (first ph) ph)
-        raw (if (qp? type) (swap-qp swp-fn m p t) (swap-body swp-fn m p t))
-        swapped (mapify-swapped raw m p type ph-op)
+        is-json-qp (json-qp? m p)
+        is-qp (qp? type)
+        raw (if is-qp (swap-qp swp-fn m p is-json-qp t) (swap-body swp-fn m p t))
+        swapped (mapify-swapped raw p is-qp is-json-qp ph-op)
         sts (for [[k [sval stype :as v]] raw] stype)
         swap-type (cond
                    (some #{"gen" "exp"} sts) "dyn"

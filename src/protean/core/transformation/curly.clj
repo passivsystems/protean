@@ -55,23 +55,23 @@
 
 (defn- curly-literal-> [s payload] (str payload s))
 
-(defn- translate [phs entry k tree]
+(defn- translate-query-params [phs entry tree]
   (if phs
     (let [res
           (-> phs
-              (p/holders-swap p/holder-swap-exp entry k :exp tree)
-              (p/holders-swap p/holder-swap-gen entry k :vars tree))]
+              (p/holders-swap p/holder-swap-exp entry true :exp tree)
+              (p/holders-swap p/holder-swap-gen entry true :vars tree))]
       (if (vector? res) (first res) res))
     nil))
 
-(defn- curly-query-params-> [{:keys [query-params] :as entry} tree payload]
-  (let [phs (:required query-params)
-        query (if-let [rp (translate phs entry :query-params tree)]
-          (if (not (empty? rp))
-            (if (d/qp-json? entry)
-              (str "?q=" (rp "q"))
-              (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode (val %))) rp))))))]
-        (str payload query)))
+(defn- curly-query-params-> [entry tree payload]
+  (let [phs (d/get-in-tree tree [:req :query-params :required])
+        query (if-let [rp (translate-query-params phs entry tree)]
+    (if (not (empty? rp))
+      (if (d/qp-json? entry)
+        (str "?q=" (rp "q"))
+        (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode (val %))) rp))))))]
+      (str payload query)))
 
 (defn- curly-replace-> [s1 s2 payload] (s/replace payload s1 s2))
 
