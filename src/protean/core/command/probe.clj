@@ -5,6 +5,7 @@
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as d]
+            [protean.core.codex.document :as doc]
             [protean.core.codex.placeholder :as p]
             [protean.core.protocol.http :as pth]
             [protean.core.transformation.coerce :as co]
@@ -122,21 +123,26 @@
   (prep-docs corpus)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
-     (doseq [e (a/analysis-> "host" 1234 codices corpus)]
-       (let [uri-path (-> (URI. (:uri e)) (.getPath))
-             id (str (name (:method e)) (stg/replace uri-path #"/" "-"))
-             body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
-             success (or (get-in e [:codex :success-code]) (:status (pth/status (:method e))))
-             errors (get-in e [:codex :errors])
-             full (assoc e :id id
-                         :path (subs uri-path 1)
-                         :success-code (str success)
-                         :error-codes (str errors)
-                         :curl (cod/url-decode (c/curly-> e))
-                         :sample-response body)]
-         (spit (str directory "/api/" id ".edn") (pr-str (update-in full [:method] name)))
-         (doc-params directory id (:vars e))
-         (doc-hdrs directory id (get-in e [:codex :headers])))))])
+     (doseq [{:keys [uri method tree] :as e} (a/analysis-> "host" 1234 codices corpus)]
+       (let [uri-path (-> (URI. uri) (.getPath))
+             id (str (name method) (stg/replace uri-path #"/" "-"))
+             body (body (doc/get-in-tree tree [:rsp :headers "Content-Type"])
+                        (doc/get-in-tree tree [:rsp :body]))
+             success (or (doc/get-in-tree tree [:rsp :status])
+                         (:status (pth/status method)))
+             errors (doc/get-in-tree tree [:rsp :errors :status])
+             full {:id id
+                   :path (subs uri-path 1)
+                   :success-code (str success)
+                   :error-codes (str errors)
+                   :curl (cod/url-decode (c/curly-> e))
+                   :sample-response body
+                   :doc (doc/get-in-tree tree [:doc])
+                   :desc (doc/get-in-tree tree [:description])
+                   :method (name method)}]
+         (spit (str directory "/api/" id ".edn") (pr-str full))
+         (doc-params directory id (doc/get-in-tree tree [:req :vars]))
+         (doc-hdrs directory id (doc/get-in-tree tree [:rsp :headers])))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)

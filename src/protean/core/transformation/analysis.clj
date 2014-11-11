@@ -46,11 +46,8 @@
        (uri-> entry host port)
        (d/assoc-tree-item-> tree [:req :headers] [:headers])
        (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
-       (d/assoc-tree-item-> tree [:req :body] [:body-keys]) ; not used internally (silk?)
        (d/assoc-tree-item-> tree [:req :vars] [:vars])
        (d/assoc-tree-item-> tree [:req :query-params] [:query-params])
-       (d/assoc-tree-item-> tree [:doc] [:doc])
-       (d/assoc-tree-item-> tree [:description] [:desc]) ; (not used internally - required by silk? Should move to probe's pre-silk adjustments?) (input: tree, output -> silk done there?)
        ; codex-resp:
        (d/assoc-tree-item-> tree [:req :query-params-type] [:codex :q-params-type])
        (d/assoc-tree-item-> tree [:rsp :body] [:codex :body])
