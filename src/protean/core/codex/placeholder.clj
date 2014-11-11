@@ -101,12 +101,12 @@
   "Swap codex example values in for placeholders."
   [k v m tree]
   (if (holder? v)
-    (if-let [x (get-in m [:req :vars k :examples])] [(first x) "exp"] [v "idn"])
+    (if-let [x (d/get-in-tree tree [:req :vars k :examples])] [(first x) "exp"] [v "idn"])
     [v "idn"]))
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
-  [k v mp tree]
+  [k v m tree]
   (if (holder? v)
     (if-let [x (d/get-in-tree tree [:req :vars k :type])][(g-val x tree) "format"] [v "idn"])
     [v "idn"]))
