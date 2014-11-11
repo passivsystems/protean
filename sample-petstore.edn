@@ -23,6 +23,8 @@
     "api/pet" {
 
       :put {
+        :description
+"Full description for update an existing pet"
         :doc "Update an existing pet"
         :errors {:status [400 404 405]} ; Need to document the error codes
       }
@@ -33,7 +35,7 @@
       }
 
     }
-  
+
     "api/pet/*" {
 
       :types {
