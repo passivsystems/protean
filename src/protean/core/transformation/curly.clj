@@ -68,7 +68,7 @@
   (let [phs (d/get-in-tree tree [:req :query-params :required])
         query (if-let [rp (translate-query-params phs entry tree)]
     (if (not (empty? rp))
-      (if (d/qp-json? entry)
+      (if (d/qp-json? tree)
         (str "?q=" (rp "q"))
         (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode (val %))) rp))))))]
       (str payload query)))

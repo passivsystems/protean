@@ -111,8 +111,8 @@
     (if-let [x (d/get-in-tree tree [:req :vars k :type])][(g-val x tree) "format"] [v "idn"])
     [v "idn"]))
 
-(defn- json-qp? [m p]
-  (if (empty? p) false (and (d/qp-json? m) (map? (first (vals p))))))
+(defn- json-qp? [t p]
+  (if (empty? p) false (and (d/qp-json? t) (map? (first (vals p))))))
 
 (defn- swap-qp [swp-fn m p is-json-qp t]
   (let [c (if is-json-qp (first (vals p)) p)]
@@ -131,7 +131,7 @@
   "Swap all placeholders with available seed, example or generated substitutes."
   [ph swp-fn m type ph-op t]
   (let [p (if (vector? ph) (first ph) ph)
-        is-json-qp (json-qp? m p)
+        is-json-qp (json-qp? t p)
         is-qp (qp? type)
         raw (if is-qp (swap-qp swp-fn m p is-json-qp t) (swap-body swp-fn m p t))
         swapped (mapify-swapped raw p is-qp is-json-qp ph-op)

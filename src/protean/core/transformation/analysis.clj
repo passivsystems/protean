@@ -49,13 +49,7 @@
        (d/assoc-tree-item-> tree [:req :vars] [:vars])
        (d/assoc-tree-item-> tree [:req :query-params] [:query-params])
        ; codex-resp:
-       (d/assoc-tree-item-> tree [:req :query-params-type] [:codex :q-params-type])
        (d/assoc-tree-item-> tree [:rsp :body] [:codex :body])
-       (d/assoc-tree-item-> tree [:rsp :body-res] [:codex :body-res])
-       (d/assoc-tree-item-> tree [:rsp :status] [:codex :success-code])
-       (d/assoc-tree-item-> tree [:rsp :errors :status] [:codex :errors])
-       (d/assoc-tree-item-> tree [:req :headers "Content-Type"] [:codex :content-type-req])
-       (d/assoc-tree-item-> tree [:rsp :headers "Content-Type"] [:codex :content-type])
        (d/assoc-tree-item-> tree [:rsp :headers] [:codex :headers])
        ; and preserve tree..
        (d/assoc-item-> entry [:tree] [:tree])))
