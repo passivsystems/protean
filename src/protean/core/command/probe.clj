@@ -103,8 +103,7 @@
   (let [target-dir (file directory)]
     (.mkdirs (File. (str target-dir "/" resource "/params/")))
     (doseq [[k v] params]
-      (let [type (if (= (:type v) "Range") (str (:type v) " - " (:range v)) (:type v))
-            qm {:title (name-param k) :type type :doc (:doc v)}]
+      (let [qm {:title (name-param k) :type (:type v) :doc (:doc v)}]
         (spit (str target-dir "/" resource "/params/" (UUID/randomUUID) ".edn") (pr-str qm))))))
 
 (defn- doc-hdrs [directory resource hdrs]
