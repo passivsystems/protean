@@ -30,9 +30,9 @@
   [s]
   (s/replace s "*" "psv+"))
 
-(defn- body [entry payload]
-  (if (:body-keys entry)
-    (assoc payload :body (c/js (:body-keys entry)))
+(defn- body [tree payload]
+  (if-let [b (d/get-in-tree tree [:req :body])]
+    (assoc payload :body (c/js b))
     payload))
 
 ;; add json ctype to request headers if there is no ctype and we are post or put
@@ -50,7 +50,7 @@
               (d/assoc-tree-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
               (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
               (d/assoc-tree-item-> tree [:req :vars] [:vars])
-              (body entry)
+              (body tree)
               (d/assoc-item-> entry [:codex] [:codex])
               (postprocess entry))))
 

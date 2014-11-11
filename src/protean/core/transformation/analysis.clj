@@ -46,7 +46,7 @@
        (uri-> entry host port)
        (d/assoc-tree-item-> tree [:req :headers] [:headers])
        (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
-       (d/assoc-tree-item-> tree [:req :body] [:body-keys])
+       (d/assoc-tree-item-> tree [:req :body] [:body-keys]) ; not used internally (silk?)
        (d/assoc-tree-item-> tree [:req :vars] [:vars])
        (d/assoc-tree-item-> tree [:req :query-params] [:query-params])
        (d/assoc-tree-item-> tree [:doc] [:doc])

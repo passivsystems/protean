@@ -10,6 +10,7 @@
   "returns only entries where the keys are not keywords"
   [c] (remove #(keyword? (key %)) c))
 
+; TODO can we create our own destructure to get at stuff in tree?
 (defn get-in-tree
   "returns the first result for given sequence of keys from a tree (scope)"
   [tree ks]
