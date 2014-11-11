@@ -128,18 +128,20 @@
              id (str (name method) (stg/replace uri-path #"/" "-"))
              body (body (doc/get-in-tree tree [:rsp :headers "Content-Type"])
                         (doc/get-in-tree tree [:rsp :body]))
+             status-codes (map name (keys (:rsp (first tree)))) ; TODO getting from first - but should look up the tree?
              success (or (doc/get-in-tree tree [:rsp :status])
-                         (:status (pth/status method)))
+                         (:status (pth/status method))) ; TODO these conventions should be in an included file
              errors (doc/get-in-tree tree [:rsp :errors :status])
              full {:id id
                    :path (subs uri-path 1)
-                   :success-code (str success)
-                   :error-codes (str errors)
+                   :success-code (apply str (filter pth/success? status-codes))
+                   :error-codes (stg/join " " (filter (complement pth/success?) status-codes))
                    :curl (cod/url-decode (c/curly-> e))
                    :sample-response body
                    :doc (doc/get-in-tree tree [:doc])
                    :desc (doc/get-in-tree tree [:description])
                    :method (name method)}]
+         (println "status-codes for" id ":" status-codes)
          (spit (str directory "/api/" id ".edn") (pr-str full))
          (doc-params directory id (doc/get-in-tree tree [:req :vars]))
          (doc-hdrs directory id (doc/get-in-tree tree [:rsp :headers])))))])
