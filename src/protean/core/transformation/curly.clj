@@ -30,25 +30,25 @@
       "'")
     payload))
 
-(defn- curly-body-> [entry payload]
+(defn- curly-body-> [entry tree payload]
   (cond
     (= (get-in entry [:codex :content-type-req]) h/xml)
-      (if-let [b (:body-keys entry)]
+      (if-let [b (d/get-in-tree tree [:req :body])]
         (str payload " --data '" (c/str-xml b) "'")
         payload)
       (or (not (get-in entry [:codex :content-type-req]))
           (= (get-in entry [:codex :content-type-req]) h/jsn-simple))
-      (if-let [b (:body-keys entry)]
-           (if (map? b)
-             (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
-                  (jsn/generate-string b) "'")
-             (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
-                  (jsn/generate-string (first b)) "'"))
-           payload)
+      (if-let [b (d/get-in-tree tree [:req :body])]
+        (if (map? b)
+          (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
+            (jsn/generate-string b) "'")
+          (str payload " -H '" h/ctype ": " h/jsn-simple "' --data '"
+            (jsn/generate-string (first b)) "'"))
+        payload)
     (= (get-in entry [:codex :content-type-req]) h/txt)
-      (if-let [b (:body-keys entry)]
+      (if-let [b (d/get-in-tree tree [:req :body])]
         (str payload " --data '"
-             (jsn/generate-string (first b)) "'")
+           (jsn/generate-string (first b)) "'")
         payload)))
 
 (defn- curly-uri-> [entry payload] (str payload " '" (:uri entry)))
@@ -62,7 +62,7 @@
       (if (vector? res) (first res) res))
     nil))
 
-(defn- curly-query-params-> [{:keys [query-params tree] :as entry} payload]
+(defn- curly-query-params-> [{:keys [query-params] :as entry} tree payload]
   (let [phs (:required query-params)]
     (if-let [rp (translate phs entry :query-params tree)]
       (if (empty? rp)
@@ -81,11 +81,11 @@
        (curly-method-> entry)
        (curly-headers-> entry)
        (curly-form-> entry)
-       (curly-body-> entry)
+       (curly-body-> entry tree)
        (curly-uri-> entry)
-       (curly-query-params-> entry)
+       (curly-query-params-> entry tree)
        (curly-postprocess-> "*" "1")
-       (curly-postprocess-> "psv+" "XYZ")))
+       (curly-postprocess-> "psv+" "XYZ"))) ; TODO use generate
 
 
 ;; =============================================================================
