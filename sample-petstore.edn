@@ -8,6 +8,8 @@
 {
   :includes [ "defaults.edn" ]
 
+  :title "Pet Store API Docs"
+
   "petstore" {
 
     :types {

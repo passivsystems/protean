@@ -73,6 +73,11 @@
           (.mkdirs (file (str directory "/api"))))
       (.mkdirs (file (str directory "/api"))))))
 
+(defn spit-to
+  "Will make directory if does not exist before spitting to file."
+  [target content]
+  (.mkdirs (file (.getParent (.getAbsoluteFile (File. target)))))
+  (spit target content))
 
 ;; =============================================================================
 ;; Probe config
@@ -96,54 +101,35 @@
 (defn- name-param [title]
   (if (.contains title "psv+") (stg/replace title "psv+" "*") title))
 
-(defn- doc-params [directory resource params]
+(defn- doc-params [target-dir params]
   "Doc query params for a given node.
-   Directory is the data directory root.
-   Resource is the current endpoint (parent of params).
+   target-dir is the directory to write to.
    Params is the gen information for a resources params."
-  (let [target-dir (str directory "/" resource "/params/")]
-    (.mkdirs (File. target-dir))
-    (doseq [[k v] params]
-      (let [qm {:title (name-param k) :type (:type v) :doc (:doc v)}]
-        (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm))))))
+  (.mkdirs (File. target-dir))
+  (doseq [[k v] params]
+    (let [qm {:title (name-param k) :type (:type v) :doc (:doc v)}]
+      (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
-(defn- doc-hdrs [directory resource hdrs]
+(defn- doc-hdrs [target-dir hdrs]
+  "Doc response headers for a given node.
+   target-dir is the directory to write to.
+   hdrs is the codex rsp headers."
+  (.mkdirs (File. target-dir))
+  (doseq [[k v] hdrs]
+    (spit (str target-dir (UUID/randomUUID) ".edn")
+          (pr-str {:title k :value v}))))
+
+(defn- doc-status-codes [target-dir tree filter-exp]
   "Doc response headers for a given node.
    Directory is the data directory root.
    Resource is the current endpoint (parent of headers).
-   hdrs is the codex rsp headers."
-  (let [target-dir (str directory "/" resource "/headers/")]
+   filter-exp is a regular expression to match the status codes to include."
+  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))
+        statuses (some identity (map filter tree))]
     (.mkdirs (File. target-dir))
-    (doseq [[k v] hdrs]
+    (doseq [[k v] statuses]
       (spit (str target-dir (UUID/randomUUID) ".edn")
-            (pr-str {:title k :value v})))))
-
-(defn- doc-status-codes [target-dir statuses]
-  "Doc status for a given node.
-   Directory is the data directory root.
-   Resource is the current endpoint (parent of headers).
-   statuses is the codex rsps."
-  (.mkdirs (File. target-dir))
-  (doseq [[k v] statuses]
-    (println target-dir statuses)
-    (spit (str target-dir (UUID/randomUUID) ".edn")
-          (pr-str {:code (name k) :doc (:doc v)}))))
-
-(defn- doc-success-status-codes [directory resource rsps]
-  "Doc status for a given node.
-   Directory is the data directory root.
-   Resource is the current endpoint (parent of headers).
-   statuses is the codex rsps."
-  (doc-status-codes (str directory "/" resource "/success-statuses/")
-    (filter #(re-matches #"2\d\d" (name (key %))) rsps)))
-
-(defn- doc-error-status-codes [directory resource rsps]
-  "Doc status for a given node.
-   Directory is the data directory root.
-   Resource is the current endpoint (parent of headers).
-   statuses is the codex rsps."
-  (doc-status-codes (str directory "/" resource "/error-statuses/")
-    (filter #(re-matches #"[1345]\d\d" (name (key %))) rsps)))
+            (pr-str {:code (name k) :doc (:doc v)})))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
@@ -155,9 +141,6 @@
              id (str (name method) (stg/replace uri-path #"/" "-"))
              body (body (doc/get-in-tree tree [:rsp :headers "Content-Type"])
                         (doc/get-in-tree tree [:rsp :body]))
-             success (or (doc/get-in-tree tree [:rsp :status])
-                         (:status (pth/status method))) ; TODO these conventions should be in an included file. And make sure all are merged up the tree..
-             errors (doc/get-in-tree tree [:rsp :errors :status])
              full {:id id
                    :path (subs uri-path 1)
                    :curl (cod/url-decode (c/curly-> e))
@@ -165,11 +148,12 @@
                    :doc (doc/get-in-tree tree [:doc])
                    :desc (doc/get-in-tree tree [:description])
                    :method (name method)}]
-         (spit (str directory "/api/" id ".edn") (pr-str full))
-         (doc-params directory id (doc/get-in-tree tree [:req :vars]))
-         (doc-hdrs directory id (doc/get-in-tree tree [:rsp :headers]))
-         (doc-success-status-codes directory id (doc/get-in-tree tree [:rsp]))
-         (doc-error-status-codes directory id (doc/get-in-tree tree [:rsp])))))])
+         (spit-to (str directory "/global/site.edn") (pr-str {:site-name (doc/get-in-tree tree [:title])}))
+         (spit-to (str directory "/api/" id ".edn") (pr-str full))
+         (doc-params (str directory "/" id "/params/") (doc/get-in-tree tree [:req :vars]))
+         (doc-hdrs (str directory "/" id "/headers/") (doc/get-in-tree tree [:rsp :headers]))
+         (doc-status-codes (str directory "/" id "/status-codes-success/") tree #"2\d\d")
+         (doc-status-codes (str directory "/" id "/status-codes-error/") tree #"[1345]\d\d"))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)

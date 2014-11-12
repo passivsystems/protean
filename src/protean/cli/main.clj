@@ -61,7 +61,7 @@
         "                         e.g. To run tests against a server"
         "                             visit -f sample-petstore.edn -b '{\"host\": \"localhost\", \"port\": 3000, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
         "                         e.g. To generate documentation"
-        "                             visit -f sample-petstore.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"docs\"}'"
+        "                             visit -f sample-petstore.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"silk_templates/data/protean-api\"}'"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"

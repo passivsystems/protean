@@ -19,6 +19,7 @@
     }
   "
   (:require [clojure.string :as stg]
+            [clojure.pprint]
             [protean.core.codex.document :as d]))
 
 ;; =============================================================================
@@ -30,6 +31,7 @@
   [(get-in codices [svc path method])
    (get-in codices [svc path])
    (get-in codices [svc])
+   (get-in codices [method]) ; TODO confirm position of this..
    codices]
 )
 

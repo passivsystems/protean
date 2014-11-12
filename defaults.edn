@@ -1,4 +1,11 @@
 {
+  ; default status code per method
+  :get {:rsp {:200 {:doc "Success"}}}
+  :post {:rsp {:201 {:doc "Success"}}}
+  :put {:rsp {:204 {:doc "Success"}}}
+  :delete {:rsp {:204 {:doc "Success"}}}
+  :head {:rsp {:200 {:doc "Success"}}}
+
   :rsp {:headers {"X-Powered-By" "Protean"}}
   :types {
     :String "[ -~]*" ; all ASCII chars between space and tilde are the printable chars.
