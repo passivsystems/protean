@@ -1,6 +1,8 @@
 (ns protean.core.transformation.sim
   (:require [clojure.string :as s]
             [clojure.set :as st]
+            [clojure.pprint]
+            [clojure.main :as m]
             [clojure.xml :as x]
             [clojure.zip :as z]
             [cheshire.core :as jsn]
@@ -165,7 +167,7 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn sim-rsp-> [{:keys [uri] :as req} codices]
+(defn sim-rsp-old-> [{:keys [uri] :as req} codices]
   (let [srv (second (s/split uri #"/"))
         k (second (s/split uri (re-pattern (str "/" (name srv) "/"))))
         srv-errors (get (get-in codices [srv :errors]) :status)
@@ -179,3 +181,75 @@
              (body ((:method req) codex)))
         {:status 405})
       {:status 404})))
+
+
+
+
+
+
+
+
+(defn- to-endpoint [requested-endpoint sim-rules srv]
+  (let [endpoints (keys (get-in sim-rules [srv]))
+        to-tuple (fn [endpoint] [(s/replace endpoint #"\*" ".+") endpoint])
+        regexs (map to-tuple endpoints)
+        is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
+    (some is-match regexs)
+  )
+)
+
+(defn sim-rsp-> [{:keys [uri] :as req} codices]
+  (println "\nsim-rsp-> req:" req)
+  (let [srv (second (s/split uri #"/"))
+        sim-rules (m/load-script (str srv ".edn.sim"))
+        requested-endpoint (second (s/split uri (re-pattern (str "/" (name srv) "/"))))
+        endpoint (to-endpoint requested-endpoint sim-rules srv)
+        method (:request-method req)
+        rules (get-in sim-rules [srv endpoint method])
+        codex (get-in codices [srv]) ; TODO or convert to tree?
+        request (assoc-in req [:endpoint] endpoint) ; TODO review this - adding resolved endpoint to request
+        corpus {}
+        execute (fn [rule] (apply rule [codex request corpus]))
+        response (some identity (map execute rules))]
+    (println "uri:" uri)
+    (println (count rules) "rules for srv:" srv "endpoint:" endpoint "method:" method)
+    (println "responding with" response)
+    response)) ; TODO what if there is more than one?
+
+;
+; DSL for sim..
+;
+(defn transport [what where]
+  (println "transporting" what "to" where)
+)
+
+(defn schedule [cron func]
+  
+  (println "scheduling" func "in" cron)
+)
+
+(defn success [codex request]
+  (println "\nsuccess request:" request)
+  (println "\nsuccess codex:")
+  (clojure.pprint/pprint codex)
+  (let [rsp (get-in codex [(:endpoint request) (:request-method request) :rsp]) ; TODO need get-in-tree..
+        success-rsp (first rsp) ; TODO get success, not first - and find in whole tree, not first rsp defined
+        status-code (Integer/parseInt (name (key success-rsp)))
+        body (:body (val success-rsp))]
+    (println "success rsp:" success-rsp)
+    (println "returning :" {:status status-code :body body})
+    {:status status-code :body body}
+  )
+      ; get default success from codex, and return that..
+;      :put {
+;        :rsp {
+;          :200 {
+;            ;; no need for a header, it is computed form the body file
+;            :body "data/content/doc/responses/simple/200-ref.json"
+;          }
+
+)
+
+
+
+

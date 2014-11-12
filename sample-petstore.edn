@@ -25,8 +25,7 @@
     "api/pet" {
 
       :put {
-        :description
-"Full description for update an existing pet"
+        :description "Full description for update an existing pet"
         :doc "Update an existing pet"
         :rsp {
           :200 {
