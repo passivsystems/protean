@@ -17,7 +17,8 @@
   (:require [clojure.string :as s]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.analysis :as a]
-            [protean.core.transformation.coerce :as c]))
+            [protean.core.transformation.coerce :as c]
+            [protean.core.codex.document :as d]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -29,26 +30,10 @@
   [s]
   (s/replace s "*" "psv+"))
 
-(defn- rp-build [entry out-k corpus]
-  (if (= (get-in corpus [:config "test-level"]) (int 1))
-    (get-in entry [out-k :required])
-    (merge (get-in entry [out-k :required]) (get-in entry [out-k :optional]))))
-
-(defn assoc-item
-  "Extracts out-k out of entry and assocs to payload as in-k."
-  [entry out-k in-k corpus payload]
-  (if-let [v (if (= out-k :query-params)
-               (rp-build entry out-k corpus)
-               (out-k entry))]
-    (if (empty? v) payload (assoc payload in-k v))
+(defn- body [tree payload]
+  (if-let [b (d/get-in-tree tree [:req :body])]
+    (assoc payload :body (c/js b))
     payload))
-
-(defn- body [entry payload]
-  (if (:body-keys entry)
-    (assoc payload :body (c/js (:body-keys entry)))
-    payload))
-
-(defn- codex-rsp [entry payload] (assoc payload :codex (:codex entry)))
 
 ;; add json ctype to request headers if there is no ctype and we are post or put
 (defn- postprocess [entry payload]
@@ -57,19 +42,21 @@
     (assoc-in payload [:headers h/ctype]  h/jsn-simple )
     payload))
 
-(defn- options [entry corpus payload]
+(defn- options [{:keys [tree] :as entry} corpus payload]
   (assoc payload :options
          (->> {}
-              (assoc-item entry :headers :headers corpus)
-              (assoc-item entry :query-params :query-params corpus)
-              (assoc-item entry :form-params :form-params corpus)
-              (assoc-item entry :format :format corpus)
-              (body entry)
-              (codex-rsp entry)
+              (d/assoc-tree-item-> tree [:req :headers] [:headers])
+              (d/assoc-tree-item-> tree [:req :query-params :required] [:query-params])
+              (d/assoc-tree-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
+              (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
+              (d/assoc-tree-item-> tree [:req :vars] [:vars])
+              (body tree)
+              (d/assoc-item-> entry [:codex] [:codex])
               (postprocess entry))))
 
 (defn- payload [entry corpus]
-  (->> (update-in entry [:uri] uri) (options entry corpus)))
+  (->> (update-in entry [:uri] uri)
+       (options entry corpus)))
 
 
 ;; =============================================================================

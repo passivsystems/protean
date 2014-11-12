@@ -21,7 +21,7 @@
 (defn- uri [entry payload] (conj payload (:uri entry)))
 
 (defn- options [entry payload]
-  (conj payload (assoc (:options entry) :throw-exceptions false)))
+  (conj payload (assoc (:options entry) :throw-exceptions false :tree (:tree entry))))
 
 (defn- clj-http [entry]
   (->> []

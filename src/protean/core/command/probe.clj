@@ -5,6 +5,7 @@
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as d]
+            [protean.core.codex.document :as doc]
             [protean.core.codex.placeholder :as p]
             [protean.core.protocol.http :as pth]
             [protean.core.transformation.coerce :as co]
@@ -64,7 +65,7 @@
   (println (aa/red msg))
     (System/exit 0))
 
-(defn prep-docs [{:keys [directory]}]
+(defn- prep-docs [{:keys [directory]}]
   (if (not directory)
     (bomb "please provide \"directory\" config to generate docs")
     (if (d/exists-dir? directory)
@@ -72,6 +73,11 @@
           (.mkdirs (file (str directory "/api"))))
       (.mkdirs (file (str directory "/api"))))))
 
+(defn spit-to
+  "Will make directory if does not exist before spitting to file."
+  [target content]
+  (.mkdirs (file (.getParent (.getAbsoluteFile (File. target)))))
+  (spit target content))
 
 ;; =============================================================================
 ;; Probe config
@@ -95,48 +101,59 @@
 (defn- name-param [title]
   (if (.contains title "psv+") (stg/replace title "psv+" "*") title))
 
-(defn- doc-params [directory resource params]
+(defn- doc-params [target-dir params]
   "Doc query params for a given node.
-   Directory is the data directory root.
-   Resource is the current endpoint (parent of params).
+   target-dir is the directory to write to.
    Params is the gen information for a resources params."
-  (let [target-dir (file directory)]
-    (.mkdirs (File. (str target-dir "/" resource "/params/")))
-    (doseq [[k v] params]
-      (let [type (if (= (:type v) "Range") (str (:type v) " - " (:range v)) (:type v))
-            qm {:title (name-param k) :type type :doc (:doc v)}]
-        (spit (str target-dir "/" resource "/params/" (UUID/randomUUID) ".edn") (pr-str qm))))))
+  (.mkdirs (File. target-dir))
+  (doseq [[k v] params]
+    (let [qm {:title (name-param k) :type (:type v) :doc (:doc v)}]
+      (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
-(defn- doc-hdrs [directory resource hdrs]
+(defn- doc-hdrs [target-dir hdrs]
+  "Doc response headers for a given node.
+   target-dir is the directory to write to.
+   hdrs is the codex rsp headers."
+  (.mkdirs (File. target-dir))
+  (doseq [[k v] hdrs]
+    (spit (str target-dir (UUID/randomUUID) ".edn")
+          (pr-str {:title k :value v}))))
+
+(defn- doc-status-codes [target-dir tree filter-exp]
   "Doc response headers for a given node.
    Directory is the data directory root.
    Resource is the current endpoint (parent of headers).
-   hdrs is the codex rsp headers."
-  (let [target-dir (file directory)]
-    (.mkdirs (File. (str target-dir "/" resource "/headers/")))
-    (doseq [[k v] hdrs]
-      (spit (str target-dir "/" resource "/headers/" (UUID/randomUUID) ".edn")
-            (pr-str {:title k :value v})))))
+   filter-exp is a regular expression to match the status codes to include."
+  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))
+        statuses (some identity (map filter tree))]
+    (.mkdirs (File. target-dir))
+    (doseq [[k v] statuses]
+      (spit (str target-dir (UUID/randomUUID) ".edn")
+            (pr-str {:code (name k) :doc (:doc v)})))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
   (prep-docs corpus)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
-     (doseq [e (a/analysis-> "host" 1234 codices corpus)]
-       (let [uri-path (-> (URI. (:uri e)) (.getPath))
-             id (str (name (:method e)) (stg/replace uri-path #"/" "-"))
-             body (body (get-in e [:codex :content-type]) (get-in e [:codex :body]))
-             success (or (get-in e [:codex :success-code]) (:status (pth/status (:method e))))
-             errors (get-in e [:codex :errors])
-             full (assoc e :id id :path (subs uri-path 1)
-                         :success-code (str success)
-                         :error-codes (str errors)
-                         :curl (cod/url-decode (c/curly-> e))
-                         :sample-response body)]
-         (spit (str directory "/api/" id ".edn") (pr-str (update-in full [:method] name)))
-         (doc-params directory id (:format e))
-         (doc-hdrs directory id (get-in e [:codex :headers])))))])
+     (doseq [{:keys [uri method tree] :as e} (a/analysis-> "host" 1234 codices corpus)]
+       (let [uri-path (-> (URI. uri) (.getPath))
+             id (str (name method) (stg/replace uri-path #"/" "-"))
+             body (body (doc/get-in-tree tree [:rsp :headers "Content-Type"])
+                        (doc/get-in-tree tree [:rsp :body]))
+             full {:id id
+                   :path (subs uri-path 1)
+                   :curl (cod/url-decode (c/curly-> e))
+                   :sample-response body
+                   :doc (doc/get-in-tree tree [:doc])
+                   :desc (doc/get-in-tree tree [:description])
+                   :method (name method)}]
+         (spit-to (str directory "/global/site.edn") (pr-str {:site-name (doc/get-in-tree tree [:title])}))
+         (spit-to (str directory "/api/" id ".edn") (pr-str full))
+         (doc-params (str directory "/" id "/params/") (doc/get-in-tree tree [:req :vars]))
+         (doc-hdrs (str directory "/" id "/headers/") (doc/get-in-tree tree [:rsp :headers]))
+         (doc-status-codes (str directory "/" id "/status-codes-success/") tree #"2\d\d")
+         (doc-status-codes (str directory "/" id "/status-codes-error/") tree #"[1345]\d\d"))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)
@@ -158,9 +175,9 @@
 ;; Probe result handlers
 ;; =============================================================================
 
-(defn res-simple! [result] (println "doing nothing"))
+(defn- res-simple! [result] (println "doing nothing"))
 
-(defn res-persist!
+(defn- res-persist!
   "Persist result in its interim state to a store.
    In this protoype the store is the disk."
   [result]

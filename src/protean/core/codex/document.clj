@@ -10,6 +10,27 @@
   "returns only entries where the keys are not keywords"
   [c] (remove #(keyword? (key %)) c))
 
+; TODO can we create our own destructure to get at stuff in tree?
+(defn get-in-tree
+  "returns the first result for given sequence of keys from a tree (scope)"
+  [tree ks]
+  (some identity (map #(get-in % ks) tree)))
+
+(defn assoc-tree-item->
+  "Extracts first out-ks in tree and assocs to target as in-k."
+  [tree out-ks in-ks target]
+  (if-let [v (get-in-tree tree out-ks)]
+    (if (empty? v) target (assoc-in target in-ks v)) ; TODO confirm is (empty?) - only applies to payload, not analysis?
+    target))
+
+(defn assoc-item->
+  "Extracts out-ks in source and assocs to target as in-ks."
+  [source out-ks in-ks target]
+  (if-let [v (get-in source out-ks)]
+    (if (empty? v) target (assoc-in target in-ks v))
+    target))
+
+
 ;; =============================================================================
 ;; Codex request
 ;; =============================================================================
@@ -42,7 +63,7 @@
 ;; Codex fragment functions (codex fragments that travel with tests etc)
 ;; =============================================================================
 
-(defn qp-type [c] (get-in c [:codex :q-params-type]))
+(defn qp-type [t] (get-in-tree t [:req :query-params-type]))
 
 (defn azn [c] (get-in c [:headers h/azn]))
 
@@ -51,4 +72,4 @@
 ;; Truthiness functions
 ;; =============================================================================
 
-(defn qp-json? [c] (= (qp-type c) :json))
+(defn qp-json? [t] (= (qp-type t) :json))

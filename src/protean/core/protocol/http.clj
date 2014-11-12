@@ -16,6 +16,9 @@
 ; default per method status codes
 (def statuses {:get 200 :post 201 :put 204 :delete 204 :head 200})
 
+(defn success? [status]
+  (.startsWith (str status) "2"))
+
 (defn status [method] {:status (or (method statuses) 500)})
 
 

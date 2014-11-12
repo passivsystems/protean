@@ -8,57 +8,111 @@
 {
   :includes [ "defaults.edn" ]
 
+  :title "Pet Store API Docs"
+
   "petstore" {
+
+    :types {
+      :Status "(available|pending|sold)"
+    }
+    :req {
+      :vars {
+        "status" {:type :Status :doc "Updated status of the pet"}
+      }
+    }
+
 
     "api/pet" {
 
       :put {
+        :description
+"Full description for update an existing pet"
         :doc "Update an existing pet"
-        :errors {:status [400 404 405]} ; Need to document the error codes
+        :rsp {
+          :200 {
+            ;; no need for a header, it is computed form the body file
+            :body "data/content/doc/responses/simple/200-ref.json"
+          }
+
+          :400 {
+            :doc "Pet not found"
+          }
+
+          :404 {
+            :doc "Invalid ID supplied"
+          }
+
+          :405 {
+            :doc "Validation exception"
+            ;; override the content type calculated from the file extension
+            :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
+            :body "data/content/problems/bad-custom-domain-field.json"
+          }
+        }
       }
 
       :post {
         :doc "Add a new pet to the store"
-        :errors {:status [405]}
+        :rsp {
+          :405 {
+            :doc "Validation exception"
+          }
+        }
       }
 
     }
-  
+
     "api/pet/*" {
+
+      :types {
+        :PetId "[0-9a-zA-Z]{3,7}"
+      }
+      :req {
+        :vars {
+          "pet/psv+" {:type :PetId :doc "ID of pet"}
+        }
+      }
 
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
           :query-params {:required {"name" "psv+name" "status" "psv+status"}}
-          :format {
-            "pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be updated"}
-            "name" {:type :String, :doc "Updated name of the pet"}
-            "status" {:type "(available|pending|sold)", :doc "Updated status of the pet"}
+          :body {"name" "psv+name" "status" "psv+status"} ; an alternative to query-params (should have required/optional?)
+          :vars {
+            "name" {:type :String :doc "Updated name of the pet"}
+            "status" {:type :Status :doc "Updated status of the pet"}
           }
         }
-        :errors {:status [405]}
+        :rsp {
+          :405 {
+            :doc "Validation exception"
+          }
+        }
       }
 
       :get {
         :doc "Find a pet by ID"
-        :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be fetched"}}
+
+        :rsp {
+          :404 {
+            :doc "Invalid ID supplied"
+          }
+
+          :405 {
+            :doc "Validation exception"
+            ;; override the content type calculated from the file extension
+            :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
+            :body "data/content/problems/bad-custom-domain-field.json"
+          }
         }
-        :errors {:status [400 404]}
       }
 
       :delete {
         :doc "Deletes a pet"
-        :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be deleted"}}
-        }
       }
 
       :patch {
         :doc "Partial updates to a pet"
-        :req {
-          :format {"pet/psv+" {:type "[0-9a-zA-Z]{3,7}" :doc "ID of pet that needs to be patched"}}
-        }
       }
 
     }
@@ -66,22 +120,29 @@
     "api/pet/findByStatus" {
       :get {
         :doc "Finds pets by status"
-        :query-params {:optional {"status" {:type "(available|pending|sold)" :doc "Status values that need to be considered for filter. available is default."}}}
+        :req {
+          :query-params {:optional {"status" "psv+status"}}
+        }
       }
     }
 
     "api/pet/findByTags" {
       :get {
         :doc "Finds pets by tags"
-        :query-params {:required {"tags" {:type :String :doc "Tags to filter by"}}}
+        :req {
+          :query-params {:required {"tags" "psv+tags"}}
+          :vars {"tags" {:type :String :doc "Tags to filter by"}}
+        }
       }
     }
 
     "api/pet/uploadImage" {
       :post {
         :doc "uploads an image"
-        :query-params {:required {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
+        :req {
+          :query-params {:required {"additionalMetadata" "psv+additionalMetadata"}}
 ;           {"file" {:type :File}} ; Binary?; Multipart?
+          :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
         }
       }
     }
