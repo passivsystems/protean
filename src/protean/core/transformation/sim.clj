@@ -16,11 +16,11 @@
 
 (defn- err-status?
   "Is payload status a codex error status code ?"
-  [{:keys [status]}] (some #{status} h/errs))
+  [{:keys [status]}] (not (h/success? status)))
 
 (defn- client-err-status?
   "Is payload status a codex client error status code ? "
-  [{:keys [status]}] (some #{status} h/client-errs))
+  [{:keys [status]}] (h/client-err? status))
 
 (defn- percentage? [x] (if (< (rand-int 100) x) true false))
 
@@ -132,8 +132,10 @@
        (verify-form req codex)
        (verify-body req codex)))
 
+(defn- default-status [method] {:status (or (method {:get 200 :post 201 :put 204 :delete 204 :head 200}) 500)})
+
 (defn- status [req codex srv-errs prob]
-  (->> (h/status (:method req))
+  (->> (default-status (:method req))
        (srv-2-status codex)
        (verify-2-status req codex)
        (err-2-status codex srv-errs prob)))

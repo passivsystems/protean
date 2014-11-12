@@ -7,7 +7,7 @@
             [me.rossputin.diskops :as d]
             [protean.core.codex.document :as doc]
             [protean.core.codex.placeholder :as p]
-            [protean.core.protocol.http :as pth]
+            [protean.core.protocol.http :as h]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.analysis :as a]
             [protean.core.transformation.curly :as c]
@@ -56,8 +56,8 @@
 (defn- body [ctype body]
   (if-let [b body]
     (cond
-      (= ctype pth/xml) (co/pretty-xml b)
-      (= ctype pth/txt) b
+      (= ctype h/xml) (co/pretty-xml b)
+      (= ctype h/txt) b
       :else (co/pretty-js b))
     "N/A"))
 
