@@ -53,12 +53,13 @@
     (tl-testdoc tests corpus codices)
     (tl-negotiation tests corpus codices)))
 
-(defn- body [ctype body]
-  (if-let [b body]
-    (cond
-      (= ctype h/xml) (co/pretty-xml b)
-      (= ctype h/txt) b
-      :else (co/pretty-js b))
+(defn- body [tree v]
+  (if-let [b (:body v)]
+    (let [ctype (d/get-in-tree tree [:codex :headers "Content-Type"])]
+      (cond
+        (= ctype pth/xml) (co/pretty-xml b)
+        (= ctype pth/txt) b
+        :else (co/pretty-js b)))
     "N/A"))
 
 (defn- bomb [msg]
@@ -127,7 +128,8 @@
     (.mkdirs (File. target-dir))
     (doseq [[k v] statuses]
       (spit (str target-dir (UUID/randomUUID) ".edn")
-            (pr-str {:code (name k) :doc (:doc v)}))))
+            (pr-str
+              {:code (name k) :doc (:doc v) :sample-response (body tree v)})))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
@@ -137,12 +139,9 @@
      (doseq [{:keys [uri method tree] :as e} (a/analysis-> "host" 1234 codices corpus)]
        (let [uri-path (-> (URI. uri) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
-             body (body (d/get-in-tree tree [:rsp :headers "Content-Type"])
-                        (d/get-in-tree tree [:rsp :body]))
              full {:id id
                    :path (subs uri-path 1)
                    :curl (cod/url-decode (c/curly-> e))
-                   :sample-response body
                    :doc (d/get-in-tree tree [:doc])
                    :desc (d/get-in-tree tree [:description])
                    :method (name method)}]
