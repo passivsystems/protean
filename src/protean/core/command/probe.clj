@@ -53,12 +53,13 @@
     (tl-testdoc tests corpus codices)
     (tl-negotiation tests corpus codices)))
 
-(defn- body [ctype body]
-  (if-let [b body]
-    (cond
-      (= ctype pth/xml) (co/pretty-xml b)
-      (= ctype pth/txt) b
-      :else (co/pretty-js b))
+(defn- body [tree v]
+  (if-let [b (:body v)]
+    (let [ctype (doc/get-in-tree tree [:codex :headers "Content-Type"])]
+      (cond
+        (= ctype pth/xml) (co/pretty-xml b)
+        (= ctype pth/txt) b
+        :else (co/pretty-js b)))
     "N/A"))
 
 (defn- bomb [msg]
@@ -129,7 +130,8 @@
     (.mkdirs (File. target-dir))
     (doseq [[k v] statuses]
       (spit (str target-dir (UUID/randomUUID) ".edn")
-              (pr-str {:code (name k) :doc (:doc v) :sample-response (:body v "N/A")})))))
+            (pr-str
+              {:code (name k) :doc (:doc v) :sample-response (body tree v)})))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
