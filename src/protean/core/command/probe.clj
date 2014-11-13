@@ -54,11 +54,12 @@
     (tl-negotiation tests corpus codices)))
 
 (defn- body [tree v]
-  (if-let [b (:body v)]
-    (let [ctype (d/get-in-tree tree [:codex :headers "Content-Type"])]
+  (if-let [bf (:body v)]
+    (let [b (slurp bf)
+          ctype (d/get-in-tree tree [:rsp :headers "Content-Type"])]
       (cond
-        (= ctype pth/xml) (co/pretty-xml b)
-        (= ctype pth/txt) b
+        (= ctype h/xml) (co/pretty-xml b)
+        (= ctype h/txt) b
         :else (co/pretty-js b)))
     "N/A"))
 
@@ -129,7 +130,7 @@
     (doseq [[k v] statuses]
       (spit (str target-dir (UUID/randomUUID) ".edn")
             (pr-str
-              {:code (name k) :doc (:doc v) :sample-response (body tree v)})))))
+              {:code (name k) :doc (:doc v) :sample-response (body tree v)}))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
@@ -149,8 +150,8 @@
          (spit-to (str directory "/api/" id ".edn") (pr-str full))
          (doc-params (str directory "/" id "/params/") (d/get-in-tree tree [:req :vars]))
          (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
-         (doc-status-codes (str directory "/" id "/status-codes-success/") (d/success-status tree))
-         (doc-status-codes (str directory "/" id "/status-codes-error/") (d/error-status tree)))))])
+         (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
+         (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree)))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)

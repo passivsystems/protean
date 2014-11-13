@@ -185,6 +185,9 @@
 
 
 
+;; =============================================================================
+;; NEW
+;; =============================================================================
 
 
 
@@ -242,13 +245,27 @@
   (println "scheduling" func "in" cron)
 )
 
-(defn- format-rsp [rsp]
-  (if rsp
-    (let [status-code (Integer/parseInt (name (key rsp)))
-          body (:body (val rsp))] ; TODO read body from file as instructed - also calculate mime-type
-      (println "rsp:" rsp)
-      (println "returning :" {:status status-code :body body})
-      {:status status-code :body body})
+(defn- mime [url]
+  (cond
+    (.endsWith url ".json") h/jsn
+    (.endsWith url ".xml") h/xml
+    (.endsWith url ".txt") h/txt
+    :else h/bin))
+
+(defn- format-rsp [rsp-entry]
+  (if rsp-entry
+    (let [status-code (Integer/parseInt (name (key rsp-entry)))
+          rsp (val rsp-entry)
+          body-url (:body rsp)
+          headers (:headers rsp)
+          headers_w_ctype (if (and body-url (not (get-in headers ["Content-Type"])))
+                            (assoc-in headers ["Content-Type"] (mime body-url))
+                            headers)
+          body (if body-url (slurp body-url))
+          response {:status status-code :headers headers_w_ctype :body body}]
+      (println "formatting rsp:" rsp)
+      (println "returning :" response)
+      response)
     (println "no response found to handle request")))
 
 (defn success []

@@ -30,6 +30,7 @@
 (def jsn-simple "application/json")
 (def jsn (str jsn-simple "; charset=utf-8"))
 (def frm "application/x-www-form-urlencoded")
+(def bin "application/octet-stream")
 
 
 ;; =============================================================================
