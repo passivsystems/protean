@@ -7,7 +7,7 @@
   :delete {:rsp {:204 {:doc "Success"}}}
   :head {:rsp {:200 {:doc "Success"}}}
 
-  :rsp {:headers {"X-Powered-By" "Protean"}}
+  ;; an example :rsp {:headers {"X-Powered-By" "Protean"}}
   :types {
     :String "[ -~]*" ; all ASCII chars between space and tilde are the printable chars.
     :Date "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))"
