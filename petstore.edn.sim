@@ -1,33 +1,25 @@
-(ns protean.core.transformation.sim
-  (:require [clojure.java.io :as io]))
+(refer 'protean.core.transformation.sim)
 
-  ; default behaviour
-  ; error response based on prob.
-  ; verify required inputs in request (headers, params)
-
-  ; email
-  ; rest calls
-  ; logging
-  ;
+  ; TODO:
+  ;   verify required inputs in request (headers, params)
+  ;   support emailing
 {
   "petstore" {
 
     "api/pet" {
       :put [
-        (fn []
-          {:status 200 :headers {"Content-Type" "application/json"} :body (io/file "data/content/doc/responses/simple/200-ref.json")})
+        #(-> {:status 200 :headers {"Content-Type" "application/json"} :body (slurp "data/content/doc/responses/simple/200-ref.json")})
       ]
     }
 
     "api/pet/*" {
-      :post [
-        (fn []
-          (success))
+      :get [
+        (fn [] (log request (str (env :user-home) "/tmp/requests.txt"))
+               (success))
       ]
 
       :delete [
-        (fn []
-          (error))
+        #(error)
       ]
 
       :patch [
@@ -36,50 +28,47 @@
               (success)))
       ]
 
-      :get [
+      :post [
 
-
-;put/post
-;"http://...."
-;content-type -> content-type
-;body -> body
-;log response "file:///"
-
-;          :errors {:status [504] :probability 50} ; success 50, error 50
-
-        ;; a synchronous response only
+        ;; synchronous response
         (fn []
           (when true
-          {:status 200 :body (io/file "data/content/doc/responses/simple/200-ref.json")}))
+            (respond 200 "data/content/doc/responses/simple/200-ref.json")))
 
+        ;; synchronously forward request to another API, and log response
         (fn []
           (when true
-            (transport "some body" "somewhere")))
+            (make-request :post "http://google.com" {
+              :content-type (get-in request [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
+              :body (:body request)
+              :log (str (env :user-home) "/tmp/responses.txt")})))
 
-        ;; a synchronous and n asynchronous events
+        ;; asynchronously forward request to another API, and log response
+        ;; after delay (in ms)
         (fn []
           (when true
-            (transport "some body" "somewhere")))
+            (after 3000
+              (delay
+                (make-request :post "http://google.com" {
+                  :content-type (get-in request [:headers "content-type"])
+                  :body (:body request)
+                  :log (str (env :user-home) "/tmp/responses.txt")})))))
 
-        (fn []
-          (when true
-            (schedule "- - 1 300000"
-              (delay (transport "post url headers body" "")))))
+        ;; TODO support these use cases?
+;        (fn []
+;          (when true
+;            (schedule "1415786400000 1415872800 - 300000" ;from 10 every 5 minutes for 24 hours
+;              (delay (transport "email some body" "somewhere")))))
 
-        (fn []
-          (when true
-            (schedule "1415786400000 1415872800 - 300000" ;from 10 every 5 minutes for 24 hours
-              (delay (transport "email some body" "somewhere")))))
+;        (fn []
+;          (when true
+;            (schedule "1415786400000 - 5 300000" ;from 10 every 5 minutes 5 times
+;              (delay (transport "some body" "somewhere")))))
 
-        (fn []
-          (when true
-            (schedule "1415786400000 - 5 300000" ;from 10 every 5 minutes 5 times
-              (delay (transport "some body" "somewhere")))))
-
-        (fn []
-          (when true
-            (schedule "0 0 15 ? * 5"
-              (delay (transport "some body" "somewhere")))))
+;        (fn []
+;          (when true
+;            (schedule "0 0 15 ? * 5"
+;              (delay (transport "some body" "somewhere")))))
       ]
     }
   }

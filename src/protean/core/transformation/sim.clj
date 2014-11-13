@@ -9,7 +9,10 @@
             [protean.core.protocol.http :as h]
             [protean.core.protocol.protean :as p]
             [protean.core.codex.document :as d]
-            [protean.core.transformation.coerce :as c])
+            [protean.core.transformation.coerce :as c]
+            [clj-http.client :as clt]
+            [overtone.at-at :as at]
+            [environ.core :as ec])
   (:import java.io.ByteArrayInputStream))
 
 ;; =============================================================================
@@ -216,34 +219,60 @@
         method (:request-method req)
         rules (get-in sim-rules [svc endpoint method])
         tree (d/to-seq codices svc endpoint method)
-        request (assoc-in req [:endpoint] endpoint) ; TODO review this - adding resolved endpoint to request
+        body-in (:body req)
+        request (assoc req
+          ; make endpoint available in request
+          :endpoint endpoint
+          ; also convert body from input stream to content, since we may need to access it more than once
+          :body (if body-in (slurp body-in) ""))
         corpus {}
         execute (fn [rule]
-          (binding [tree tree
-                    request request
-                    corpus corpus]
-             (apply rule nil)))
+          (try
+            (binding [tree tree
+                      request request
+                      corpus corpus]
+               (apply rule nil))
+            (catch Exception e (println "caught exception: " (.getMessage e)))))
+        ; we return the first non-nil response. If there are none - will return nil (resolves to 404)
         response (some identity (map execute rules))]
-    (println "uri:" uri)
-    (println (count rules) "rules for svc:" svc "endpoint:" endpoint "method:" method)
+    (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
     (println "responding with" response)
-    response)) ; TODO what if there is more than one?
+    response))
 
-;
-; DSL for sim..
-;
+;;;
+;;; DSL for sim..
+;;;
 
+;; scheduling....
+(def ^:private schedule-pool (at/mk-pool))
 
+(defn- job
+  "Creates a job to be scheduled from provided delay - will ensure dynamic bindings are preserved"
+  [delayed]
+  (let [captured_tree tree
+        captured_request request
+        captured_corpus corpus]
+    (fn []
+      (try
+        (do
+          (println "timeout - executing job")
+          (binding [tree captured_tree
+                    request captured_request
+                    corpus captured_corpus]
+            @delayed))
+      (catch Exception e (println "caught exception: " (.getMessage e)))))))
 
-(defn transport [what where]
-  (println "transporting" what "to" where)
-)
+(defn at [ms-time delayed] 
+  (at/at ms-time (job delayed) schedule-pool)
+;  (at/show-schedule schedule-pool)
+  nil)
 
 ; TODO use macro with lazy evaluation instead of delay?...
-(defn schedule [cron func]
-  
-  (println "scheduling" func "in" cron)
-)
+(defn after [delay-ms delayed]
+  (at/after delay-ms (job delayed) schedule-pool)
+;  (at/show-schedule schedule-pool)
+  nil)
+
 
 (defn- mime [url]
   (cond
@@ -259,7 +288,7 @@
           body-url (:body rsp)
           headers (:headers rsp)
           headers_w_ctype (if (and body-url (not (get-in headers ["Content-Type"])))
-                            (assoc-in headers ["Content-Type"] (mime body-url))
+                            (assoc headers "Content-Type" (mime body-url))
                             headers)
           body (if body-url (slurp body-url))
           response {:status status-code :headers headers_w_ctype :body body}]
@@ -268,14 +297,44 @@
       response)
     (println "no response found to handle request")))
 
-(defn success []
+(defn success
+  "Returns a (randomly selected) success response as defined for endpoint"
+  []
   (format-rsp (rand-nth (d/success-status tree))))
 
-(defn error []
+(defn error
+  "Returns a (randomly selected) error response as defined for endpoint"
+  []
   (format-rsp (rand-nth (d/error-status tree))))
 
+(defn respond
+  "Creates a response with the content and content-type for provided body-url"
+  [status-code body-url]
+  {:status status-code :body (slurp body-url) :headers {"Content-Type" (mime body-url)}})
+
 ; TODO use macro with lazy evaluation instead of delay...
-(defn prob [n delayed]
-  (println "prob" n)
+(defn prob
+  "Will evaluate the provided function with specified probability"
+  [n delayed]
   (if (< (rand) n) @delayed))
 
+(defn log [what where]
+  (let [to-log [(str (java.util.Date.)) what]]
+    (spit where (with-out-str (clojure.pprint/pprint to-log)) :append true)))
+
+(defn make-request
+  "Makes an API request"
+  [method url content]
+  (let [the-request (assoc content
+          :url url
+          :method method
+          :throw-exceptions false)
+        res (clt/request the-request)]
+    (println "res" res)
+    (if-let [log-file (:log content)]
+      (log [(str "Response from " (:url content)) res] log-file))))
+
+(defn env
+  "Accesses environment variables"
+  [name]
+  (ec/env name))
