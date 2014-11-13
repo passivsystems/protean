@@ -198,6 +198,12 @@
   )
 )
 
+
+(def ^:dynamic tree)
+(def ^:dynamic request)
+(def ^:dynamic corpus)
+
+
 (defn sim-rsp-> [{:keys [uri] :as req} codices]
   (println "\nsim-rsp-> req:" req)
   (let [svc (second (s/split uri #"/"))
@@ -209,7 +215,11 @@
         tree (d/to-seq codices svc endpoint method)
         request (assoc-in req [:endpoint] endpoint) ; TODO review this - adding resolved endpoint to request
         corpus {}
-        execute (fn [rule] (apply rule [tree request corpus]))
+        execute (fn [rule]
+          (binding [tree tree
+                    request request
+                    corpus corpus]
+             (apply rule nil)))
         response (some identity (map execute rules))]
     (println "uri:" uri)
     (println (count rules) "rules for svc:" svc "endpoint:" endpoint "method:" method)
@@ -219,31 +229,36 @@
 ;
 ; DSL for sim..
 ;
+
+
+
 (defn transport [what where]
   (println "transporting" what "to" where)
 )
 
+; TODO use macro with lazy evaluation instead of delay?...
 (defn schedule [cron func]
   
   (println "scheduling" func "in" cron)
 )
 
 (defn- format-rsp [rsp]
-  (let [status-code (Integer/parseInt (name (key rsp)))
-        body (:body (val rsp))] ; TODO read body from file as instructed - also calculate mime-type
-    (println "rsp:" rsp)
-    (println "returning :" {:status status-code :body body})
-    {:status status-code :body body}))
+  (if rsp
+    (let [status-code (Integer/parseInt (name (key rsp)))
+          body (:body (val rsp))] ; TODO read body from file as instructed - also calculate mime-type
+      (println "rsp:" rsp)
+      (println "returning :" {:status status-code :body body})
+      {:status status-code :body body})
+    (println "no response found to handle request")))
 
-(defn success [tree request]
+(defn success []
   (format-rsp (rand-nth (d/success-status tree))))
 
-(defn error [tree request]
+(defn error []
   (format-rsp (rand-nth (d/error-status tree))))
 
-(defn prob [n func]
-  (if (< rand n) eval func))
-
-
-
+; TODO use macro with lazy evaluation instead of delay...
+(defn prob [n delayed]
+  (println "prob" n)
+  (if (< (rand) n) @delayed))
 

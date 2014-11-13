@@ -14,62 +14,69 @@
 
     "api/pet" {
       :put [
-        (fn [tree request corpus]
+        (fn []
           {:status 200 :headers {"Content-Type" "application/json"} :body (io/file "data/content/doc/responses/simple/200-ref.json")})
       ]
     }
 
     "api/pet/*" {
       :post [
-        (fn [tree request corpus]
-          (success tree request))
+        (fn []
+          (success))
       ]
 
       :delete [
-        (fn [tree request corpus]
-          (error tree request))
+        (fn []
+          (error))
       ]
 
       :patch [
-        (fn [tree request corpus]
-          (or (prob 0.5 (error tree request))
-              (success tree request)))
+        (fn []
+          (or (prob 0.5 (delay (error)))
+              (success)))
       ]
 
       :get [
 
+
+;put/post
+;"http://...."
+;content-type -> content-type
+;body -> body
+;log response "file:///"
+
 ;          :errors {:status [504] :probability 50} ; success 50, error 50
 
         ;; a synchronous response only
-        (fn [tree request corpus]
+        (fn []
           (when true
           {:status 200 :body (io/file "data/content/doc/responses/simple/200-ref.json")}))
 
-        (fn [tree request corpus]
+        (fn []
           (when true
             (transport "some body" "somewhere")))
 
         ;; a synchronous and n asynchronous events
-        (fn [tree request corpus]
+        (fn []
           (when true
             (transport "some body" "somewhere")))
 
-        (fn [tree request corpus]
+        (fn []
           (when true
             (schedule "- - 1 300000"
               (delay (transport "post url headers body" "")))))
 
-        (fn [tree request corpus]
+        (fn []
           (when true
             (schedule "1415786400000 1415872800 - 300000" ;from 10 every 5 minutes for 24 hours
               (delay (transport "email some body" "somewhere")))))
 
-        (fn [tree request corpus]
+        (fn []
           (when true
             (schedule "1415786400000 - 5 300000" ;from 10 every 5 minutes 5 times
               (delay (transport "some body" "somewhere")))))
 
-        (fn [tree request corpus]
+        (fn []
           (when true
             (schedule "0 0 15 ? * 5"
               (delay (transport "some body" "somewhere")))))

@@ -108,10 +108,21 @@
 
       :delete {
         :doc "Deletes a pet"
+
+        :rsp {
+          :404 {
+            :doc "Invalid ID supplied"
+          }
+        }
       }
 
       :patch {
         :doc "Partial updates to a pet"
+        :rsp {
+          :404 {
+            :doc "Invalid ID supplied"
+          }
+        }
       }
 
     }
