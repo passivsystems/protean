@@ -4,8 +4,8 @@
             [clojure.java.io :refer [file]]
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
-            [me.rossputin.diskops :as d]
-            [protean.core.codex.document :as doc]
+            [me.rossputin.diskops :as dsk]
+            [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as p]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.coerce :as co]
@@ -68,8 +68,8 @@
 (defn- prep-docs [{:keys [directory]}]
   (if (not directory)
     (bomb "please provide \"directory\" config to generate docs")
-    (if (d/exists-dir? directory)
-      (do (d/delete-directory (file directory))
+    (if (dsk/exists-dir? directory)
+      (do (dsk/delete-directory (file directory))
           (.mkdirs (file (str directory "/api"))))
       (.mkdirs (file (str directory "/api"))))))
 
@@ -119,17 +119,15 @@
     (spit (str target-dir (UUID/randomUUID) ".edn")
           (pr-str {:title k :value v}))))
 
-(defn- doc-status-codes [target-dir tree filter-exp]
+(defn- doc-status-codes [target-dir tree statuses]
   "Doc response headers for a given node.
    Directory is the data directory root.
    Resource is the current endpoint (parent of headers).
    filter-exp is a regular expression to match the status codes to include."
-  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))
-        statuses (some identity (map filter tree))]
     (.mkdirs (File. target-dir))
     (doseq [[k v] statuses]
       (spit (str target-dir (UUID/randomUUID) ".edn")
-            (pr-str {:code (name k) :doc (:doc v)})))))
+            (pr-str {:code (name k) :doc (:doc v)}))))
 
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
@@ -139,21 +137,21 @@
      (doseq [{:keys [uri method tree] :as e} (a/analysis-> "host" 1234 codices corpus)]
        (let [uri-path (-> (URI. uri) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
-             body (body (doc/get-in-tree tree [:rsp :headers "Content-Type"])
-                        (doc/get-in-tree tree [:rsp :body]))
+             body (body (d/get-in-tree tree [:rsp :headers "Content-Type"])
+                        (d/get-in-tree tree [:rsp :body]))
              full {:id id
                    :path (subs uri-path 1)
                    :curl (cod/url-decode (c/curly-> e))
                    :sample-response body
-                   :doc (doc/get-in-tree tree [:doc])
-                   :desc (doc/get-in-tree tree [:description])
+                   :doc (d/get-in-tree tree [:doc])
+                   :desc (d/get-in-tree tree [:description])
                    :method (name method)}]
-         (spit-to (str directory "/global/site.edn") (pr-str {:site-name (doc/get-in-tree tree [:title])}))
+         (spit-to (str directory "/global/site.edn") (pr-str {:site-name (d/get-in-tree tree [:title])}))
          (spit-to (str directory "/api/" id ".edn") (pr-str full))
-         (doc-params (str directory "/" id "/params/") (doc/get-in-tree tree [:req :vars]))
-         (doc-hdrs (str directory "/" id "/headers/") (doc/get-in-tree tree [:rsp :headers]))
-         (doc-status-codes (str directory "/" id "/status-codes-success/") tree #"2\d\d")
-         (doc-status-codes (str directory "/" id "/status-codes-error/") tree #"[1345]\d\d"))))])
+         (doc-params (str directory "/" id "/params/") (d/get-in-tree tree [:req :vars]))
+         (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
+         (doc-status-codes (str directory "/" id "/status-codes-success/") (d/success-status tree))
+         (doc-status-codes (str directory "/" id "/status-codes-error/") (d/error-status tree)))))])
 
 (defmethod build :test [_ {:keys [locs] :as corpus} codices]
   (println "building a test probe to visit : " locs)

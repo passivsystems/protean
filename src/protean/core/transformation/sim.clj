@@ -38,10 +38,10 @@
       (first x)
       nil)))
 
-(defn- service-path? [codices srv k]
-  (or (get-in codices [srv k])
-      (get-in codices [srv (wild-path? k
-    (filter #(.contains % "*") (d/custom-keys (get-in codices [srv]))))])))
+(defn- service-path? [codices svc k]
+  (or (get-in codices [svc k])
+      (get-in codices [svc (wild-path? k
+    (filter #(.contains % "*") (d/custom-keys (get-in codices [svc]))))])))
 
 (defn req-> [{:keys [request-method headers query-params form-params body]}]
   {:method request-method :hdrs headers :q-params query-params
@@ -59,13 +59,13 @@
         (if k (st/rename-keys hdrs {k (str k "mutated")}) hdrs))
       hdrs)))
 
-(defn- srv-2-status [{:keys [rsp]} payload]
+(defn- svc-2-status [{:keys [rsp]} payload]
   (if-let [status (:status rsp)]
     (assoc payload :status status)
     payload))
 
-(defn- err-2-status [codex srv-errs prob payload]
-  (let [estatus (or (d/err-status codex) srv-errs)
+(defn- err-2-status [codex svc-errs prob payload]
+  (let [estatus (or (d/err-status codex) svc-errs)
         eprob (or (d/err-prob codex) prob)]
     (if (and
           (and estatus (percentage? eprob))
@@ -136,14 +136,14 @@
 
 (defn- default-status [method] {:status (or (method {:get 200 :post 201 :put 204 :delete 204 :head 200}) 500)})
 
-(defn- status [req codex srv-errs prob]
+(defn- status [req codex svc-errs prob]
   (->> (default-status (:method req))
-       (srv-2-status codex)
+       (svc-2-status codex)
        (verify-2-status req codex)
-       (err-2-status codex srv-errs prob)))
+       (err-2-status codex svc-errs prob)))
 
-(defn- headers [codex srv-errs svc-rsp prob payload]
-  (if-let [hdrs (mod-1st-hdr codex srv-errs svc-rsp prob)]
+(defn- headers [codex svc-errs svc-rsp prob payload]
+  (if-let [hdrs (mod-1st-hdr codex svc-errs svc-rsp prob)]
     (if (err-status? payload) payload (assoc payload :headers hdrs))
     payload))
 
@@ -168,16 +168,16 @@
 ;; =============================================================================
 
 (defn sim-rsp-old-> [{:keys [uri] :as req} codices]
-  (let [srv (second (s/split uri #"/"))
-        k (second (s/split uri (re-pattern (str "/" (name srv) "/"))))
-        srv-errors (get (get-in codices [srv :errors]) :status)
-        svc-rsp (get-in codices [srv :rsp])
-        prob (or (get (get-in codices [srv :errors]) :probability) 0)
+  (let [svc (second (s/split uri #"/"))
+        k (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
+        svc-errors (get (get-in codices [svc :errors]) :status)
+        svc-rsp (get-in codices [svc :rsp])
+        prob (or (get (get-in codices [svc :errors]) :probability) 0)
         req (req-> req)]
-    (if-let [codex (service-path? codices srv k)]
+    (if-let [codex (service-path? codices svc k)]
       (if ((:method req) codex)
-        (->> (status req ((:method req) codex) srv-errors prob)
-             (headers ((:method req) codex) srv-errors svc-rsp prob)
+        (->> (status req ((:method req) codex) svc-errors prob)
+             (headers ((:method req) codex) svc-errors svc-rsp prob)
              (body ((:method req) codex)))
         {:status 405})
       {:status 404})))
@@ -189,8 +189,8 @@
 
 
 
-(defn- to-endpoint [requested-endpoint sim-rules srv]
-  (let [endpoints (keys (get-in sim-rules [srv]))
+(defn- to-endpoint [requested-endpoint sim-rules svc]
+  (let [endpoints (keys (get-in sim-rules [svc]))
         to-tuple (fn [endpoint] [(s/replace endpoint #"\*" ".+") endpoint])
         regexs (map to-tuple endpoints)
         is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
@@ -200,19 +200,19 @@
 
 (defn sim-rsp-> [{:keys [uri] :as req} codices]
   (println "\nsim-rsp-> req:" req)
-  (let [srv (second (s/split uri #"/"))
-        sim-rules (m/load-script (str srv ".edn.sim"))
-        requested-endpoint (second (s/split uri (re-pattern (str "/" (name srv) "/"))))
-        endpoint (to-endpoint requested-endpoint sim-rules srv)
+  (let [svc (second (s/split uri #"/"))
+        sim-rules (m/load-script (str svc ".edn.sim"))
+        requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
+        endpoint (to-endpoint requested-endpoint sim-rules svc)
         method (:request-method req)
-        rules (get-in sim-rules [srv endpoint method])
-        codex (get-in codices [srv]) ; TODO or convert to tree?
+        rules (get-in sim-rules [svc endpoint method])
+        tree (d/to-seq codices svc endpoint method)
         request (assoc-in req [:endpoint] endpoint) ; TODO review this - adding resolved endpoint to request
         corpus {}
-        execute (fn [rule] (apply rule [codex request corpus]))
+        execute (fn [rule] (apply rule [tree request corpus]))
         response (some identity (map execute rules))]
     (println "uri:" uri)
-    (println (count rules) "rules for srv:" srv "endpoint:" endpoint "method:" method)
+    (println (count rules) "rules for svc:" svc "endpoint:" endpoint "method:" method)
     (println "responding with" response)
     response)) ; TODO what if there is more than one?
 
@@ -228,27 +228,21 @@
   (println "scheduling" func "in" cron)
 )
 
-(defn success [codex request]
-  (println "\nsuccess request:" request)
-  (println "\nsuccess codex:")
-  (clojure.pprint/pprint codex)
-  (let [rsp (get-in codex [(:endpoint request) (:request-method request) :rsp]) ; TODO need get-in-tree..
-        success-rsp (first rsp) ; TODO get success, not first - and find in whole tree, not first rsp defined
-        status-code (Integer/parseInt (name (key success-rsp)))
-        body (:body (val success-rsp))]
-    (println "success rsp:" success-rsp)
+(defn- format-rsp [rsp]
+  (let [status-code (Integer/parseInt (name (key rsp)))
+        body (:body (val rsp))] ; TODO read body from file as instructed - also calculate mime-type
+    (println "rsp:" rsp)
     (println "returning :" {:status status-code :body body})
-    {:status status-code :body body}
-  )
-      ; get default success from codex, and return that..
-;      :put {
-;        :rsp {
-;          :200 {
-;            ;; no need for a header, it is computed form the body file
-;            :body "data/content/doc/responses/simple/200-ref.json"
-;          }
+    {:status status-code :body body}))
 
-)
+(defn success [tree request]
+  (format-rsp (rand-nth (d/success-status tree))))
+
+(defn error [tree request]
+  (format-rsp (rand-nth (d/error-status tree))))
+
+(defn prob [n func]
+  (if (< rand n) eval func))
 
 
 

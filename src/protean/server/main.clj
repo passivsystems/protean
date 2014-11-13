@@ -14,7 +14,8 @@
             [protean.core.transformation.coerce :as co]
             [protean.server.docs :as pdoc]
             [protean.core.codex.reader :as r]
-            [protean.core.codex.document :as d])
+            [protean.core.codex.document :as d]
+            [clojure.pprint])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File)
   (:gen-class))
@@ -36,7 +37,15 @@
   [c-dir]
   (let [fs (files c-dir)]
     (doseq [f fs]
-      (reset! pipe/state (merge @pipe/state (r/read-codex f)))))
+      ; TODO - currently loading all codices whose defaults merge ontop of each other...
+      ; could segment by file name, but would need to look through them all for an appropriate endpoint..
+      ; also hot swapping - would be by whole file, not partial codex
+      (do
+;        (println "\n" f "->")
+;        (clojure.pprint/pprint (r/read-codex f))
+;        (println "\naftermerge:")
+;        (clojure.pprint/pprint (merge @pipe/state (r/read-codex f)))
+        (reset! pipe/state (merge @pipe/state (r/read-codex f))))))
   (d/custom-keys @pipe/state))
 
 

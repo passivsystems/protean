@@ -14,49 +14,62 @@
 
     "api/pet" {
       :put [
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           {:status 200 :headers {"Content-Type" "application/json"} :body (io/file "data/content/doc/responses/simple/200-ref.json")})
       ]
     }
 
     "api/pet/*" {
       :post [
-        (fn [codex request corpus]
-          (success codex request))
+        (fn [tree request corpus]
+          (success tree request))
+      ]
 
+      :delete [
+        (fn [tree request corpus]
+          (error tree request))
+      ]
+
+      :patch [
+        (fn [tree request corpus]
+          (or (prob 0.5 (error tree request))
+              (success tree request)))
       ]
 
       :get [
+
+;          :errors {:status [504] :probability 50} ; success 50, error 50
+
         ;; a synchronous response only
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           (when true
           {:status 200 :body (io/file "data/content/doc/responses/simple/200-ref.json")}))
 
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           (when true
             (transport "some body" "somewhere")))
 
         ;; a synchronous and n asynchronous events
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           (when true
             (transport "some body" "somewhere")))
 
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           (when true
             (schedule "- - 1 300000"
               (delay (transport "post url headers body" "")))))
 
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           (when true
             (schedule "1415786400000 1415872800 - 300000" ;from 10 every 5 minutes for 24 hours
               (delay (transport "email some body" "somewhere")))))
 
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           (when true
             (schedule "1415786400000 - 5 300000" ;from 10 every 5 minutes 5 times
               (delay (transport "some body" "somewhere")))))
 
-        (fn [codex request corpus]
+        (fn [tree request corpus]
           (when true
             (schedule "0 0 15 ? * 5"
               (delay (transport "some body" "somewhere")))))

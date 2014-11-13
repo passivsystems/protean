@@ -10,6 +10,15 @@
   "returns only entries where the keys are not keywords"
   [c] (remove #(keyword? (key %)) c))
 
+(defn to-seq [codices svc path method]
+  "creates a sequence (for now aka 'tree' - needs renaming) that can be traversed to resolve required references in scope"
+  [(get-in codices [svc path method])
+   (get-in codices [svc path])
+   (get-in codices [svc])
+   (get-in codices [method]) ; TODO confirm position of this..
+   codices]
+)
+
 ; TODO can we create our own destructure to get at stuff in tree?
 (defn get-in-tree
   "returns the first result for given sequence of keys from a tree (scope)"
@@ -57,6 +66,16 @@
 (defn err-status [c] (get-in c [:rsp :errors :status]))
 
 (defn err-prob [c] (get-in c [:rsp :errors :probability]))
+
+(defn status-matching [tree filter-exp]
+  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))]
+    (some identity (map filter tree))))
+
+(defn success-status [tree]
+  (status-matching tree #"2\d\d"))
+
+(defn error-status [tree]
+  (status-matching tree #"[1345]\d\d"))
 
 
 ;; =============================================================================

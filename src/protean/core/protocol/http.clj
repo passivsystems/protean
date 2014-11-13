@@ -8,6 +8,7 @@
 ;;;;;;;;;;;;;;;
 
 (defn success? [status]
+  (println status "is success?")
   (.startsWith (str status) "2"))
 
 (defn client-err? [status]
