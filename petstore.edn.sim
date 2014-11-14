@@ -13,7 +13,7 @@
 
     "api/pet/*" {
       :get [
-        (fn [] (log request (str (env :user-home) "/tmp/requests.txt"))
+        (fn [] (log request (str (env :user-home) "/tmp/protean-requests.txt"))
                (Thread/sleep 2000)
                (success))
       ]
@@ -42,7 +42,7 @@
             (make-request :post "http://google.com" {
               :content-type (get-in request [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
               :body (:body request)
-              :log (str (env :user-home) "/tmp/responses.txt")})))
+              :log (str (env :user-home) "/tmp/protean-responses.txt")})))
 
         ;; asynchronously forward request to another API, and log response
         ;; after delay (in ms)
@@ -53,7 +53,7 @@
                 (make-request :post "http://google.com" {
                   :content-type (get-in request [:headers "content-type"])
                   :body (:body request)
-                  :log (str (env :user-home) "/tmp/responses.txt")})))))
+                  :log (str (env :user-home) "/tmp/protean-responses.txt")})))))
 
         ;; TODO support these use cases?
 ;        (fn []
