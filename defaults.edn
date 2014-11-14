@@ -1,10 +1,10 @@
 {
   ; default status code per method
-  :get {:rsp {:200 {:doc "Success"}}}
-  :post {:rsp {:201 {:doc "Success"}}}
-  :put {:rsp {:204 {:doc "Success"}}}
-  :delete {:rsp {:204 {:doc "Success"}}}
-  :head {:rsp {:200 {:doc "Success"}}}
+  :get {:rsp {:200 {:doc "OK"}}}
+  :post {:rsp {:201 {:doc "Created"}}}
+  :put {:rsp {:204 {:doc "No Content"}}}
+  :delete {:rsp {:204 {:doc "No Content"}}}
+  :head {:rsp {:200 {:doc "OK"}}}
 
   ;; an example :rsp {:headers {"X-Powered-By" "Protean"}}
   :types {
