@@ -10,6 +10,15 @@
   "returns only entries where the keys are not keywords"
   [c] (remove #(keyword? (key %)) c))
 
+(defn to-seq [codices svc path method]
+  "creates a sequence (for now aka 'tree' - needs renaming) that can be traversed to resolve required references in scope"
+  [(get-in codices [svc path method])
+   (get-in codices [svc path])
+   (get-in codices [svc])
+   (get-in codices [method]) ; TODO confirm position of this..
+   codices]
+)
+
 ; TODO can we create our own destructure to get at stuff in tree?
 (defn get-in-tree
   "returns the first result for given sequence of keys from a tree (scope)"
@@ -35,13 +44,13 @@
 ;; Codex request
 ;; =============================================================================
 
-(defn qp [c] (get-in c [:req :query-params :required]))
+(defn qp [t] (get-in-tree t [:req :query-params :required]))
 
-(defn fp [c] (get-in c [:req :form-params]))
+(defn fp [t] (get-in-tree t [:req :form-params]))
 
-(defn hdrs-req [c] (get-in c [:req :headers]))
+(defn hdrs-req [t] (get-in-tree t [:req :headers]))
 
-(defn body-req [c] (get-in c [:req :body]))
+(defn body-req [t] (get-in-tree t [:req :body]))
 
 
 ;; =============================================================================
@@ -54,9 +63,15 @@
 
 (defn body-rsp [c] (get-in c [:rsp :body]))
 
-(defn err-status [c] (get-in c [:rsp :errors :status]))
+(defn status-matching [tree filter-exp]
+  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))]
+    (some identity (map filter tree))))
 
-(defn err-prob [c] (get-in c [:rsp :errors :probability]))
+(defn success-status [tree]
+  (status-matching tree #"2\d\d"))
+
+(defn error-status [tree]
+  (status-matching tree #"[1345]\d\d"))
 
 
 ;; =============================================================================

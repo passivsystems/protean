@@ -3,6 +3,7 @@
   :get {:rsp {:200 {:doc "OK"}}}
   :post {:rsp {:201 {:doc "Created"}}}
   :put {:rsp {:204 {:doc "No Content"}}}
+  :patch {:rsp {:204 {:doc "No Content"}}}
   :delete {:rsp {:204 {:doc "No Content"}}}
   :head {:rsp {:200 {:doc "OK"}}}
 

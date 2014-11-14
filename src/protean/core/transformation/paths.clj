@@ -26,17 +26,8 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn to-seq [codices svc path method]
-  "creates a sequence that can be traversed to resolve required references in scope"
-  [(get-in codices [svc path method])
-   (get-in codices [svc path])
-   (get-in codices [svc])
-   (get-in codices [method]) ; TODO confirm position of this..
-   codices]
-)
-
 (defn- encode [svc path method codex]
-  {:svc svc :path path :method method :tree (to-seq codex svc path method)})
+  {:svc svc :path path :method method :tree (d/to-seq codex svc path method)})
 
 (defn- is-http-method? [c]
   (some #{c} #{:get :post :put :delete :patch :head}))

@@ -1,179 +1,254 @@
 (ns protean.core.transformation.sim
   (:require [clojure.string :as s]
             [clojure.set :as st]
+            [clojure.pprint]
+            [clojure.main :as m]
             [clojure.xml :as x]
             [clojure.zip :as z]
             [cheshire.core :as jsn]
             [protean.core.protocol.http :as h]
             [protean.core.protocol.protean :as p]
             [protean.core.codex.document :as d]
-            [protean.core.transformation.coerce :as c])
+            [protean.core.transformation.coerce :as c]
+            [clj-http.client :as clt]
+            [overtone.at-at :as at]
+            [environ.core :as ec]
+            [io.aviso.ansi :as aa])
   (:import java.io.ByteArrayInputStream))
 
 ;; =============================================================================
-;; Helper functions
+;; Verify request functions
 ;; =============================================================================
 
-(defn- err-status?
-  "Is payload status a codex error status code ?"
-  [{:keys [status]}] (some #{status} h/errs))
+(defn- valid-headers? [request tree]
+  (let [hdrs (d/hdrs-req tree)]
+    (if hdrs
+      (let [expected-headers (map s/lower-case (keys hdrs))
+            received-headers (keys (:hdrs request))]
+        (if (every? (set received-headers) expected-headers)
+          true
+          (println "Headers not valid - expected" expected-headers "but received" received-headers)))
+      true)))
 
-(defn- client-err-status?
-  "Is payload status a codex client error status code ? "
-  [{:keys [status]}] (some #{status} h/client-errs))
+(defn- valid-query-params? [request tree]
+  (let [rpms (d/qp tree)]
+    (if rpms
+      (let [expected-qps (keys rpms)
+            received-qps (map name (keys (:params request)))]
+        (if (every? (set received-qps) expected-qps)
+          true
+          (println "Query params not valid - expected" expected-qps "but received" received-qps)))
+      true)))
 
-(defn- percentage? [x] (if (< (rand-int 100) x) true false))
+(defn- valid-form? [request tree]
+  (let [f-keys (d/fp tree)]
+    (if f-keys
+      (let [expected-form (keys f-keys)
+            received-form (keys (:form-params request))]
+        (if (= (set received-form) (set (keys f-keys)))
+          true
+          (println "Form params not valid - expected" expected-form "but received" received-form)))
+      true)))
 
-(defn- partial-path? [key path]
-  (let [split-path (set (s/split path #"/"))]
-    (>= (count (st/intersection (set (s/split key #"/")) split-path))
-       (dec (count split-path)))))
+(defn- zip-str [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
+(defn- map-vals [m k] (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))
+(defn- valid-xml-body? [request tree]
+  (let [codex-body (d/body-req tree)
+        tags-in-str (fn [s] (map-vals (zip-str s) :tag))]
+    (if codex-body
+      (let [expected-tags (tags-in-str (c/pretty-xml codex-body))
+            received-tags (tags-in-str (:body request))]
+        (if (= received-tags expected-tags)
+          true
+          (println "Xml body not valid - expected" expected-tags "but received" received-tags)))
+      true)))
 
-(defn- wild-path? [k paths]
-  (let [candidates (filter #(partial-path? k %) paths)]
-    (if-let [x (filter #(= (count (s/split k #"/"))
-                           (count (s/split % #"/"))) candidates)]
-      (first x)
-      nil)))
+(defn- valid-jsn-body? [request tree]
+  (let [codex-body (d/body-req tree)]
+    (if codex-body
+      (let [body-jsn (jsn/parse-string (:body request))]
+        (if (map? codex-body)
+          (let [expected-keys (set (keys codex-body))
+                received-keys (set (keys body-jsn))]
+            (if (= received-keys expected-keys)
+              true
+              (println "Json body not valid - expected" expected-keys "but received" received-keys)))
+          (contains? codex-body body-jsn)))
+      true)))
 
-(defn- service-path? [codices srv k]
-  (or (get-in codices [srv k])
-      (get-in codices [srv (wild-path? k
-    (filter #(.contains % "*") (d/custom-keys (get-in codices [srv]))))])))
+(defn- valid-body? [request tree]
+  (if (h/xml? (p/ctype request))
+    (valid-xml-body? request tree)
+    (valid-jsn-body? request tree)))
 
-(defn req-> [{:keys [request-method headers query-params form-params body]}]
-  {:method request-method :hdrs headers :q-params query-params
-   :form-params form-params :body (slurp body)})
 
-(defn- mod-1st-hdr
-  "If a based on a probability defined in the codex optionally mutate the first
-   response header."
-  [codex errs {:keys [headers]} prob]
-  (let [path-hdrs (d/hdrs-rsp codex)
-        hdrs (if-let [r-hdrs headers] (merge path-hdrs r-hdrs) path-hdrs)
-        estatus (or (d/err-status codex) errs)]
-    (if (and estatus (percentage? (or (d/err-prob codex) prob)))
-      (let [k (first (keys hdrs))]
-        (if k (st/rename-keys hdrs {k (str k "mutated")}) hdrs))
-      hdrs)))
 
-(defn- srv-2-status [{:keys [rsp]} payload]
-  (if-let [status (:status rsp)]
-    (assoc payload :status status)
-    payload))
+(defn- pretty-str [s ctype]
+  (cond
+    (h/xml? ctype) (c/pretty-xml s)
+    (h/txt? ctype) s
+    :else (c/pretty-js s)))
 
-(defn- err-2-status [codex srv-errs prob payload]
-  (let [estatus (or (d/err-status codex) srv-errs)
-        eprob (or (d/err-prob codex) prob)]
-    (if (and
-          (and estatus (percentage? eprob))
-          (not (client-err-status? payload)))
-      (assoc payload :status (rand-nth estatus))
-      payload)))
+(defn- to-endpoint [requested-endpoint sim-rules svc]
+  (let [endpoints (keys (get-in sim-rules [svc]))
+        to-tuple (fn [endpoint] [(s/replace endpoint #"\*" ".+") endpoint])
+        regexs (map to-tuple endpoints)
+        is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
+    (some is-match regexs)))
 
-(defn- verify-headers [req codex payload]
-  (if-let [hdrs (d/hdrs-req codex)]
-    (if (every? (set (keys (:hdrs req))) (map s/lower-case (keys hdrs)))
-      payload
-      (assoc payload :status 400))
-    payload))
+(defn- print-error [e] (println (aa/red (str "caught exception: " (.getMessage e)))))
 
-(defn- verify-query-params [req codex payload]
-  (if-let [rpms (d/qp codex)]
-    (if (every? (set (keys (:q-params req))) (keys rpms))
-      payload
-      (assoc payload :status 400))
-    payload))
-
-(defn- verify-form [req codex payload]
-  (if-let [f-keys (d/fp codex)]
-    (let [req-form-ks (set (keys (:form-params req)))]
-      (if (= req-form-ks (set (keys f-keys)))
-        payload
-        (assoc payload :status 400)))
-    payload))
-
-(defn zip-str [s]
-  (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
-
-(defn- map-vals [m k]
-  (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))
-
-(defn- xml-body [req codex payload]
-  (if-let [codex-body (d/body-req codex)]
-    (let [req-xml (zip-str (:body req))
-          codex-xml (zip-str (c/pretty-xml (d/body-req codex)))
-          rb-vals (map-vals req-xml :tag)
-          cb-vals (map-vals codex-xml :tag)]
-      (if (= rb-vals cb-vals) payload (assoc payload :status 400)))
-    payload))
-
-(defn- jsn-body [req codex payload]
-  (if-let [codex-body (d/body-req codex)]
-    (let [body-jsn (jsn/parse-string (:body req))]
-      (if (map? codex-body)
-        (let [req-body-ks (set (keys body-jsn))]
-          (if (= req-body-ks (set (keys codex-body)))
-            payload
-            (assoc payload :status 400)))
-        (if (contains? codex-body body-jsn)
-          payload
-          (assoc payload :status 400))))
-    payload))
-
-(defn- verify-body [req codex payload]
-  (if (h/xml? (p/ctype req))
-    (xml-body req codex payload)
-    (jsn-body req codex payload)))
-
-(defn- verify-2-status [req codex payload]
-  (->> (verify-headers req codex payload)
-       (verify-query-params req codex)
-       (verify-form req codex)
-       (verify-body req codex)))
-
-(defn- status [req codex srv-errs prob]
-  (->> (h/status (:method req))
-       (srv-2-status codex)
-       (verify-2-status req codex)
-       (err-2-status codex srv-errs prob)))
-
-(defn- headers [codex srv-errs svc-rsp prob payload]
-  (if-let [hdrs (mod-1st-hdr codex srv-errs svc-rsp prob)]
-    (if (err-status? payload) payload (assoc payload :headers hdrs))
-    payload))
-
-;; TODO: this is nasty, needs refactoring, no time right now
-(defn- body [codex payload]
-  (when (:time (:rsp codex))
-    (Thread/sleep (* (:time (:rsp codex)) 1000)))
-  (if (err-status? payload)
-    payload
-    (if-let [body (:body (:rsp codex))]
-      (if-let [ctype (d/rsp-type codex)]
-        (cond
-          (h/xml? ctype) (h/rsp payload ctype (c/pretty-xml body))
-          (h/txt? ctype) (h/rsp payload ctype body)
-          :else (h/rsp payload h/jsn (c/pretty-js body)))
-        (h/rsp payload h/jsn (c/pretty-js body)))
-      payload)))
+(def ^:dynamic tree)
+(def ^:dynamic request)
+(def ^:dynamic corpus)
 
 
 ;; =============================================================================
-;; Transformation functions
+;; Entry
 ;; =============================================================================
 
 (defn sim-rsp-> [{:keys [uri] :as req} codices]
-  (let [srv (second (s/split uri #"/"))
-        k (second (s/split uri (re-pattern (str "/" (name srv) "/"))))
-        srv-errors (get (get-in codices [srv :errors]) :status)
-        svc-rsp (get-in codices [srv :rsp])
-        prob (or (get (get-in codices [srv :errors]) :probability) 0)
-        req (req-> req)]
-    (if-let [codex (service-path? codices srv k)]
-      (if ((:method req) codex)
-        (->> (status req ((:method req) codex) srv-errors prob)
-             (headers ((:method req) codex) srv-errors svc-rsp prob)
-             (body ((:method req) codex)))
-        {:status 405})
-      {:status 404})))
+  (let [svc (second (s/split uri #"/"))
+        sim-rules (m/load-script (str svc ".edn.sim"))
+        requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
+        endpoint (to-endpoint requested-endpoint sim-rules svc)
+        method (:request-method req)
+        rules (get-in sim-rules [svc endpoint method])
+        tree (d/to-seq codices svc endpoint method)
+        body-in (:body req)
+        request (assoc req
+          ; make endpoint available in request
+          :endpoint endpoint
+          ; also convert body from input stream to content, since we may need to access it more than once
+          :body (if body-in (slurp body-in) ""))
+        corpus {}
+        execute (fn [rule]
+          (try
+            (binding [tree tree
+                      request request
+                      corpus corpus]
+               (apply rule nil))
+            (catch Exception e (print-error e))))
+        ; we return the first non-nil response. If there are none - will return nil (resolves to 404)
+        response (some identity (map execute rules))]
+    (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
+    (println "responding with" response)
+    response))
+
+
+;; =============================================================================
+;; DSL for sims
+;; =============================================================================
+
+
+; TODO provide schema in codex for xml/json, and validate against that.
+(defn valid-inputs? []
+  (and
+    (valid-headers? request tree)
+    (valid-query-params? request tree)
+    (valid-form? request tree)
+    (valid-body? request tree)))
+
+;; =============================================================================
+;; Scheduling
+;; =============================================================================
+
+(def ^:private schedule-pool (at/mk-pool))
+
+(defn- job
+  "Creates a job to be scheduled from provided delay - will ensure dynamic bindings are preserved"
+  [delayed]
+  (let [captured_tree tree
+        captured_request request
+        captured_corpus corpus]
+    (fn []
+      (try
+        (do
+          (println "timeout - executing job")
+          (binding [tree captured_tree
+                    request captured_request
+                    corpus captured_corpus]
+            @delayed))
+      (catch Exception e (print-error e))))))
+
+(defn at [ms-time delayed] 
+  (at/at ms-time (job delayed) schedule-pool)
+;  (at/show-schedule schedule-pool)
+  nil)
+
+; TODO use macro with lazy evaluation instead of delay?...
+(defn after [delay-ms delayed]
+  (at/after delay-ms (job delayed) schedule-pool)
+;  (at/show-schedule schedule-pool)
+  nil)
+
+
+(defn- mime [url]
+  (cond
+    (.endsWith url ".json") h/jsn
+    (.endsWith url ".xml") h/xml
+    (.endsWith url ".txt") h/txt
+    :else h/bin))
+
+(defn- format-rsp [rsp-entry]
+  (if rsp-entry
+    (let [status-code (Integer/parseInt (name (key rsp-entry)))
+          rsp (val rsp-entry)
+          body-url (:body rsp)
+          headers (:headers rsp)
+          headers_w_ctype (if (and body-url (not (get-in headers ["Content-Type"])))
+                            (assoc headers "Content-Type" (mime body-url))
+                            headers)
+          body (if body-url (slurp body-url))
+          response {:status status-code :headers headers_w_ctype :body body}]
+      (println "formatting rsp:" rsp)
+      (println "returning :" response)
+      response)
+    (println "no response found to handle request")))
+
+(defn success
+  "Returns a (randomly selected) success response as defined for endpoint"
+  []
+  (format-rsp (rand-nth (d/success-status tree))))
+
+(defn error
+  "Returns a (randomly selected) error response as defined for endpoint"
+  []
+  (format-rsp (rand-nth (d/error-status tree))))
+
+(defn respond
+  "Creates a response with given status-code.
+   If body-url is provided, will include the content and inferred content-type."
+  [status-code & {:keys [body-url]}]
+  (if body-url
+    {:status status-code
+      :body (slurp body-url)
+      :headers {"Content-Type" (mime body-url)}}
+    {:status status-code}))
+
+; TODO use macro with lazy evaluation instead of delay...
+(defn prob
+  "Will evaluate the provided function with specified probability"
+  [n delayed]
+  (if (< (rand) n) @delayed))
+
+(defn log [what where]
+  (let [to-log [(str (java.util.Date.)) what]]
+    (spit where (with-out-str (clojure.pprint/pprint to-log)) :append true)))
+
+(defn make-request
+  "Makes an API request"
+  [method url content]
+  (let [the-request (assoc content
+          :url url
+          :method method
+          :throw-exceptions false)
+        res (clt/request the-request)]
+    (println "res" res)
+    (if-let [log-file (:log content)]
+      (log [(str "Response from " (:url content)) res] log-file))))
+
+(defn env
+  "Accesses environment variables"
+  [name]
+  (ec/env name))

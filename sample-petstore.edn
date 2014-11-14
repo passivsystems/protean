@@ -25,12 +25,11 @@
     "api/pet" {
 
       :put {
-        :description
-"Full description for update an existing pet"
+        :description "Full description for update an existing pet"
         :doc "Update an existing pet"
         :rsp {
           :200 {
-            ;; no need for a header, it is computed form the body file
+            ;; no need for a header, it is computed from the body file
             :body "data/content/doc/responses/simple/200-ref.json"
           }
 
@@ -94,6 +93,10 @@
         :doc "Find a pet by ID"
 
         :rsp {
+          :200 {
+            :body "data/content/doc/responses/simple/200-ref.json"
+          }
+
           :404 {
             :doc "Invalid ID supplied"
           }
@@ -109,10 +112,21 @@
 
       :delete {
         :doc "Deletes a pet"
+
+        :rsp {
+          :404 {
+            :doc "Invalid ID supplied"
+          }
+        }
       }
 
       :patch {
         :doc "Partial updates to a pet"
+        :rsp {
+          :404 {
+            :doc "Invalid ID supplied"
+          }
+        }
       }
 
     }
