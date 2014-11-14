@@ -12,7 +12,8 @@
             [protean.core.transformation.coerce :as c]
             [clj-http.client :as clt]
             [overtone.at-at :as at]
-            [environ.core :as ec])
+            [environ.core :as ec]
+            [io.aviso.ansi :as aa])
   (:import java.io.ByteArrayInputStream))
 
 ;; =============================================================================
@@ -22,37 +23,56 @@
 (defn- valid-headers? [request tree]
   (let [hdrs (d/hdrs-req tree)]
     (if hdrs
-      (every? (set (keys (:hdrs request))) (map s/lower-case (keys hdrs)))
+      (let [expected-headers (map s/lower-case (keys hdrs))
+            received-headers (keys (:hdrs request))]
+        (if (every? (set received-headers) expected-headers)
+          true
+          (println "Headers not valid - expected" expected-headers "but received" received-headers)))
       true)))
 
 (defn- valid-query-params? [request tree]
   (let [rpms (d/qp tree)]
     (if rpms
-      (every? (set (keys (:q-params request))) (keys rpms))
+      (let [expected-qps (keys rpms)
+            received-qps (map name (keys (:params request)))]
+        (if (every? (set received-qps) expected-qps)
+          true
+          (println "Query params not valid - expected" expected-qps "but received" received-qps)))
       true)))
 
 (defn- valid-form? [request tree]
   (let [f-keys (d/fp tree)]
     (if f-keys
-      (= (set (keys (:form-params request))) (set (keys f-keys)))
+      (let [expected-form (keys f-keys)
+            received-form (keys (:form-params request))]
+        (if (= (set received-form) (set (keys f-keys)))
+          true
+          (println "Form params not valid - expected" expected-form "but received" received-form)))
       true)))
 
+(defn- zip-str [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
+(defn- map-vals [m k] (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))
 (defn- valid-xml-body? [request tree]
   (let [codex-body (d/body-req tree)
-        zip-str (fn [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
-        map-vals (fn [m k] (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))]
+        tags-in-str (fn [s] (map-vals (zip-str s) :tag))]
     (if codex-body
-      (let [req-xml (zip-str (:body request))
-            codex-xml (zip-str (c/pretty-xml codex-body))]
-        (= (map-vals req-xml :tag) (map-vals codex-xml :tag)))
-       true)))
+      (let [expected-tags (tags-in-str (c/pretty-xml codex-body))
+            received-tags (tags-in-str (:body request))]
+        (if (= received-tags expected-tags)
+          true
+          (println "Xml body not valid - expected" expected-tags "but received" received-tags)))
+      true)))
 
 (defn- valid-jsn-body? [request tree]
   (let [codex-body (d/body-req tree)]
     (if codex-body
       (let [body-jsn (jsn/parse-string (:body request))]
         (if (map? codex-body)
-          (= (set (keys body-jsn)) (set (keys codex-body)))
+          (let [expected-keys (set (keys codex-body))
+                received-keys (set (keys body-jsn))]
+            (if (= received-keys expected-keys)
+              true
+              (println "Json body not valid - expected" expected-keys "but received" received-keys)))
           (contains? codex-body body-jsn)))
       true)))
 
@@ -63,20 +83,11 @@
 
 
 
-; TODO use (c/pretty-xml body) and (c/pretty-js body) to format response as appropriate
-; (cond
-;          (h/xml? ctype) (h/rsp payload ctype (c/pretty-xml body))
-;          (h/txt? ctype) (h/rsp payload ctype body)
-;          :else (h/rsp payload h/jsn (c/pretty-js body)))
-;        (h/rsp payload h/jsn (c/pretty-js body)))
-  
-
-;; =============================================================================
-;; NEW
-;; =============================================================================
-
-
-
+(defn- pretty-str [s ctype]
+  (cond
+    (h/xml? ctype) (c/pretty-xml s)
+    (h/txt? ctype) s
+    :else (c/pretty-js s)))
 
 (defn- to-endpoint [requested-endpoint sim-rules svc]
   (let [endpoints (keys (get-in sim-rules [svc]))
@@ -85,14 +96,18 @@
         is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
     (some is-match regexs)))
 
+(defn- print-error [e] (println (aa/red (str "caught exception: " (.getMessage e)))))
 
 (def ^:dynamic tree)
 (def ^:dynamic request)
 (def ^:dynamic corpus)
 
 
+;; =============================================================================
+;; Entry
+;; =============================================================================
+
 (defn sim-rsp-> [{:keys [uri] :as req} codices]
-  (println "\nsim-rsp-> req:" req)
   (let [svc (second (s/split uri #"/"))
         sim-rules (m/load-script (str svc ".edn.sim"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
@@ -113,7 +128,7 @@
                       request request
                       corpus corpus]
                (apply rule nil))
-            (catch Exception e (println "caught exception: " (.getMessage e)))))
+            (catch Exception e (print-error e))))
         ; we return the first non-nil response. If there are none - will return nil (resolves to 404)
         response (some identity (map execute rules))]
     (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
@@ -121,11 +136,12 @@
     response))
 
 
+;; =============================================================================
+;; DSL for sims
+;; =============================================================================
+
 
 (defn valid-inputs? []
-  (println "verifying inputs:")
-;  (clojure.pprint/pprint tree)
-
   (and
     (valid-headers? request tree)
     (valid-query-params? request tree)
@@ -152,7 +168,7 @@
                     request captured_request
                     corpus captured_corpus]
             @delayed))
-      (catch Exception e (println "caught exception: " (.getMessage e)))))))
+      (catch Exception e (print-error e))))))
 
 (defn at [ms-time delayed] 
   (at/at ms-time (job delayed) schedule-pool)
@@ -202,9 +218,11 @@
 (defn respond
   "Creates a response with given status-code.
    If body-url is provided, will include the content and inferred content-type."
-  [status-code & body-url]
+  [status-code & {:keys [body-url]}]
   (if body-url
-    {:status status-code :body (slurp body-url) :headers {"Content-Type" (mime body-url)}}
+    {:status status-code
+      :body (slurp body-url)
+      :headers {"Content-Type" (mime body-url)}}
     {:status status-code}))
 
 ; TODO use macro with lazy evaluation instead of delay...

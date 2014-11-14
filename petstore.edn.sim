@@ -15,6 +15,7 @@
     "api/pet/*" {
       :get [
         (fn [] (log request (str (env :user-home) "/tmp/requests.txt"))
+               (Thread/sleep 2000)
                (success))
       ]
 
@@ -32,12 +33,13 @@
 
         ;; synchronous response
         (fn []
-          (when true
-            (respond 200 "data/content/doc/responses/simple/200-ref.json")))
+          (if (valid-inputs?)
+            (respond 200 :body-url "data/content/doc/responses/simple/200-ref.json")
+            (respond 400)))
 
         ;; synchronously forward request to another API, and log response
         (fn []
-          (when true
+          (when (valid-inputs)
             (make-request :post "http://google.com" {
               :content-type (get-in request [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
               :body (:body request)
