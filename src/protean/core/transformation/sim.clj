@@ -141,6 +141,7 @@
 ;; =============================================================================
 
 
+; TODO provide schema in codex for xml/json, and validate against that.
 (defn valid-inputs? []
   (and
     (valid-headers? request tree)

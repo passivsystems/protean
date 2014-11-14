@@ -45,7 +45,6 @@
    ["-d" "--directory DIRECTORY" "Documentation site"]
    ["-b" "--body BODY" "JSON body"]
    ["-s" "--status-err STATUS-ERROR" "Error status code"]
-   ["-l" "--level LEVEL" "Error level (probability)"]
    ["-h" "--help"]])
 
 (defn- usage-hud [options-summary]
@@ -69,9 +68,6 @@
         "  service-usage          -n myservice (List curl statements to use API)"
         "  add-services           -f service-config-file.edn (Add services in a codex)"
         "  del-service            -n myservice (Delete a service)"
-        "  service-errors         -n myservice (Show service level error status codes)"
-        "  add-service-error      -n myservice -s 500 (Add an error status code to a service)"
-        "  del-service-errors     -n myservice (Delete error response codes)"
         ""
         "Please refer to the manual page for more information."]
        (s/join \newline)))
@@ -117,9 +113,6 @@
       (and (= cmd i/svc-usg) (not name)) (bomb summary)
       (and (= cmd i/add-svcs) (not file)) (bomb summary)
       (and (= cmd i/del-svc) (not name)) (bomb summary)
-      (and (= cmd i/svc-errs) (not name)) (bomb summary)
-      (and (= cmd i/add-svc-err) (i/add-svc-err? options)) (bomb summary)
-      (and (= cmd i/del-svc-errs) (not name)) (bomb summary)
       (and (= cmd i/visit (i/visit? options))) (bomb summary))))
 
 (defn -main [& args]
@@ -133,8 +126,5 @@
       (= cmd i/svc-usg) (project-usage options)
       (= cmd i/add-svcs) (add-projects options)
       (= cmd i/del-svc) (delete-project options)
-      (= cmd i/svc-errs) (service-errors options)
-      (= cmd i/add-svc-err) (add-project-error options)
-      (= cmd i/del-svc-errs) (del-project-errors options)
       (= cmd i/visit) (visit options)
       :else (exit 1 (usage-exit summary)))))

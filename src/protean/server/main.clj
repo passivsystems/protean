@@ -62,12 +62,6 @@
   (GET    "/documentation" [] (pipe/service-documentation))
   (GET    "/roadmap" [] (pipe/service-road))
   (GET    "/community" [] (pipe/service-community))
-  (GET    "/services/:id/errors" [id] (pipe/service-errors id))
-  (DELETE "/services/:id/errors" [id] (pipe/delete-service-errors id))
-  (PUT    "/services/:id/errors/status/:err" [id err]
-    (pipe/put-service-error id err))
-  (PUT    "/services/:id/errors/probability/:prob" [id prob]
-    (pipe/put-service-error-prob id prob))
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
   (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))

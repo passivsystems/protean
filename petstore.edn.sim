@@ -1,8 +1,7 @@
 (refer 'protean.core.transformation.sim)
 
-  ; TODO:
-  ;   verify required inputs in request (headers, params)
-  ;   support emailing
+; TODO:
+;   support emailing
 {
   "petstore" {
 

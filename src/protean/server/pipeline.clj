@@ -86,24 +86,6 @@
       (spit (str (name (key d)) ".edn") (pr-str {(key d) (val d)})))
     (services)))
 
-(defn service-errors [svc]
-  (assoc json :body (co/js (get-in @state [svc :errors :status]))))
-
-(defn delete-service-errors [svc]
-  (reset! state (ib/dissoc-in @state [svc :errors :status]))
-  {:status 204})
-
-(defn put-service-error [svc err]
-  (reset! state
-    (update-in @state [svc :errors :status] conj (co/int err)))
-  {:status 204})
-
-(defn put-service-error-prob [svc prob]
-  (reset! state
-    (assoc-in @state [svc :errors :probability] (co/int prob)))
-  {:status 204})
-
-
 ;; services documentation
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
