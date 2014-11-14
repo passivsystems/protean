@@ -3,26 +3,41 @@
   (:require [clj-http.client :as clt]
             [protean.core.transformation.coerce :as c]))
 
-(defn projects [{:keys [host port]}]
+(defn services [{:keys [host port]}]
 	(let [rsp (clt/get (str "http://" host ":" port "/services"))]
     (c/pretty-clj (:body rsp))))
 
-(defn project [{:keys [host port name]}]
+(defn service [{:keys [host port name]}]
   (let [rsp (clt/get (str "http://" host ":" port "/services/" name))]
     (c/pretty-clj (:body rsp))))
 
-(defn project-usage [{:keys [host port name]}]
+(defn service-usage [{:keys [host port name]}]
   (let [rsp (clt/get (str "http://" host ":" port "/services/" name "/usage"))]
     (doseq [j (c/clj (:body rsp))] (println j))))
 
-(defn add-projects [{:keys [file host port]}]
+(defn add-services [{:keys [file host port]}]
   (let [rsp (clt/put (str "http://" host ":" port "/services")
               {:multipart [{:name "file"
                             :content (clojure.java.io/file file)}]})]
     (println (:body rsp))))
 
-(defn delete-project [{:keys [host port name] :as options}]
+(defn delete-service [{:keys [host port name] :as options}]
   (let [rsp (clt/delete (str "http://" host ":" port "/services/" name)
                         {:throw-exceptions false})]
-   (projects options)))
+   (services options)))
+
+(defn sims [{:keys [host port]}]
+	(let [rsp (clt/get (str "http://" host ":" port "/sims"))]
+    (c/pretty-clj (:body rsp))))
+
+(defn add-sims [{:keys [file host port]}]
+  (let [rsp (clt/put (str "http://" host ":" port "/sims")
+              {:multipart [{:name "file"
+                            :content (clojure.java.io/file file)}]})]
+    (println (:body rsp))))
+
+(defn delete-sim [{:keys [host port name] :as options}]
+  (let [rsp (clt/delete (str "http://" host ":" port "/sims/" name)
+                        {:throw-exceptions false})]
+   (sims options)))
 

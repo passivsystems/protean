@@ -66,8 +66,11 @@
         "  services               (List services)"
         "  service                -n myservice (List service)"
         "  service-usage          -n myservice (List curl statements to use API)"
-        "  add-services           -f service-config-file.edn (Add services in a codex)"
+        "  add-services           -f service-config-file.cod.edn (Add services in a codex)"
         "  del-service            -n myservice (Delete a service)"
+        "  sims                   (List sims)"
+        "  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
+        "  del-sim                -n myservice (Delete a sim)"
         ""
         "Please refer to the manual page for more information."]
        (s/join \newline)))
@@ -113,6 +116,8 @@
       (and (= cmd i/svc-usg) (not name)) (bomb summary)
       (and (= cmd i/add-svcs) (not file)) (bomb summary)
       (and (= cmd i/del-svc) (not name)) (bomb summary)
+      (and (= cmd i/add-sims) (not file)) (bomb summary)
+      (and (= cmd i/del-sim) (not name)) (bomb summary)
       (and (= cmd i/visit (i/visit? options))) (bomb summary))))
 
 (defn -main [& args]
@@ -121,10 +126,13 @@
     (handle-errors options arguments errors summary)
     (println "\n")
     (cond
-      (= cmd i/svcs) (projects options)
-      (= cmd i/svc) (project options)
-      (= cmd i/svc-usg) (project-usage options)
-      (= cmd i/add-svcs) (add-projects options)
-      (= cmd i/del-svc) (delete-project options)
+      (= cmd i/svcs) (services options)
+      (= cmd i/svc) (service options)
+      (= cmd i/svc-usg) (service-usage options)
+      (= cmd i/add-svcs) (add-services options)
+      (= cmd i/del-svc) (delete-service options)
+      (= cmd i/sims) (sims options)
+      (= cmd i/add-sims) (add-sims options)
+      (= cmd i/del-sim) (delete-sim options)
       (= cmd i/visit) (visit options)
       :else (exit 1 (usage-exit summary)))))

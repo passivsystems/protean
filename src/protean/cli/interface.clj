@@ -12,6 +12,9 @@
 (def svcs "services")
 (def add-svcs "add-services")
 (def del-svc "del-service")
+(def sims "sims")
+(def add-sims "add-sims")
+(def del-sim "del-sim")
 (def doc "doc")
 (def visit "visit")
 

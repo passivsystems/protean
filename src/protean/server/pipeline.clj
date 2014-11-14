@@ -1,6 +1,7 @@
 (ns protean.server.pipeline
   (:require [clojure.edn :as edn]
             [clojure.core.incubator :as ib]
+            [clojure.main :as m]
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
@@ -27,6 +28,7 @@
 (def json {:headers {h/ctype h/jsn}})
 
 (def state (atom {}))
+(def sims (atom {}))
 
 (defn- log-request [{:keys [request-method uri query-params] :as req}]
   (debug "request is : " req)
@@ -36,7 +38,7 @@
   [f & handlers]
   (reduce (fn [handled h] (partial h handled)) f (reverse handlers)))
 
-(defn handle-service-del-error
+(defn handle-error
   [f & args]
   (try
     (apply f args)
@@ -54,7 +56,7 @@
 
 (defn api [req]
   (log-request req)
-  (txsim/sim-rsp-> req @state))
+  (txsim/sim-rsp-> req @state @sims))
 
 
 ;; =============================================================================
@@ -73,18 +75,40 @@
 
 (defn del-service [svc]
   (reset! state (ib/dissoc-in @state [svc]))
-  (delete-file (str svc ".edn"))
+  (delete-file (str svc ".cod.edn"))
   {:status 204})
 
-(def del-service-handled (handler del-service handle-service-del-error))
+(def del-service-handled (handler del-service handle-error))
 
 (defn put-services [req]
   (let [file ((:params req) "file")
         data (r/read-codex (:tempfile file))]
     (reset! state (merge @state data))
     (doseq [d data]
-      (spit (str (name (key d)) ".edn") (pr-str {(key d) (val d)})))
-    (services)))
+      (spit (str (name (key d)) ".cod.edn") (pr-str {(key d) (val d)}))))
+  (services))
+
+;; sims
+;;;;;;;;;;;
+
+(defn sims-names [] (assoc json :body (co/js (sort (d/custom-keys @sims)))))
+
+(defn del-sim [svc]
+  (reset! state (ib/dissoc-in @sims [svc]))
+  (delete-file (str svc ".sim.edn"))
+  {:status 204})
+
+(def del-sim-handled (handler del-sim handle-error))
+
+(defn load-sim [f]
+  (let [file-content (m/load-script (.getPath f))]
+    (reset! sims (merge @sims file-content))))
+
+(defn put-sims [req]
+  (let [file ((:params req) "file")]
+    (load-sim (:tempfile file)))
+  (sims-names))
+
 
 ;; services documentation
 ;;;;;;;;;;;;;;;;;;;;;;;;;

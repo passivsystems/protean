@@ -107,13 +107,12 @@
 ;; Entry
 ;; =============================================================================
 
-(defn sim-rsp-> [{:keys [uri] :as req} codices]
+(defn sim-rsp-> [{:keys [uri] :as req} codices sims]
   (let [svc (second (s/split uri #"/"))
-        sim-rules (m/load-script (str svc ".edn.sim"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
-        endpoint (to-endpoint requested-endpoint sim-rules svc)
+        endpoint (to-endpoint requested-endpoint sims svc)
         method (:request-method req)
-        rules (get-in sim-rules [svc endpoint method])
+        rules (get-in sims [svc endpoint method])
         tree (d/to-seq codices svc endpoint method)
         body-in (:body req)
         request (assoc req
