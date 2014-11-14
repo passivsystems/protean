@@ -71,7 +71,6 @@
         "  del-service            -n myservice (Delete a service)"
         "  service-errors         -n myservice (Show service level error status codes)"
         "  add-service-error      -n myservice -s 500 (Add an error status code to a service)"
-        "  set-service-error-prob -n myservice -l 10 (Set error probability)"
         "  del-service-errors     -n myservice (Delete error response codes)"
         ""
         "Please refer to the manual page for more information."]
@@ -120,7 +119,6 @@
       (and (= cmd i/del-svc) (not name)) (bomb summary)
       (and (= cmd i/svc-errs) (not name)) (bomb summary)
       (and (= cmd i/add-svc-err) (i/add-svc-err? options)) (bomb summary)
-      (and (= cmd i/set-svc-err-prob) (i/set-svc-err-prob? options)) (bomb summary)
       (and (= cmd i/del-svc-errs) (not name)) (bomb summary)
       (and (= cmd i/visit (i/visit? options))) (bomb summary))))
 
@@ -137,7 +135,6 @@
       (= cmd i/del-svc) (delete-project options)
       (= cmd i/svc-errs) (service-errors options)
       (= cmd i/add-svc-err) (add-project-error options)
-      (= cmd i/set-svc-err-prob) (set-project-error-prob options)
       (= cmd i/del-svc-errs) (del-project-errors options)
       (= cmd i/visit) (visit options)
       :else (exit 1 (usage-exit summary)))))

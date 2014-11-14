@@ -44,13 +44,13 @@
 ;; Codex request
 ;; =============================================================================
 
-(defn qp [c] (get-in c [:req :query-params :required]))
+(defn qp [t] (get-in-tree t [:req :query-params :required]))
 
-(defn fp [c] (get-in c [:req :form-params]))
+(defn fp [t] (get-in-tree t [:req :form-params]))
 
-(defn hdrs-req [c] (get-in c [:req :headers]))
+(defn hdrs-req [t] (get-in-tree t [:req :headers]))
 
-(defn body-req [c] (get-in c [:req :body]))
+(defn body-req [t] (get-in-tree t [:req :body]))
 
 
 ;; =============================================================================
@@ -62,10 +62,6 @@
 (defn hdrs-rsp [c] (get-in c [:rsp :headers]))
 
 (defn body-rsp [c] (get-in c [:rsp :body]))
-
-(defn err-status [c] (get-in c [:rsp :errors :status]))
-
-(defn err-prob [c] (get-in c [:rsp :errors :probability]))
 
 (defn status-matching [tree filter-exp]
   (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))]
