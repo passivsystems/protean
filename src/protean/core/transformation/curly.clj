@@ -8,8 +8,7 @@
             [protean.core.codex.placeholder :as p]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
-            [protean.core.protocol.http :as h]
-            [protean.core.transformation.analysis :as txan]))
+            [protean.core.protocol.http :as h]))
 
 ;; =============================================================================
 ;; Helper functions

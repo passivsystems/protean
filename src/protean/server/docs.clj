@@ -7,7 +7,6 @@
             [ring.util.codec :as cod]
             [me.raynes.laser :as l]
             [protean.config :as c]
-            [protean.core.transformation.analysis :as txan]
             [protean.core.transformation.curly :as txc])
   (:use [clojure.java.io :refer [file]]
         [me.rossputin.pew])
