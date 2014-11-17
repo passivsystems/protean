@@ -133,13 +133,15 @@
             (pr-str
               {:code (name k) :doc (:doc v) :sample-response (body tree v)}))))
 
+(defn- safe-uri [s] (ph/replace-placeholders s "*"))
+
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
   (prep-docs corpus)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
      (doseq [{:keys [uri method tree] :as e} (p/analysis-> "host" 1234 codices corpus)]
-       (let [uri-path (-> (URI. uri) (.getPath))
+       (let [uri-path (-> (URI. (safe-uri uri)) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
              full {:id id
                    :path (subs uri-path 1)
@@ -244,7 +246,7 @@
   (doseq [[method uri mp phs] results]
     (let [status (:status mp)
           ass (assess method status phs)
-          so (if (or (ph/uri-ns-holder? uri) (ph/authzn-holder? mp))
+          so (if (or (ph/holder? uri) (ph/authzn-holder? mp))
                (aa/bold-red "error - untested")
                (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass)))]
       (println "Test : " method " - " uri ", status - " status ": " so))))

@@ -61,22 +61,22 @@
 
     }
 
-    "api/pet/*" {
+    "api/pet/${petId}" {
 
       :types {
         :PetId "[0-9a-zA-Z]{3,7}"
       }
       :req {
         :vars {
-          "pet/psv+" {:type :PetId :doc "ID of pet"}
+          "petId" {:type :PetId :doc "ID of pet"}
         }
       }
 
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
-          :query-params {:required {"name" "psv+name" "status" "psv+status"}}
-          :body {"name" "psv+name" "status" "psv+status"} ; an alternative to query-params (should have required/optional?)
+          :query-params {:required {"name" "${name}" "status" "${status}"}}
+          :body {"name" "${name}" "status" "${status}"} ; an alternative to query-params (should have required/optional?)
           :vars {
             "name" {:type :String :doc "Updated name of the pet"}
             "status" {:type :Status :doc "Updated status of the pet"}
@@ -135,7 +135,7 @@
       :get {
         :doc "Finds pets by status"
         :req {
-          :query-params {:optional {"status" "psv+status"}}
+          :query-params {:optional {"status" "${status}"}}
         }
       }
     }
@@ -144,7 +144,7 @@
       :get {
         :doc "Finds pets by tags"
         :req {
-          :query-params {:required {"tags" "psv+tags"}}
+          :query-params {:required {"tags" "${tags}"}}
           :vars {"tags" {:type :String :doc "Tags to filter by"}}
         }
       }
@@ -154,7 +154,7 @@
       :post {
         :doc "uploads an image"
         :req {
-          :query-params {:required {"additionalMetadata" "psv+additionalMetadata"}}
+          :query-params {:required {"additionalMetadata" "${additionalMetadata}"}}
 ;           {"file" {:type :File}} ; Binary?; Multipart?
           :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
         }

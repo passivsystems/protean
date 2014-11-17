@@ -5,7 +5,7 @@
             [clojure.set :as st]
             [ring.util.codec :as e]
             [cheshire.core :as jsn]
-            [protean.core.codex.placeholder :as p]
+            [protean.core.codex.placeholder :as ph]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
             [protean.core.protocol.http :as h]))
@@ -24,9 +24,9 @@
     (str payload (apply str hstr))))
 
 (defn- curly-form-> [tree payload]
-  (if-let [f (d/get-in-tree tree [:req :form-params])]
-    (str payload " --data '" (s/join "&" (map #(str (key %) "=" (val %)) f))
-      "'")
+  (if-let [f (d/get-in-tree tree [:req :form-params])
+           param-pairs (map #(str (key %) "=" (val %)) f)]
+    (str payload " --data '" (s/join "&" param-pairs) "'")
     payload))
 
 (defn- curly-body-> [tree payload]
@@ -58,34 +58,40 @@
   (if phs
     (let [res
           (-> phs
-              (p/holders-swap p/holder-swap-exp entry true :exp tree)
-              (p/holders-swap p/holder-swap-gen entry true :vars tree))]
+              (ph/holders-swap ph/holder-swap-exp entry :query-params :exp tree)
+              (ph/holders-swap ph/holder-swap-gen entry :query-params :vars tree)
+;              (ph/replace-placeholders "XYZ") ; TODO generated values are not URL friendly.. before just used "XYZ"...
+           )]
       (if (vector? res) (first res) res))
     nil))
+
+
+(defn- curly-uri-> [uri payload]
+  (curly-literal-> (ph/replace-placeholders uri "1") payload))
 
 (defn- curly-query-params-> [entry tree payload]
   (let [phs (d/get-in-tree tree [:req :query-params :required])
         query (if-let [rp (translate-query-params phs entry tree)]
-    (if (not (empty? rp))
-      (if (d/qp-json? tree)
-        (str "?q=" (rp "q"))
-        (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode (val %))) rp))))))]
+          (if (not (empty? rp))
+            (if (d/qp-json? tree)
+              (str "?q=" (rp "q"))
+              (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode  (val %))) rp))))))]
       (str payload query)))
 
-(defn- curly-replace-> [s1 s2 payload] (s/replace payload s1 s2))
+(defn- curly-replace-> [s1 s2 payload]
+  (s/replace payload s1 s2))
 
 (defn curly-> [{:keys [tree method uri] :as entry}]
+  (println "\ncurly" method uri)
   (->> "curl -v"
        (curly-method-> method)
        (curly-headers-> tree)
        (curly-form-> tree)
        (curly-body-> tree)
        (curly-literal-> " '")
-       (curly-literal-> uri)
+       (curly-uri-> uri)
        (curly-query-params-> entry tree)
-       (curly-literal-> "'")
-       (curly-replace-> "*" "1")
-       (curly-replace-> "psv+" "XYZ"))) ; TODO use generate?
+       (curly-literal-> "'"))) 
 
 
 ;; =============================================================================
