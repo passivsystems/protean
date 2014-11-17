@@ -27,7 +27,10 @@
 ;; =============================================================================
 
 (defn- encode [svc path method codex]
-  {:svc svc :path path :method method :tree (d/to-seq codex svc path method)})
+  {:svc svc
+   :path path
+   :method method
+   :tree (d/to-seq codex svc path method)})
 
 (defn- is-http-method? [c]
   (some #{c} #{:get :post :put :delete :patch :head}))
@@ -70,3 +73,21 @@
   (def res (locs-range codices locs))
   (if (empty? res) (println "WARNING locs" locs "did not resolve to any path"))
   res)
+
+
+
+(defn uri [host port svc path]
+  (str "http://" host ":" port "/" svc "/" path))
+
+(defn- uri-> [{:keys [svc path] :as entry} host port]
+  (assoc entry :uri (uri host port svc path)))
+
+;; =============================================================================
+;; Transformation functions
+;; =============================================================================
+
+(defn analysis->
+  "in addition to calculating paths, adds uri to result."
+  [host port codices corpus]
+  (let [p (paths-> codices (:locs corpus))]
+    (map #(uri-> % host port) p)))

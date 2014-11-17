@@ -10,11 +10,10 @@
             [protean.core.protocol.http :as h]
             [protean.core.transformation.sim :as txsim]
             [protean.core.transformation.coerce :as co]
-            [protean.core.transformation.analysis :as txan]
             [protean.core.transformation.curly :as txc]
             [protean.server.docs :as txdocs]
             [protean.core.codex.reader :as r]
-            [protean.core.transformation.paths :as path]
+            [protean.core.transformation.paths :as p]
             [clojure.pprint])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
@@ -81,7 +80,7 @@
                   methods (keys (val path))]
              (for [method methods]
                {:method method
-                 :uri (txan/uri host port svc endpoint)
+                 :uri (p/uri host port svc endpoint)
                  :tree (get-in @paths [svc endpoint method])})))
         analysed (mapcat to-map (get-in @paths [svc]))]
     (assoc json :body (co/js (txc/curly-analysis-> analysed)))))
@@ -96,7 +95,7 @@
 
   (let [codex (r/read-codex f)
         locs (d/custom-keys codex)
-        tpaths (path/paths-> codex locs)]
+        tpaths (p/paths-> codex locs)]
     (doseq [path tpaths]
       (swap! paths assoc-in [(:svc path) (:path path) (:method path)] (:tree path)))
     (reset! state (merge @state codex))))

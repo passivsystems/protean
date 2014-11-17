@@ -16,7 +16,7 @@
   "
   (:require [clojure.string :as s]
             [protean.core.protocol.http :as h]
-            [protean.core.transformation.analysis :as a]
+            [protean.core.transformation.paths :as p]
             [protean.core.transformation.coerce :as c]
             [protean.core.codex.document :as d]))
 
@@ -64,5 +64,5 @@
 ;; =============================================================================
 
 (defn build-payload [host port codices corpus]
-  (let [analysed (a/analysis-> host port codices corpus)]
+  (let [analysed (p/analysis-> host port codices corpus)]
     (map #(payload % corpus) analysed)))
