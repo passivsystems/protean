@@ -38,15 +38,7 @@
   [c-dir]
   (let [codex-fs (files c-dir "cod.edn")]
     (doseq [f codex-fs]
-      ; TODO - currently loading all codices whose defaults merge ontop of each other...
-      ; could segment by file name, but would need to look through them all for an appropriate endpoint..
-      ; also hot swapping - would be by whole file, not partial codex
-      (do
-;        (println "\n" f "->")
-;        (clojure.pprint/pprint (r/read-codex f))
-;        (println "\naftermerge:")
-;        (clojure.pprint/pprint (merge @pipe/state (r/read-codex f)))
-        (reset! pipe/state (merge @pipe/state (r/read-codex f))))))
+      (pipe/load-codex f)))
   (d/custom-keys @pipe/state))
 
 (defn- build-sims

@@ -25,7 +25,7 @@
       :patch [
         (fn []
           (or (prob 0.5 (delay (error)))
-              (success)))
+                        (delay (success))))
       ]
 
       :post [

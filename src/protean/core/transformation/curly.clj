@@ -93,7 +93,5 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn curly-analysis-> [host port codices service]
-  (let [corpus {:locs [service]}
-        analysed (txan/analysis-> host port codices corpus)]
-    (map #(curly-> %) analysed)))
+(defn curly-analysis-> [analysed]
+  (map #(curly-> %) analysed))

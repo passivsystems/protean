@@ -13,7 +13,9 @@
             [protean.core.transformation.analysis :as txan]
             [protean.core.transformation.curly :as txc]
             [protean.server.docs :as txdocs]
-            [protean.core.codex.reader :as r])
+            [protean.core.codex.reader :as r]
+            [protean.core.transformation.paths :as path]
+            [clojure.pprint])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
@@ -28,6 +30,7 @@
 (def json {:headers {h/ctype h/jsn}})
 
 (def state (atom {}))
+(def paths (atom {}))
 (def sims (atom {}))
 
 (defn- log-request [{:keys [request-method uri query-params] :as req}]
@@ -56,7 +59,7 @@
 
 (defn api [req]
   (log-request req)
-  (txsim/sim-rsp-> req @state @sims))
+  (txsim/sim-rsp-> req @paths @sims))
 
 
 ;; =============================================================================
@@ -66,23 +69,42 @@
 ;; services
 ;;;;;;;;;;;
 
-(defn services [] (assoc json :body (co/js (sort (d/custom-keys @state)))))
+(defn services [] (assoc json :body (co/js (sort (keys @paths)))))
 
-(defn service [id] (assoc json :body (co/js (get-in @state [id]))))
+; TODO the result of this function is currently affected by collisions between codices - should use @paths instead
+(defn service [svc] (assoc json :body (co/js (get-in @state [svc]))))
 
-(defn service-usage [id host]
-  (assoc json :body (co/js (txc/curly-analysis-> host (c/sim-port) @state id))))
+(defn service-usage [svc host]
+  (let [port (c/sim-port)
+        to-map (fn [path]
+            (let [endpoint (key path)
+                  methods (keys (val path))]
+             (for [method methods]
+               {:method method
+                 :uri (txan/uri host port svc endpoint)
+                 :tree (get-in @paths [svc endpoint method])})))
+        analysed (mapcat to-map (get-in @paths [svc]))]
+    (assoc json :body (co/js (txc/curly-analysis-> analysed)))))
 
 (defn del-service [svc]
-  (reset! state (ib/dissoc-in @state [svc]))
+  (reset! paths (ib/dissoc-in @paths [svc]))
   {:status 204})
 
 (def del-service-handled (handler del-service handle-error))
 
+(defn load-codex [f]
+
+  (let [codex (r/read-codex f)
+        locs (d/custom-keys codex)
+        tpaths (path/paths-> codex locs)]
+    (doseq [path tpaths]
+      (swap! paths assoc-in [(:svc path) (:path path) (:method path)] (:tree path)))
+    (reset! state (merge @state codex))))
+
 (defn put-services [req]
   (let [file ((:params req) "file")
         data (r/read-codex (:tempfile file))]
-    (reset! state (merge @state data)))
+    (load-codex (:tempfile file)))
   (services))
 
 ;; sims
@@ -91,7 +113,7 @@
 (defn sims-names [] (assoc json :body (co/js (sort (d/custom-keys @sims)))))
 
 (defn del-sim [svc]
-  (reset! state (ib/dissoc-in @sims [svc]))
+  (reset! sims (ib/dissoc-in @sims [svc]))
   {:status 204})
 
 (def del-sim-handled (handler del-sim handle-error))
@@ -111,7 +133,7 @@
 
 
 (defn services-docs []
-  (txdocs/services-template (sort (d/custom-keys @state))))
+  (txdocs/services-template (sort (keys @paths))))
 
 (defn- html [f] (str (c/html-dir) f))
 

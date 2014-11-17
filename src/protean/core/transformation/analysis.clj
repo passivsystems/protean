@@ -35,9 +35,11 @@
     {:method method}
     {:method :get}))
 
+(defn uri [host port svc path]
+  (str "http://" host ":" port "/" svc "/" path))
+
 (defn- uri-> [{:keys [svc path]} host port payload]
-  (let [uri (str "http://" host ":" port "/" (name svc) "/" path)]
-    (assoc payload :uri uri)))
+  (assoc payload :uri (uri host port svc path)))
 
 ;TODO since tree has everything we need, we should just read from that directly (using codex fully qualified path).
 ;For now, adding tree to analysis result so available further down the pipeline
