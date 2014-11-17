@@ -10,20 +10,20 @@
           ;; a body cannot be guessed
           :202 {
             ;; no need for a header, it is computed form the body file
-            :body "data/content/doc/responses/simple/202-ref.json"
+            :body "test-data/content/doc/responses/simple/202-ref.json"
           }
 
           ;; HTTP API problems based response
           :400 {
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "data/content/problems/bad-custom-domain-field.json"
+            :body "test-data/content/problems/bad-custom-domain-field.json"
           }
 
           ;; HTTP API problems based response
           :412 {
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "data/content/problems/asynchronous-custom-computation-failure.json"
+            :body "test-data/content/problems/asynchronous-custom-computation-failure.json"
           }
 
           ;; standard 503 implicit
@@ -36,7 +36,7 @@
 
         :rsp {
           :200 {
-            :body "data/content/doc/responses/simple/200-ref.json"
+            :body "test-data/content/doc/responses/simple/200-ref.json"
           }
 
           :503 {}

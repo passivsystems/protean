@@ -107,14 +107,15 @@
 ;; Entry
 ;; =============================================================================
 
-(defn sim-rsp-> [{:keys [uri] :as req} codices]
+(declare success)
+(defn sim-rsp-> [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
-        sim-rules (m/load-script (str svc ".edn.sim"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
-        endpoint (to-endpoint requested-endpoint sim-rules svc)
+        endpoint (to-endpoint requested-endpoint sims svc)
         method (:request-method req)
-        rules (get-in sim-rules [svc endpoint method])
-        tree (d/to-seq codices svc endpoint method)
+        rules (get-in sims [svc endpoint method])
+        tree (get-in paths [svc endpoint method])
+          ; (d/to-seq codices svc endpoint method)
         body-in (:body req)
         request (assoc req
           ; make endpoint available in request
@@ -129,8 +130,10 @@
                       corpus corpus]
                (apply rule nil))
             (catch Exception e (print-error e))))
-        ; we return the first non-nil response. If there are none - will return nil (resolves to 404)
-        response (some identity (map execute rules))]
+        rules-response (some identity (map execute rules))
+        default-success (binding [tree tree request request corpus corpus](success))
+        ; we return the first non-nil response, else a success response. (TODO should be imported from a default sim.edn file)
+        response (if rules-response rules-response default-success)]
     (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
     (println "responding with" response)
     response))

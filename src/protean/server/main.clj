@@ -1,6 +1,7 @@
 (ns protean.server.main
   "Entry point into the server component.  Config, server and routes."
   (:require [clojure.edn :as edn]
+            [clojure.main :as m]
             [clojure.java.io :refer [file]]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.multipart-params :as mp]
@@ -28,25 +29,25 @@
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
 (timbre/set-level! :info)
 
-(defn files [c-dir]
+(defn- files [c-dir ext]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
-      (do/filter-exts ["edn"])))
+      (do/filter-exts [ext])))
 
 (defn- build-services
   "Load services from disk."
   [c-dir]
-  (let [fs (files c-dir)]
-    (doseq [f fs]
-      ; TODO - currently loading all codices whose defaults merge ontop of each other...
-      ; could segment by file name, but would need to look through them all for an appropriate endpoint..
-      ; also hot swapping - would be by whole file, not partial codex
-      (do
-;        (println "\n" f "->")
-;        (clojure.pprint/pprint (r/read-codex f))
-;        (println "\naftermerge:")
-;        (clojure.pprint/pprint (merge @pipe/state (r/read-codex f)))
-        (reset! pipe/state (merge @pipe/state (r/read-codex f))))))
+  (let [codex-fs (files c-dir "cod.edn")]
+    (doseq [f codex-fs]
+      (pipe/load-codex f)))
   (d/custom-keys @pipe/state))
+
+(defn- build-sims
+  "Load sims from disk."
+  [c-dir]
+  (let [sim-fs (files c-dir "sim.edn")]
+    (doseq [f sim-fs]
+      (pipe/load-sim f)))
+  (d/custom-keys @pipe/sims))
 
 
 ;; =============================================================================
@@ -67,6 +68,9 @@
   (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
   (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
   (DELETE "/services/:id" [id] (pipe/del-service-handled id))
+  (GET    "/sims" [] (pipe/sims-names))
+  (mp/wrap-multipart-params (PUT    "/sims" req (pipe/put-sims req))) ; TODO only first mp/wrap-multipart-params wrapped route works with multi-part...
+  (DELETE "/sims/:id" [id] (pipe/del-sim-handled id))
   (GET    "/status" [] (pipe/status)))
 
 (defroutes api-routes
@@ -77,7 +81,7 @@
 ;; Server setup
 ;; =============================================================================
 
-(defn server [api-port admin-port]
+(defn- server [api-port admin-port]
   (jetty/run-jetty admin-routes {:port admin-port :join? false})
   (jetty/run-jetty (-> api-routes handler/api) {:port api-port :join? false}))
 
@@ -93,6 +97,7 @@
     (info "Codex directory : " c-dir)
     (info "Asset directory : " (c/asset-dir))
     (info (str "Services loaded : " (build-services c-dir)))
+    (info (str "Sims loaded : " (build-sims c-dir)))
     (server (co/int api-port) (co/int (c/admin-port)))
     (info (str "Protean has started"
       " : api-port " api-port ", admin-port " (c/admin-port)))))

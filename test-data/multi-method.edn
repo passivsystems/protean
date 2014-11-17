@@ -3,6 +3,8 @@
 ;; Demonstrates handling multiple methods for a given uri
 
 {
+  :includes [ "defaults.edn" ]
+
   "sample" {
     "homes/1" {
       :get {:doc "Test get"}

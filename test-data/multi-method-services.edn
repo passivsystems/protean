@@ -4,6 +4,8 @@
 
 (
 {
+  :includes [ "defaults.edn" ]
+
   "sample" {
     "homes/1" {
       :get {:doc "Test homes get"}

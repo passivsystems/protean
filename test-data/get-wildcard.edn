@@ -2,4 +2,8 @@
 ;;
 ;; Test more complex path structures
 
-{"sample" {"simple/*" {:get {}}}}
+{
+  :includes [ "defaults.edn" ]
+
+  "sample" {"simple/*" {:get {}}}
+}

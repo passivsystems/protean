@@ -30,7 +30,7 @@
         :rsp {
           :200 {
             ;; no need for a header, it is computed from the body file
-            :body "data/content/doc/responses/simple/200-ref.json"
+            :body "test-data/content/doc/responses/simple/200-ref.json"
           }
 
           :400 {
@@ -45,7 +45,7 @@
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "data/content/problems/bad-custom-domain-field.json"
+            :body "test-data/content/problems/bad-custom-domain-field.json"
           }
         }
       }
@@ -94,7 +94,7 @@
 
         :rsp {
           :200 {
-            :body "data/content/doc/responses/simple/200-ref.json"
+            :body "test-data/content/doc/responses/simple/200-ref.json"
           }
 
           :404 {
@@ -105,7 +105,7 @@
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "data/content/problems/bad-custom-domain-field.json"
+            :body "test-data/content/problems/bad-custom-domain-field.json"
           }
         }
       }

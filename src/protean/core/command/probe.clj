@@ -6,10 +6,10 @@
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
             [protean.core.codex.document :as d]
-            [protean.core.codex.placeholder :as p]
+            [protean.core.codex.placeholder :as ph]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.coerce :as co]
-            [protean.core.transformation.analysis :as a]
+            [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
             [protean.core.transformation.testy-cljhttp :as tc]
             [protean.core.command.test :as t]
@@ -137,7 +137,7 @@
   (prep-docs corpus)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
-     (doseq [{:keys [uri method tree] :as e} (a/analysis-> "host" 1234 codices corpus)]
+     (doseq [{:keys [uri method tree] :as e} (p/analysis-> "host" 1234 codices corpus)]
        (let [uri-path (-> (URI. uri) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
              full {:id id
@@ -242,7 +242,7 @@
   (doseq [[method uri mp phs] results]
     (let [status (:status mp)
           ass (assess method status phs)
-          so (if (or (p/uri-ns-holder? uri) (p/authzn-holder? mp))
+          so (if (or (ph/uri-ns-holder? uri) (ph/authzn-holder? mp))
                (aa/bold-red "error - untested")
                (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass)))]
       (println "Test : " method " - " uri ", status - " status ": " so))))

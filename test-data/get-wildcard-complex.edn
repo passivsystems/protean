@@ -3,9 +3,11 @@
 ;; Test more complex path structures
 
 {
+  :includes [ "defaults.edn" ]
+
   "sample" {
     "v/1/users/*/items/*/status" {
-      :put {:rsp {:status 200}}
+      :put {:rsp {:200 {}}}
     }
 
     "v/1/users/*/items/*" {:get {}}

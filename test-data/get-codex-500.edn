@@ -3,12 +3,14 @@
 ;; Demonstrates a guaranteed 500 response
 
 {
+  :includes [ "defaults.edn" ]
+
   "sample" {
     "simple" {
       :get {
         :rsp {
           :body {"t1key" "t1val"}
-          :errors {:status [500] :probability 100}
+          :500 {}
         }
       }
     }
