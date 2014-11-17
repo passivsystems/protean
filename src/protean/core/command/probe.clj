@@ -5,6 +5,7 @@
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
+            [silk.cli.api :as silk]
             [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as ph]
             [protean.core.protocol.http :as h]
@@ -217,8 +218,9 @@
 
 (defmethod analyse :doc [_ corpus codices result]
   (hlg "analysing probe data")
-  (println "documentation has been produced at" (.getAbsolutePath (file (:directory corpus))))
-  (println "Now you can produce HTML via Silk.")) ; TODO can we integrate with Silk directly?
+  (let [path (.getAbsolutePath (file (:directory corpus)))
+        silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
+    (silk/spin-or-reload false silk-path false false)))
 
 (defn- get? [m] (= m 'client/get))
 
