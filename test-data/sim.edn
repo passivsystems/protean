@@ -3,6 +3,8 @@
 ;; Illustrates response body etc
 
 {
+  :includes [ "defaults.edn" ]
+
   "sim" {
 
     "path1" {
@@ -36,7 +38,7 @@
 
     "status-override" {
       :get {
-        :rsp {:status 204}
+        :rsp {:204 {}}
       }
     }
 

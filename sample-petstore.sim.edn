@@ -1,0 +1,76 @@
+(refer 'protean.core.transformation.sim)
+
+; TODO:
+;   support emailing
+{
+  "petstore" {
+
+    "api/pet" {
+      :put [
+        #(-> {:status 200 :headers {"Content-Type" "application/json"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
+      ]
+    }
+
+    "api/pet/*" {
+      :get [
+        (fn [] (log request (str (env :user-home) "/tmp/protean-requests.txt"))
+               (Thread/sleep 2000)
+               (success))
+      ]
+
+      :delete [
+        #(error)
+      ]
+
+      :patch [
+        (fn []
+          (or (prob 0.5 (delay (error)))
+              (success)))
+      ]
+
+      :post [
+
+        ;; synchronous response
+        (fn []
+          (if (valid-inputs?)
+            (respond 200 :body-url "test-data/content/doc/responses/simple/200-ref.json")
+            (respond 400)))
+
+        ;; synchronously forward request to another API, and log response
+        (fn []
+          (when (valid-inputs?)
+            (make-request :post "http://google.com" {
+              :content-type (get-in request [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
+              :body (:body request)
+              :log (str (env :user-home) "/tmp/protean-responses.txt")})))
+
+        ;; asynchronously forward request to another API, and log response
+        ;; after delay (in ms)
+        (fn []
+          (when true
+            (after 3000
+              (delay
+                (make-request :post "http://google.com" {
+                  :content-type (get-in request [:headers "content-type"])
+                  :body (:body request)
+                  :log (str (env :user-home) "/tmp/protean-responses.txt")})))))
+
+        ;; TODO support these use cases?
+;        (fn []
+;          (when true
+;            (schedule "1415786400000 1415872800 - 300000" ;from 10 every 5 minutes for 24 hours
+;              (delay (transport "email some body" "somewhere")))))
+
+;        (fn []
+;          (when true
+;            (schedule "1415786400000 - 5 300000" ;from 10 every 5 minutes 5 times
+;              (delay (transport "some body" "somewhere")))))
+
+;        (fn []
+;          (when true
+;            (schedule "0 0 15 ? * 5"
+;              (delay (transport "some body" "somewhere")))))
+      ]
+    }
+  }
+}

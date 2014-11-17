@@ -2,14 +2,9 @@
 /target
 /classes
 /checkouts
+/server-data
 pom.xml
 pom.xml.asc
-*.jar
-*.class
 /.lein-*
 /.nrepl-port
 *.log
-/*.edn
-!sample-codex.edn
-!sample-petstore.edn
-!defaults.edn

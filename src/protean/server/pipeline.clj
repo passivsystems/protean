@@ -75,7 +75,6 @@
 
 (defn del-service [svc]
   (reset! state (ib/dissoc-in @state [svc]))
-  (delete-file (str svc ".cod.edn"))
   {:status 204})
 
 (def del-service-handled (handler del-service handle-error))
@@ -83,9 +82,7 @@
 (defn put-services [req]
   (let [file ((:params req) "file")
         data (r/read-codex (:tempfile file))]
-    (reset! state (merge @state data))
-    (doseq [d data]
-      (spit (str (name (key d)) ".cod.edn") (pr-str {(key d) (val d)}))))
+    (reset! state (merge @state data)))
   (services))
 
 ;; sims
@@ -95,7 +92,6 @@
 
 (defn del-sim [svc]
   (reset! state (ib/dissoc-in @sims [svc]))
-  (delete-file (str svc ".sim.edn"))
   {:status 204})
 
 (def del-sim-handled (handler del-sim handle-error))
