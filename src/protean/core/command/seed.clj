@@ -20,7 +20,7 @@
 ; strat is either Basic or Bearer
 (defn- header-authzn-> [strat seed [method uri mp :as payload]]
   (if-let [auth (get-in mp [:headers h/azn])]
-    (if (and (.contains auth p/psv) (.contains auth strat))
+    (if (and (.contains auth p/ph) (.contains auth strat))
       (if-let [sauth (token seed strat)]
         (let [n (assoc-in mp [:headers h/azn]
                   (str strat " " (last (s/split sauth #" "))))]
@@ -58,7 +58,7 @@
 
 ; TODO: weak, only handles 1 instance of uri placeholder
 (defn- uri-> [seed [method uri mp :as payload]]
-  (if (p/uri-ns-holder? uri)
+  (if (p/holder? uri)
     (let [v (p/uri-ns-holder uri)
           sv (bag-item v seed)
           new-uri (if sv (s/replace uri #"psv\+" (last (.split sv "/"))) uri)]

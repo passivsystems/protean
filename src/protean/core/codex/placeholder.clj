@@ -14,7 +14,9 @@
 ;; Helper functions
 ;; =============================================================================
 
-(def psv "psv+")
+(def ph #"\$\{([^\}]*)\}")
+
+;(def psv "psv+")
 (def ns-psv "/psv+")
 
 (def rnd (Random.))
@@ -40,17 +42,18 @@
 (defn- qp? [type] (= type :query-params))
 
 
+(defn replace-placeholders [s r]
+  (stg/replace s ph r)) 
+
 ;; =============================================================================
 ;; Truthiness functions
 ;; =============================================================================
 
 (defn holder?
   "Does a simple value contain a placeholder ?"
-  [v] (if (string? v) (.contains v psv) false))
+  [v]
+  (if (string? v) (re-seq ph v) false))
 
-(defn uri-ns-holder?
-  "Does a uri contain a ns prefixed wildcard placeholder ?"
-  [v] (.contains v ns-psv))
 
 (defn authzn-holder?
   "Does the authzn header contain a placeholder ?"
@@ -70,7 +73,7 @@
 (defn test-holder?
   "Does a test contain placeholders of any kind ?"
   [[method uri mp :as test]]
-  (or (uri-ns-holder? uri)
+  (or (holder? uri)
       (authzn-holder? mp)
       (params-holder? mp :query-params)
       (params-holder? mp :body)
@@ -83,23 +86,27 @@
 
 (defn uri-ns-holder
   "Get ns prefixed wildcard portion of uri, E.G. things/psv+."
-  [uri] (-> uri (.split "/psv\\+") first (.split "/") last (str "/" psv)))
+  [uri]
+  (if-let [match (holder? uri)]
+    (first (map #(nth % 1) match)))) ; Just returning first match for now - TODO
 
 (defn encode-value
   "Encode body items as clojure, they are Json initially."
   [k x] (if (= k :body) (c/clj x) x))
 
 (defn holder-swap-uri [v [method uri mp :as payload] tree]
+  (println "holder-swap-uri" uri v)
   (if-let [sv (d/get-in-tree tree [:req :vars v :type])]
     (let [gv (g-val sv tree)
           raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
           ph-map (update-in raw-map [:codex :ph-swaps] vec)]
-      (list method (stg/replace uri psv (str gv)) ph-map))
+      (list method (stg/replace uri ph (str gv)) ph-map)) ; TODO this will replace all in URI - do we know we only have 1?
     payload))
 
 (defn holder-swap-exp
   "Swap codex example values in for placeholders."
   [k v m tree]
+  (println "holder-swap-exp" k v (holder? v))
   (if (holder? v)
     (if-let [x (d/get-in-tree tree [:req :vars k :examples])] [(first x) "exp"] [v "idn"])
     [v "idn"]))
@@ -107,8 +114,11 @@
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
   [k v m tree]
+  (println "holder-swap-gen" k v (holder? v))
   (if (holder? v)
-    (if-let [x (d/get-in-tree tree [:req :vars k :type])][(g-val x tree) "format"] [v "idn"])
+    (if-let [x (d/get-in-tree tree [:req :vars k :type])]
+      (do (println "gval for " x)
+        [(g-val x tree) "format"] [v "idn"]))
     [v "idn"]))
 
 (defn- json-qp? [t p]
@@ -130,6 +140,7 @@
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."
   [ph swp-fn m type ph-op t]
+  (println "holders-swap" ph type)
   (let [p (if (vector? ph) (first ph) ph)
         is-json-qp (json-qp? t p)
         is-qp (qp? type)
