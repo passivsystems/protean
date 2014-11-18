@@ -132,7 +132,7 @@
    (fn engage [{:keys [locs directory] :as corpus} codices]
      (doseq [{:keys [uri method tree] :as e} (p/analysis-> "host" 1234 codices corpus)]
        (let [safe-uri (fn [s] (if-let [subst (first (ph/holder? s))]
-               (ph/replace-placeholders s (str "_" (nth subst 1) "_"))) s)
+               (ph/replace-placeholders s (str "_")) s))
              uri-path (-> (URI. (safe-uri uri)) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
              full {:id id
