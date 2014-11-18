@@ -27,8 +27,6 @@
     (.generate generator)))
 
 (defn- g-val [v tree]
-;  (println "g-val" v)
-;  (println "g-val-tree" tree)
   (if-let [regex (some #(get-in % [:types v]) tree)]
     (generate regex)
     (case v
@@ -95,7 +93,6 @@
   [k x] (if (= k :body) (c/clj x) x))
 
 (defn holder-swap-uri [v [method uri mp :as payload] tree]
-  (println "holder-swap-uri" uri v)
   (if-let [sv (d/get-in-tree tree [:req :vars v :type])]
     (let [gv (g-val sv tree)
           raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
@@ -106,19 +103,19 @@
 (defn holder-swap-exp
   "Swap codex example values in for placeholders."
   [k v m tree]
-  (println "holder-swap-exp" k v (holder? v))
   (if (holder? v)
-    (if-let [x (d/get-in-tree tree [:req :vars k :examples])] [(first x) "exp"] [v "idn"])
+    (if-let [x (d/get-in-tree tree [:req :vars k :examples])]
+      [(first x) "exp"]
+      [v "idn"])
     [v "idn"]))
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
   [k v m tree]
-  (println "holder-swap-gen" k v (holder? v))
   (if (holder? v)
     (if-let [x (d/get-in-tree tree [:req :vars k :type])]
-      (do (println "gval for " x)
-        [(g-val x tree) "format"] [v "idn"]))
+      [(g-val x tree) "format"]
+      [v "idn"])
     [v "idn"]))
 
 (defn- json-qp? [t p]
@@ -128,7 +125,8 @@
   (let [c (if is-json-qp (first (vals p)) p)]
     (for [[k v] c] [k (swp-fn k v m t)])))
 
-(defn- swap-body [swp-fn m p t] (for [[k v] p] [k (swp-fn k v m t)]))
+(defn- swap-body [swp-fn m p t]
+  (for [[k v] p] [k (swp-fn k v m t)]))
 
 (defn- mapify-swapped [raw p is-qp is-json-qp ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
@@ -140,7 +138,6 @@
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."
   [ph swp-fn m type ph-op t]
-  (println "holders-swap" ph type)
   (let [p (if (vector? ph) (first ph) ph)
         is-json-qp (json-qp? t p)
         is-qp (qp? type)
