@@ -130,9 +130,9 @@
                  (map val (d/get-in-tree tree [:req :query-params :optional]))
                  (map val (d/get-in-tree tree [:req :body]))
                  (map val (d/get-in-tree tree [:req :headers])))
-        t (fn [input]
+        extract-ph-names (fn [input]
             (map #(nth % 1) (ph/holder? input)))
-        ph-names (filter identity (reduce concat (map t inputs)))
+        ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
         to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
   (reduce merge (map to-map ph-names))))
 
@@ -142,11 +142,8 @@
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
      (doseq [{:keys [uri method tree] :as e} (p/analysis-> "host" 1234 codices corpus)]
-       (let [subst_placeholders (fn [s]
-                        (if-let [match (ph/holder? s)]
-                          (recur (stg/replace-first s ph/ph (str "_" (nth (first match) 1) "_")))
-                         s))
-             uri-path (-> (URI. (subst_placeholders uri)) (.getPath))
+       (let [safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
+             uri-path (-> (URI. (safe-uri uri)) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
              full {:id id
                    :path (subs uri-path 1)

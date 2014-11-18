@@ -91,6 +91,13 @@
   "Encode body items as clojure, they are Json initially."
   [k x] (if (= k :body) (c/clj x) x))
 
+(defn replace-all-with
+  "replace all occurrences in s of placeholder with result of applying func to the placeholder name"
+  [s func]
+  (if-let [match (holder? s)]
+    (recur (stg/replace-first s ph (func (nth (first match) 1))) func)
+  s))
+
 (defn holder-swap-uri [v [method uri mp :as payload] tree]
   (if-let [sv (d/get-in-tree tree [:vars v :type])]
     (let [gv (g-val sv tree)
