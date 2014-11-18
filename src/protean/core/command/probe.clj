@@ -125,15 +125,15 @@
             (pr-str
               {:code (name k) :doc (:doc v) :sample-response (body tree v)}))))
 
-(defn- safe-uri [s] (ph/replace-placeholders s "*"))
-
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
   (prep-docs corpus)
   [corpus
    (fn engage [{:keys [locs directory] :as corpus} codices]
      (doseq [{:keys [uri method tree] :as e} (p/analysis-> "host" 1234 codices corpus)]
-       (let [uri-path (-> (URI. (safe-uri uri)) (.getPath))
+       (let [safe-uri (fn [s] (if-let [subst (first (ph/holder? s))]
+               (ph/replace-placeholders s (str "_" (nth subst 1) "_"))) s)
+             uri-path (-> (URI. (safe-uri uri)) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
              full {:id id
                    :path (subs uri-path 1)
