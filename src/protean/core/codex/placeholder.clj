@@ -92,7 +92,7 @@
   [k x] (if (= k :body) (c/clj x) x))
 
 (defn holder-swap-uri [v [method uri mp :as payload] tree]
-  (if-let [sv (d/get-in-tree tree [:req :vars v :type])]
+  (if-let [sv (d/get-in-tree tree [:vars v :type])]
     (let [gv (g-val sv tree)
           raw-map (update-in mp [:codex :ph-swaps] conj "dyn")
           ph-map (update-in raw-map [:codex :ph-swaps] vec)]
@@ -103,7 +103,7 @@
   "Swap codex example values in for placeholders."
   [k v tree]
   (if-let [match (nth (first (holder? v)) 1)] ; just pulling out first match (could there be more?)
-    (if-let [x (d/get-in-tree tree [:req :vars match :examples])]
+    (if-let [x (d/get-in-tree tree [:vars match :examples])]
       [(first x) "exp"]
       [v "idn"])
     [v "idn"]))
@@ -112,7 +112,7 @@
   "Swap generative values in for placeholders."
   [k v tree]
   (if-let [match (nth (first (holder? v)) 1)]; just pulling out first match (could there be more?)
-    (if-let [x (d/get-in-tree tree [:req :vars match :type])]
+    (if-let [x (d/get-in-tree tree [:vars match :type])]
       [(g-val x tree) "format"]
       [v "idn"])
     [v "idn"]))

@@ -15,12 +15,9 @@
     :types {
       :Status "(available|pending|sold)"
     }
-    :req {
-      :vars {
-        "status" {:type :Status :doc "Updated status of the pet"}
-      }
+    :vars {
+      "status" {:type :Status :doc "Updated status of the pet"}
     }
-
 
     "api/pet" {
 
@@ -66,10 +63,8 @@
       :types {
         :PetId "[0-9a-zA-Z]{3,7}"
       }
-      :req {
-        :vars {
-          "petId" {:type :PetId :doc "ID of pet"}
-        }
+      :vars {
+        "petId" {:type :PetId :doc "ID of pet"}
       }
 
       :post {
@@ -77,15 +72,15 @@
         :req {
           :query-params {:required {"name" "${name}" "status" "${status}"}}
           :body {"name" "${name}" "status" "${status}"} ; an alternative to query-params (should have required/optional?)
-          :vars {
-            "name" {:type :String :doc "Updated name of the pet"}
-            "status" {:type :Status :doc "Updated status of the pet"}
-          }
         }
         :rsp {
           :405 {
             :doc "Validation exception"
           }
+        }
+        :vars {
+          "name" {:type :String :doc "Updated name of the pet"}
+          "status" {:type :Status :doc "Updated status of the pet"}
         }
       }
 
@@ -145,8 +140,8 @@
         :doc "Finds pets by tags"
         :req {
           :query-params {:required {"tags" "${tags}"}}
-          :vars {"tags" {:type :String :doc "Tags to filter by"}}
         }
+        :vars {"tags" {:type :String :doc "Tags to filter by"}}
       }
     }
 
@@ -156,8 +151,8 @@
         :req {
           :query-params {:required {"additionalMetadata" "${additionalMetadata}"}}
 ;           {"file" {:type :File}} ; Binary?; Multipart?
-          :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
         }
+        :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
       }
     }
   }

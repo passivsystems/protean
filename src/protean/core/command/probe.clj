@@ -16,6 +16,7 @@
             [protean.core.command.test :as t]
             [protean.core.command.seed :as s]
             [protean.core.command.exemplify :as e]
+            [clojure.pprint]
             [protean.core.command.generate :as g])
   (:import java.io.File java.net.URI java.util.UUID))
 
@@ -93,16 +94,13 @@
 
 (defmulti build (fn [command & _] command))
 
-(defn- name-param [title]
-  (if (.contains title "psv+") (stg/replace title "psv+" "*") title))
-
 (defn- doc-params [target-dir params]
   "Doc query params for a given node.
    target-dir is the directory to write to.
    Params is the gen information for a resources params."
   (.mkdirs (File. target-dir))
   (doseq [[k v] params]
-    (let [qm {:title (name-param k) :type (:type v) :doc (:doc v)}]
+    (let [qm {:title k :type (:type v) :doc (:doc v)}]
       (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
 (defn- doc-hdrs [target-dir hdrs]
@@ -125,6 +123,19 @@
             (pr-str
               {:code (name k) :doc (:doc v) :sample-response (body tree v)}))))
 
+(defn- input-params [tree uri]
+  (let [inputs (concat
+                 (list uri)
+                 (map val (d/get-in-tree tree [:req :query-params :required]))
+                 (map val (d/get-in-tree tree [:req :query-params :optional]))
+                 (map val (d/get-in-tree tree [:req :body]))
+                 (map val (d/get-in-tree tree [:req :headers])))
+        t (fn [input]
+            (map #(nth % 1) (ph/holder? input)))
+        ph-names (filter identity (reduce concat (map t inputs)))
+        to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
+  (reduce merge (map to-map ph-names))))
+
 (defmethod build :doc [_ {:keys [locs] :as corpus} codices]
   (println "building a doc probe to visit : " locs)
   (prep-docs corpus)
@@ -143,7 +154,7 @@
                    :method (name method)}]
          (spit-to (str directory "/global/site.edn") (pr-str {:site-name (d/get-in-tree tree [:title])}))
          (spit-to (str directory "/api/" id ".edn") (pr-str full))
-         (doc-params (str directory "/" id "/params/") (d/get-in-tree tree [:req :vars]))
+         (doc-params (str directory "/" id "/params/") (input-params tree uri))
          (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
          (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
          (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree)))))])
