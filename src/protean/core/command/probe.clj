@@ -54,15 +54,7 @@
     (tl-testdoc tests corpus codices)
     (tl-negotiation tests corpus codices)))
 
-(defn- body [tree v]
-  (if-let [bf (:body v)]
-    (let [b (slurp bf)
-          ctype (d/get-in-tree tree [:rsp :headers "Content-Type"])]
-      (cond
-        (= ctype h/xml) (co/pretty-xml b)
-        (= ctype h/txt) b
-        :else (co/pretty-js b)))
-    "N/A"))
+(defn- body [tree v] (if-let [bf (:body v)] (slurp bf) "N/A"))
 
 (defn- bomb [msg]
   (println (aa/red msg))
