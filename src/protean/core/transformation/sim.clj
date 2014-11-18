@@ -174,7 +174,7 @@
             @delayed))
       (catch Exception e (print-error e))))))
 
-(defn at [ms-time delayed] 
+(defn at [ms-time delayed]
   (at/at ms-time (job delayed) schedule-pool)
 ;  (at/show-schedule schedule-pool)
   nil)
@@ -241,15 +241,24 @@
 
 (defn make-request
   "Makes an API request"
-  [method url content]
-  (let [the-request (assoc content
+  ([method url content]
+    (let [the-request (assoc content
           :url url
           :method method
           :throw-exceptions false)
-        res (clt/request the-request)]
-    (println "res" res)
-    (if-let [log-file (:log content)]
-      (log [(str "Response from " (:url content)) res] log-file))))
+          res (clt/request the-request)]
+      (println "res" res)
+      (if-let [log-file (:log content)]
+        (log [(str "Response from " (:url content)) res] log-file))))
+  ([method url request body]
+    (let [the-request
+            {:url url
+             :method method
+             :body body
+             :content-type (get-in request [:headers "content-type"])
+             :throw-exceptions false}
+          res (clt/request the-request)]
+      (println "res" res))))
 
 (defn env
   "Accesses environment variables"
