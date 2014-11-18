@@ -49,7 +49,6 @@
               (d/assoc-tree-item-> tree [:req :query-params :required] [:query-params])
               (d/assoc-tree-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
               (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
-              (d/assoc-tree-item-> tree [:req :vars] [:vars])
               (body tree)
               (d/assoc-item-> entry [:codex] [:codex])
               (postprocess entry))))
