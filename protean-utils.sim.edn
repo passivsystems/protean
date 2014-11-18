@@ -1,0 +1,16 @@
+(refer 'protean.core.transformation.sim)
+
+{
+  "protean-utils" {
+    "echo" {
+      :put [
+        #(success)
+
+        ;; echo the request payload (an xml message)
+        (fn []
+          (when true
+            (println ">>>> req body : " (:body request))))
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+;; Useful functions codex
+
+{
+  :includes [ "defaults.edn" ]
+
+  :title "Useful functions codex"
+
+  "protean-utils" {
+    "echo" {:put {:doc "An echo endpoint for testing this SIM"}}
+  }
+}
