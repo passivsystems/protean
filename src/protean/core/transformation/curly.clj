@@ -16,15 +16,16 @@
 
 (defn- translate [phs type tree]
   (if phs
+    (do (println "\n"phs " (" type ")")
     (let [res
           (-> phs
-              (ph/holders-swap ph/holder-swap-exp type :exp tree)
+              (ph/holder-swap2 ph/holder-swap-gen tree)
               ; Note, placeholder generation will be different each time we request them
               ; also may not be url friendly (though we will encode them)
-              (ph/holders-swap ph/holder-swap-gen type :vars tree)
+              (ph/holder-swap2 ph/holder-swap-exp tree)
            )]
       (if (vector? res) (first res) res))
-    nil))
+    nil)))
 
 (defn- curly-method-> [method payload]
   (if (= method :get)

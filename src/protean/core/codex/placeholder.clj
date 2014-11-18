@@ -91,6 +91,18 @@
   "Encode body items as clojure, they are Json initially."
   [k x] (if (= k :body) (c/clj x) x))
 
+
+
+;        extract-ph-names (fn [input]
+;            (map #(nth % 1) (ph/holder? input)))
+;        ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
+
+
+;       (fn [s]
+;            (if-let [match (ph/holder? s)]
+;              (recur (stg/replace-first s ph/ph (str "_" (nth (first match) 1) "_")))
+;             s))
+
 (defn replace-all-with
   "replace all occurrences in s of placeholder with result of applying func to the placeholder name"
   [s func]
@@ -106,23 +118,34 @@
       (list method (stg/replace uri ph (str gv)) ph-map)) ; TODO this will replace all in URI - do we know we only have 1?
     payload))
 
-(defn holder-swap-exp
-  "Swap codex example values in for placeholders."
-  [k v tree]
-  (if-let [match (nth (first (holder? v)) 1)] ; just pulling out first match (could there be more?)
-    (if-let [x (d/get-in-tree tree [:vars match :examples])]
-      [(first x) "exp"]
-      [v "idn"])
-    [v "idn"]))
+(defn holder-swap-exp [tree v]
+  (if-let [x (d/get-in-tree tree [:vars v :examples])]
+    (first x)
+    v))
 
-(defn holder-swap-gen
+(defn holder-swap-gen [tree v]
+  (if-let [x (d/get-in-tree tree [:vars v :type])]
+    (g-val x tree)
+    v))
+
+(defn holder-swap2
   "Swap generative values in for placeholders."
-  [k v tree]
-  (if-let [match (nth (first (holder? v)) 1)]; just pulling out first match (could there be more?)
-    (if-let [x (d/get-in-tree tree [:vars match :type])]
-      [(g-val x tree) "format"]
-      [v "idn"])
-    [v "idn"]))
+  [m swap-fn tree]
+  (println "holder-swap2 m:" m (type m))
+  (def z (for [e m]
+    (do
+      (println "holder-swap2 e:" e (type e))
+    (let [k (key e)
+          v (val e)]
+      (do (println "holder-swap2 kv" k ":" v "(" (type v) ")")
+      {k (cond
+        (string? v)(do (def x (replace-all-with v (partial swap-fn tree))) (println "x:" x) x)
+        (vector? v)(for [x v] (replace-all-with x (partial swap-fn tree))) ; TODO recur on each v may be a map..
+        :else (do (println "recuring on " (type v)) (holder-swap2 swap-fn v tree)) ; recur?
+      )})
+    ))))
+  (println "z:" z)
+z)
 
 (defn- json-qp? [t p]
   (if (empty? p) false (and (d/qp-json? t) (map? (first (vals p))))))
