@@ -32,14 +32,15 @@
     (str payload " -X " (s/upper-case (name method)))))
 
 (defn- curly-headers-> [tree payload]
-  (let [hstr (map #(str " -H '" (key %) ": " (val %) "'") (d/get-in-tree tree [:req :headers]))]
-    (str payload (apply str hstr))))
+  (let [phs (d/get-in-tree tree [:req :headers])
+        hstr (if-let [rp (translate phs :headers tree)]
+         (apply str (map #(str " -H '" (key %) ": " (val %) "'") rp)))]
+    (str payload hstr)))
 
 (defn- curly-form-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :form-params])
         data (if-let [rp (translate phs :form-params tree)]
-               (str " --data '" (s/join "&" (map #(str (key %) "=" (val %)) rp)) "'")
-               "")]
+               (str " --data '" (s/join "&" (map #(str (key %) "=" (val %)) rp)) "'"))]
     (str payload data)))
 
 (defn- curly-body-> [tree payload]
@@ -53,8 +54,7 @@
                  (if b
                    (if (map? b)
                      (str " -H '" h/ctype ": " h/jsn-simple "' --data '" (jsn/generate-string b) "'")
-                     (str " -H '" h/ctype ": " h/jsn-simple "' --data '" (jsn/generate-string (first b)) "'"))
-                   "")
+                     (str " -H '" h/ctype ": " h/jsn-simple "' --data '" (jsn/generate-string (first b)) "'")))
                (= content-type-req h/txt)
                  (if b (str " --data '" (jsn/generate-string (first b)) "'") "")
                :else "")]  ;unknown content-type             
@@ -70,10 +70,10 @@
 (defn- curly-query-params-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :query-params :required])
         query (if-let [rp (translate phs :query-params tree)]
-          (if (not (empty? rp))
-            (if (d/qp-json? tree)
-              (str "?q=" (rp "q"))
-              (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode  (val %))) rp))))))]
+                (if (not (empty? rp))
+                  (if (d/qp-json? tree)
+                    (str "?q=" (rp "q"))
+                    (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode  (val %))) rp))))))]
       (str payload query)))
 
 (defn- curly-replace-> [s1 s2 payload]
