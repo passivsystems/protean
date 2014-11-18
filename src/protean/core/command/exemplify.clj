@@ -1,5 +1,5 @@
 (ns protean.core.command.exemplify
-  "Replace plapceholder values with codex provided examples
+  "Replace placeholder values with codex provided examples
    for some more complex types.
 
    N.B. we are more likely to use seed or generated examples
@@ -23,7 +23,7 @@
 (defn- swap-placeholders [k p-type tree [method uri mp :as payload]]
   (let [v (if (= k :query-params) (get-in mp [k p-type]) (k mp))]
     (if-let [phs (p/encode-value k v)]
-      (let [res (p/holders-swap phs p/holder-swap-exp mp k :exp tree)]
+      (let [res (p/holders-swap phs p/holder-swap-exp k :exp tree)]
         (list method uri (tx-payload-map k mp res)))
       payload)))
 

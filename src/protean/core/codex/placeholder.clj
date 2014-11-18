@@ -14,10 +14,8 @@
 ;; Helper functions
 ;; =============================================================================
 
+; place holder has form: ${xxx}
 (def ph #"\$\{([^\}]*)\}")
-
-;(def psv "psv+")
-(def ns-psv "/psv+")
 
 (def rnd (Random.))
 
@@ -102,7 +100,7 @@
 
 (defn holder-swap-exp
   "Swap codex example values in for placeholders."
-  [k v m tree]
+  [k v tree]
   (if (holder? v)
     (if-let [x (d/get-in-tree tree [:req :vars k :examples])]
       [(first x) "exp"]
@@ -111,7 +109,7 @@
 
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
-  [k v m tree]
+  [k v tree]
   (if (holder? v)
     (if-let [x (d/get-in-tree tree [:req :vars k :type])]
       [(g-val x tree) "format"]
@@ -121,12 +119,12 @@
 (defn- json-qp? [t p]
   (if (empty? p) false (and (d/qp-json? t) (map? (first (vals p))))))
 
-(defn- swap-qp [swp-fn m p is-json-qp t]
+(defn- swap-qp [swp-fn p is-json-qp t]
   (let [c (if is-json-qp (first (vals p)) p)]
-    (for [[k v] c] [k (swp-fn k v m t)])))
+    (for [[k v] c] [k (swp-fn k v t)])))
 
-(defn- swap-body [swp-fn m p t]
-  (for [[k v] p] [k (swp-fn k v m t)]))
+(defn- swap-body [swp-fn p t]
+  (for [[k v] p] [k (swp-fn k v t)]))
 
 (defn- mapify-swapped [raw p is-qp is-json-qp ph-op]
   (let [mapified (into {} (for [[k [sval stype :as v]] raw] [k sval]))
@@ -137,11 +135,11 @@
 
 (defn holders-swap
   "Swap all placeholders with available seed, example or generated substitutes."
-  [ph swp-fn m type ph-op t]
+  [ph swp-fn type ph-op t]
   (let [p (if (vector? ph) (first ph) ph)
         is-json-qp (json-qp? t p)
         is-qp (qp? type)
-        raw (if is-qp (swap-qp swp-fn m p is-json-qp t) (swap-body swp-fn m p t))
+        raw (if is-qp (swap-qp swp-fn p is-json-qp t) (swap-body swp-fn p t))
         swapped (mapify-swapped raw p is-qp is-json-qp ph-op)
         sts (for [[k [sval stype :as v]] raw] stype)
         swap-type (cond

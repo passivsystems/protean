@@ -14,14 +14,14 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- translate [phs entry type tree]
-  (println "translate" type phs)
+(defn- translate [phs type tree]
   (if phs
     (let [res
           (-> phs
-              (ph/holders-swap ph/holder-swap-exp entry type :exp tree)
-              (ph/holders-swap ph/holder-swap-gen entry type :vars tree)
-;              (ph/replace-placeholders "XYZ") ; TODO generated values are not URL friendly.. before just used "XYZ"...
+              (ph/holders-swap ph/holder-swap-exp type :exp tree)
+              ; Note, placeholder generation will be different each time we request them
+              ; also may not be url friendly (though we will encode them)
+              (ph/holders-swap ph/holder-swap-gen type :vars tree)
            )]
       (if (vector? res) (first res) res))
     nil))
@@ -35,17 +35,17 @@
   (let [hstr (map #(str " -H '" (key %) ": " (val %) "'") (d/get-in-tree tree [:req :headers]))]
     (str payload (apply str hstr))))
 
-(defn- curly-form-> [entry tree payload]
+(defn- curly-form-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :form-params])
-        data (if-let [rp (translate phs entry :form-params tree)]
+        data (if-let [rp (translate phs :form-params tree)]
                (str " --data '" (s/join "&" (map #(str (key %) "=" (val %)) rp)) "'")
                "")]
     (str payload data)))
 
-(defn- curly-body-> [entry tree payload]
+(defn- curly-body-> [tree payload]
   (let [content-type-req (d/get-in-tree tree [:req :headers "Content-Type"])
         phs (d/get-in-tree tree [:req :body])
-        b (translate phs entry :body tree)
+        b (translate phs :body tree)
         data (cond
                (= content-type-req h/xml)
                  (if b (str " --data '" (c/str-xml b) "'") "")
@@ -67,9 +67,9 @@
 (defn- curly-uri-> [uri payload]
   (curly-literal-> (ph/replace-placeholders uri "1") payload))
 
-(defn- curly-query-params-> [entry tree payload]
+(defn- curly-query-params-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :query-params :required])
-        query (if-let [rp (translate phs entry :query-params tree)]
+        query (if-let [rp (translate phs :query-params tree)]
           (if (not (empty? rp))
             (if (d/qp-json? tree)
               (str "?q=" (rp "q"))
@@ -79,15 +79,15 @@
 (defn- curly-replace-> [s1 s2 payload]
   (s/replace payload s1 s2))
 
-(defn curly-> [{:keys [tree method uri] :as entry}]
+(defn curly-> [{:keys [tree method uri]}]
   (->> "curl -v"
        (curly-method-> method)
        (curly-headers-> tree)
-       (curly-form-> entry tree)
-       (curly-body-> entry tree)
+       (curly-form-> tree)
+       (curly-body-> tree)
        (curly-literal-> " '")
        (curly-uri-> uri)
-       (curly-query-params-> entry tree)
+       (curly-query-params-> tree)
        (curly-literal-> "'"))) 
 
 

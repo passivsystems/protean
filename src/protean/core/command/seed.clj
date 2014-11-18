@@ -4,7 +4,7 @@
   (:require [clojure.string :as s]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.coerce :as txco]
-            [protean.core.codex.placeholder :as p]))
+            [protean.core.codex.placeholder :as ph]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -20,7 +20,7 @@
 ; strat is either Basic or Bearer
 (defn- header-authzn-> [strat seed [method uri mp :as payload]]
   (if-let [auth (get-in mp [:headers h/azn])]
-    (if (and (.contains auth p/ph) (.contains auth strat))
+    (if (and (.contains auth ph/ph) (.contains auth strat))
       (if-let [sauth (token seed strat)]
         (let [n (assoc-in mp [:headers h/azn]
                   (str strat " " (last (s/split sauth #" "))))]
@@ -36,8 +36,8 @@
     (first (filter #(substr? % (str ns "/")) (get-in seed ["bag"])))))
 
 ; first search in first class seed items, then in the bag
-(defn- holder-swap [k v seed tree]
-  (if (p/holder? v)
+(defn- holder-swap [seed k v tree]
+  (if (ph/holder? v)
     (if-let [sv (get-in seed [(last (.split v PSV-EXP))])]
       [sv :seed]
       (if-let [sv (bag-item v seed)] [sv "seed"] [v :idn]))
@@ -45,21 +45,21 @@
 
 (defn- tx-payload-map [k mp res]
   (-> mp
-      (assoc k (p/encode-value k (first res)))
+      (assoc k (ph/encode-value k (first res)))
       (update-in [:codex :ph-swaps] conj (second res))
       (update-in [:codex :ph-swaps] vec)))
 
 (defn- swap-placeholders [k seed [method uri mp options :as payload]]
-  (if-let [phs (p/encode-value k (k mp))]
+  (if-let [phs (ph/encode-value k (k mp))]
     (let [swap-mp (merge seed mp)
-          swapped (p/holders-swap phs holder-swap swap-mp k :seed (:tree options))]
+          swapped (ph/holders-swap phs (partial holder-swap seed) k :seed (:tree options))]
       (list method uri (tx-payload-map k mp swapped)))
     payload))
 
 ; TODO: weak, only handles 1 instance of uri placeholder
 (defn- uri-> [seed [method uri mp :as payload]]
-  (if (p/holder? uri)
-    (let [v (p/uri-ns-holder uri)
+  (if (ph/holder? uri)
+    (let [v (ph/uri-ns-holder uri)
           sv (bag-item v seed)
           new-uri (if sv (s/replace uri #"psv\+" (last (.split sv "/"))) uri)]
       (if sv
