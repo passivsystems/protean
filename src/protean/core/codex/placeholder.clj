@@ -2,6 +2,7 @@
   "Placeholder functionality, swapping codex examples, generating."
   (:refer-clojure :exclude [long int])
   (:require [clojure.string :as stg]
+            [clojure.pprint]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c])
   (:import java.lang.Math
@@ -25,7 +26,7 @@
     (.generate generator)))
 
 (defn- g-val [v tree]
-  (if-let [regex (some #(get-in % [:types v]) tree)]
+  (if-let [regex (d/get-in-tree tree [:types v])]
     (generate regex)
     (case v
       :Int (Math/abs (.nextInt rnd))
@@ -48,7 +49,7 @@
 (defn holder?
   "Does a simple value contain a placeholder ?"
   [v]
-  (if (string? v) (re-seq ph v) false))
+  (if (string? v) (re-seq ph v) nil))
 
 
 (defn authzn-holder?
@@ -101,8 +102,8 @@
 (defn holder-swap-exp
   "Swap codex example values in for placeholders."
   [k v tree]
-  (if (holder? v)
-    (if-let [x (d/get-in-tree tree [:req :vars k :examples])]
+  (if-let [match (nth (first (holder? v)) 1)] ; just pulling out first match (could there be more?)
+    (if-let [x (d/get-in-tree tree [:req :vars match :examples])]
       [(first x) "exp"]
       [v "idn"])
     [v "idn"]))
@@ -110,8 +111,8 @@
 (defn holder-swap-gen
   "Swap generative values in for placeholders."
   [k v tree]
-  (if (holder? v)
-    (if-let [x (d/get-in-tree tree [:req :vars k :type])]
+  (if-let [match (nth (first (holder? v)) 1)]; just pulling out first match (could there be more?)
+    (if-let [x (d/get-in-tree tree [:req :vars match :type])]
       [(g-val x tree) "format"]
       [v "idn"])
     [v "idn"]))
