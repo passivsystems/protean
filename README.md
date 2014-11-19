@@ -100,7 +100,7 @@ setting up services and getting information on how to curl them.
 
 ### Setting up your services
 
-Create a file with a .cod.edn extension. See *sample-codex.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
+Create a file with a .cod.edn extension. See *sample-petstore.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
 * uploading with the basic Protean CLI
     - protean add-services -f /path/to/service.cod.edn
 * uploading with curl
