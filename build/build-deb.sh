@@ -16,6 +16,7 @@ then
     mkdir -p ../target/deb/usr/lib/protean
 
     cp ../target/*standalone* ../target/deb/usr/lib/protean/protean.jar
+    cp ../defaults.edn ../target/deb/usr/lib/protean/defaults.edn
     cp ../sample-petstore.cod.edn ../target/deb/usr/lib/protean/sample-petstore.cod.edn
     cp ../sample-petstore.sim.edn ../target/deb/usr/lib/protean/sample-petstore.sim.edn
     cp ../protean-utils.cod.edn ../target/deb/usr/lib/protean/protean-utils.cod.edn
