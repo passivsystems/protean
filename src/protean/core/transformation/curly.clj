@@ -14,17 +14,16 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- translate [phs type tree]
+(defn- translate [phs tree]
   (if phs
     (let [res
           (-> phs
-              (ph/holders-swap ph/holder-swap-exp type :exp tree)
+              (ph/holder-swap2 ph/holder-swap-gen tree)
               ; Note, placeholder generation will be different each time we request them
               ; also may not be url friendly (though we will encode them)
-              (ph/holders-swap ph/holder-swap-gen type :vars tree)
+              (ph/holder-swap2 ph/holder-swap-exp tree)
            )]
-      (if (vector? res) (first res) res))
-    nil))
+      (if (vector? res) (first res) res))))
 
 (defn- curly-method-> [method payload]
   (if (= method :get)
@@ -33,20 +32,20 @@
 
 (defn- curly-headers-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :headers])
-        hstr (if-let [rp (translate phs :headers tree)]
+        hstr (if-let [rp (translate phs tree)]
          (apply str (map #(str " -H '" (key %) ": " (val %) "'") rp)))]
     (str payload hstr)))
 
 (defn- curly-form-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :form-params])
-        data (if-let [rp (translate phs :form-params tree)]
+        data (if-let [rp (translate phs tree)]
                (str " --data '" (s/join "&" (map #(str (key %) "=" (val %)) rp)) "'"))]
     (str payload data)))
 
 (defn- curly-body-> [tree payload]
   (let [content-type-req (d/get-in-tree tree [:req :headers "Content-Type"])
         phs (d/get-in-tree tree [:req :body])
-        b (translate phs :body tree)
+        b (translate phs tree)
         data (cond
                (= content-type-req h/xml)
                  (if b (str " --data '" (c/str-xml b) "'") "")
@@ -65,11 +64,12 @@
 
 
 (defn- curly-uri-> [uri payload]
-  (curly-literal-> (ph/replace-placeholders uri "1") payload))
+  (let [one (fn [s] "1")]
+    (curly-literal-> (ph/replace-all-with uri one) payload)))
 
 (defn- curly-query-params-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :query-params :required])
-        query (if-let [rp (translate phs :query-params tree)]
+        query (if-let [rp (translate phs tree)]
                 (if (not (empty? rp))
                   (if (d/qp-json? tree)
                     (str "?q=" (rp "q"))
