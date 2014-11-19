@@ -11,7 +11,10 @@
 mkdir -p ../target/tgz
 cp ../target/*standalone* ../target/tgz/protean.jar
 cp -r ../public ../target/tgz
-cp ../sample-codex.edn ../target/tgz
+cp ../sample-petstore.cod.edn ../target/tgz
+cp ../sample-petstore.sim.edn ../target/tgz
+cp ../protean-utils.cod.edn ../target/tgz
+cp ../protean-utils.sim.edn ../target/tgz
 cp tgz/* ../target/tgz
 cd ../target/tgz
 tar cvzf protean-osx.tgz *

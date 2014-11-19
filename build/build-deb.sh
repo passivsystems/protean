@@ -16,7 +16,10 @@ then
     mkdir -p ../target/deb/usr/lib/protean
 
     cp ../target/*standalone* ../target/deb/usr/lib/protean/protean.jar
-    cp ../sample-codex.edn ../target/deb/usr/lib/protean/sample-codex.edn
+    cp ../sample-petstore.cod.edn ../target/deb/usr/lib/protean/sample-petstore.cod.edn
+    cp ../sample-petstore.sim.edn ../target/deb/usr/lib/protean/sample-petstore.sim.edn
+    cp ../protean-utils.cod.edn ../target/deb/usr/lib/protean/protean-utils.cod.edn
+    cp ../protean-utils.sim.edn ../target/deb/usr/lib/protean/protean-utils.sim.edn
     cp -r ../public ../target/deb/usr/lib/protean
     cp -r etc/protean ../target/deb/usr/bin
     cp -r etc/protean-server ../target/deb/usr/bin
