@@ -184,7 +184,7 @@
 
 (defmacro at
   [ms-time then]
-  (list 'at-delayed ms-time (list 'delay then)))
+  `(at-delayed ~ms-time (delay ~then)))
 
 (defn after-delayed
   [delay-ms delayed]
@@ -194,7 +194,7 @@
 
 (defmacro after
   [delay-ms then]
-  (list 'after-delayed delay-ms (list 'delay then)))
+  `(after-delayed ~delay-ms (delay ~then)))
 
 (defn- mime [url]
   (cond
@@ -242,7 +242,7 @@
 (defmacro prob
   "Will evaluate the provided function with specified probability"
   [n then]
-  (list 'if (list '< '(rand) n) then))
+  `(if (< (rand) ~n) ~then))
 
 (defn log [what where]
   (let [to-log [(str (java.util.Date.)) what]]
