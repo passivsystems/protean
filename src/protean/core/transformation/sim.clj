@@ -83,8 +83,6 @@
     (valid-xml-body? request tree)
     (valid-jsn-body? request tree)))
 
-
-
 (defn- pretty-str [s ctype]
   (cond
     (h/xml? ctype) (c/pretty-xml s)
@@ -147,7 +145,6 @@
 ;; DSL for sims
 ;; =============================================================================
 
-
 ; TODO provide schema in codex for xml/json, and validate against that.
 (defn valid-inputs? []
   (and
@@ -155,6 +152,7 @@
     (valid-query-params? *request* *tree*)
     (valid-form? *request* *tree*)
     (valid-body? *request* *tree*)))
+
 
 ;; =============================================================================
 ;; Scheduling
@@ -196,6 +194,11 @@
 (defmacro after
   [delay-ms then]
   `(after-delayed ~delay-ms (delay ~then)))
+
+
+;; =============================================================================
+;; Responses
+;; =============================================================================
 
 (defn- mime [url]
   (cond
