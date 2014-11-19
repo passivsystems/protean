@@ -177,17 +177,24 @@
             @delayed))
       (catch Exception e (print-error e))))))
 
-(defn at [ms-time delayed] 
+(defn at-delayed [ms-time delayed] 
   (at/at ms-time (job delayed) schedule-pool)
 ;  (at/show-schedule schedule-pool)
   nil)
 
-; TODO use macro with lazy evaluation instead of delay?...
-(defn after [delay-ms delayed]
+(defmacro at
+  [ms-time then]
+  (list 'at-delayed ms-time (list 'delay then)))
+
+(defn after-delayed
+  [delay-ms delayed]
   (at/after delay-ms (job delayed) schedule-pool)
 ;  (at/show-schedule schedule-pool)
   nil)
 
+(defmacro after
+  [delay-ms then]
+  (list 'after-delayed delay-ms (list 'delay then)))
 
 (defn- mime [url]
   (cond
