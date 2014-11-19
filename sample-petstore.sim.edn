@@ -39,7 +39,7 @@
         ;; synchronously forward request to another API, and log response
         (fn []
           (when (valid-inputs?)
-            (make-request :post "http://google.com" {
+            (make-request :put "http://localhost:3000/protean-utils/echo" {
               :content-type (get-in request [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
               :body (:body request)
               :log (str (env :user-home) "/tmp/protean-responses.txt")})))
@@ -49,7 +49,7 @@
         (fn []
           (when true
             (after 3000
-              (make-request :post "http://google.com" {
+              (make-request :put "http://localhost:3000/protean-utils/echo" {
                 :content-type (get-in request [:headers "content-type"])
                 :body (:body request)
                 :log (str (env :user-home) "/tmp/protean-responses.txt")}))))
