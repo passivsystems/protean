@@ -177,17 +177,24 @@
             @delayed))
       (catch Exception e (print-error e))))))
 
-(defn at [ms-time delayed]
+(defn at-delayed [ms-time delayed] 
   (at/at ms-time (job delayed) schedule-pool)
 ;  (at/show-schedule schedule-pool)
   nil)
 
-; TODO use macro with lazy evaluation instead of delay?...
-(defn after [delay-ms delayed]
+(defmacro at
+  [ms-time then]
+  `(at-delayed ~ms-time (delay ~then)))
+
+(defn after-delayed
+  [delay-ms delayed]
   (at/after delay-ms (job delayed) schedule-pool)
 ;  (at/show-schedule schedule-pool)
   nil)
 
+(defmacro after
+  [delay-ms then]
+  `(after-delayed ~delay-ms (delay ~then)))
 
 (defn- mime [url]
   (cond
@@ -232,11 +239,10 @@
       :headers {"Content-Type" (mime body-url)}}
     {:status status-code}))
 
-; TODO use macro with lazy evaluation instead of delay...
-(defn prob
+(defmacro prob
   "Will evaluate the provided function with specified probability"
-  [n delayed]
-  (if (< (rand) n) @delayed))
+  [n then]
+  `(if (< (rand) ~n) ~then))
 
 (defn log [what where]
   (let [to-log [(str (java.util.Date.)) what]]
