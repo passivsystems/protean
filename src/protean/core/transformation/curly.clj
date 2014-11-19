@@ -18,10 +18,10 @@
   (if phs
     (let [res
           (-> phs
-              (ph/holder-swap2 ph/holder-swap-gen tree)
+              (ph/holder-swap ph/holder-swap-gen tree)
               ; Note, placeholder generation will be different each time we request them
               ; also may not be url friendly (though we will encode them)
-              (ph/holder-swap2 ph/holder-swap-exp tree)
+              (ph/holder-swap ph/holder-swap-exp tree)
            )]
       (if (vector? res) (first res) res))))
 

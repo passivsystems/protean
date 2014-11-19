@@ -81,14 +81,13 @@
     (g-val x tree)
     v))
 
-(defn holder-swap2
+(defn holder-swap
   "Swap generative values in for placeholders."
   [m swap-fn tree]
   (into {} (for [[k v] m]
     {k (cond
       (string? v)(replace-all-with v (partial swap-fn tree))
-      (vector? v)(for [x v] (replace-all-with x (partial swap-fn tree))) ; TODO recur on each v may be a map..
-      (map? v)(holder-swap2 v swap-fn tree)
+      (map? v)(holder-swap v swap-fn tree)
       :else v
     )})))
 
