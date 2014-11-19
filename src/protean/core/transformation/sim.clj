@@ -232,11 +232,10 @@
       :headers {"Content-Type" (mime body-url)}}
     {:status status-code}))
 
-; TODO use macro with lazy evaluation instead of delay...
-(defn prob
+(defmacro prob
   "Will evaluate the provided function with specified probability"
-  [n delayed]
-  (if (< (rand) n) @delayed))
+  [n then]
+  (list 'if (list '< '(rand) n) then))
 
 (defn log [what where]
   (let [to-log [(str (java.util.Date.)) what]]
