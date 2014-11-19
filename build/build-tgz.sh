@@ -11,6 +11,8 @@
 mkdir -p ../target/tgz
 cp ../target/*standalone* ../target/tgz/protean.jar
 cp -r ../public ../target/tgz
+cp -r ../test-data ../target/tgz
+cp ../defaults.edn ../target/tgz
 cp ../sample-petstore.cod.edn ../target/tgz
 cp ../sample-petstore.sim.edn ../target/tgz
 cp ../protean-utils.cod.edn ../target/tgz
