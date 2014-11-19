@@ -8,11 +8,9 @@ Take control of your RESTful API's. Test them, simulate them, document how to us
 * Configure probability of error per service or per resource path
 * Verify request structure; headers, query string params, body payload json keys, url encoded forms
 * Auto generate curl commands to test your API's
-* Automatically integration test your API simulation
-* Automatically integration test your real API's passing in a small initial seed of data
 * Automatic documentation generated for all configured projects - map your services
 
-This is a Clojure project which uses edn to simulate, integration test and document RESTful API's. Protean is used commerically to help speed development and test complex distributed systems.
+This is a Clojure project which uses edn to simulate and document RESTful API's. Protean is used commerically to help speed development and test complex distributed systems.
 
 
 ## Release information
@@ -97,16 +95,17 @@ We recommend 'drip' (github.com/flatland/drip) to speed things up with the comma
 
 ## Documentation
 
-Documentation is available on http://localhost:3001 when you run Protean locally.  Below is a quickstart guide.
+Documentation is available on http://www.proteanic.org.  Below is a quickstart guide to help you with
+setting up services and getting information on how to curl them.
 
 ### Setting up your services
 
-Create a file with a .edn extension. See *sample-codex.edn* at the root of this repository. Once you are finished your can add your service *codex* by;
+Create a file with a .cod.edn extension. See *sample-codex.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
 * uploading with the basic Protean CLI
-    - protean add-services -f /path/to/service.edn
+    - protean add-services -f /path/to/service.cod.edn
 * uploading with curl
-    - curl -v -X PUT --data-binary "@/path/to/service.edn" http://localhost:3001/services
-* drop the .edn file in the root of your Protean directory and restart it
+    - curl -v -X PUT --data-binary "@/path/to/service.cod.edn" http://localhost:3001/services
+* drop the .cod.edn file in the root of your Protean directory and restart it
 
 
 ### How to query your service
