@@ -10,6 +10,7 @@
             [protean.core.protocol.protean :as p]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
+            [protean.core.codex.placeholder :as ph]
             [clj-http.client :as clt]
             [overtone.at-at :as at]
             [environ.core :as ec]
@@ -91,7 +92,8 @@
 
 (defn- to-endpoint [requested-endpoint sim-rules svc]
   (let [endpoints (keys (get-in sim-rules [svc]))
-        to-tuple (fn [endpoint] [(s/replace endpoint #"\*" ".+") endpoint])
+        any (fn [s] "[^/]+")
+        to-tuple (fn [endpoint] [(ph/replace-all-with endpoint any) endpoint])
         regexs (map to-tuple endpoints)
         is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
     (some is-match regexs)))
@@ -124,6 +126,7 @@
           :body (if body-in (slurp body-in) ""))
         corpus {}
         execute (fn [rule]
+          (if (not tree) (println "Warning - no endpoint found for" [svc endpoint method]))
           (try
             (binding [tree tree
                       request request
