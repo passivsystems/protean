@@ -1,4 +1,5 @@
 (ns protean.core.transformation.sim
+  "Machinery provided for running sims and powering sim extensions."
   (:require [clojure.string :as s]
             [clojure.set :as st]
             [clojure.pprint]
@@ -177,7 +178,7 @@
             @delayed))
       (catch Exception e (print-error e))))))
 
-(defn at-delayed [ms-time delayed] 
+(defn at-delayed [ms-time delayed]
   (at/at ms-time (job delayed) schedule-pool)
 ;  (at/show-schedule schedule-pool)
   nil)
