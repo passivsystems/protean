@@ -1,0 +1,99 @@
+
+/*
+Tipue drop 4.0
+Copyright (c) 2014 Tipue
+Tipue drop is released under the MIT License
+http://www.tipue.com/drop
+*/
+
+/*#tipue_drop_input {
+  font: 13px/1.6 'open sans', sans-serif;
+	color: #333;
+	padding: 12px 12px 12px 40px;
+	width: 170px;
+	border: 1px solid #e2e2e2;
+	border-radius: 0;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+  box-shadow: none;
+	outline: 0;
+	margin: 0;
+	background: #fff url('../img/search.png') no-repeat 15px 15px;
+}*/
+
+#tipue_drop_input:focus {
+  border-color: #ccc;
+}
+
+#tipue_drop_content {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+	border: 1px solid #e2e2e2;
+	margin: 7px 20px 0 0;
+	z-index: 999;
+}
+
+#tipue_drop_wrapper {
+  display: table;
+  margin-bottom: 7px;
+}
+
+#tipue_drop_wrapper a {
+  text-decoration: none;
+}
+
+.tipue_drop_item {
+  display: table-row;
+  background-color: #fff;
+}
+
+.tipue_drop_item:hover {
+  background-color: #f7f7f7;
+}
+
+#tipue_drop_head {
+  display: table-row;
+  background-color: #fff;
+}
+
+#tipue_drop_head_text {
+  display: table-cell;
+  vertical-align: top;
+  padding: 10px 15px;
+  font: 12px/1.6 'Open Sans', sans-serif;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tipue_drop_image {
+  width: 60px;
+  height: auto;
+  outline: none;
+  display:none; /*added*/
+}
+
+.tipue_drop_left {
+  display: table-cell;
+  vertical-align: middle;
+  padding: 15px;
+}
+
+.tipue_drop_right {
+  display: table-cell;
+  vertical-align: middle;
+  /*max-width: 250px;*/
+  padding: 15px 15px 15px 0;
+}
+
+.tipue_drop_right_title {
+  font: 13px/1 'open sans', sans-serif;
+  color: #333;
+}
+
+.tipue_drop_right_text {
+  font: 300 13px/1.6 'Open Sans', sans-serif;
+  color: #555;
+  padding-top: 5px;
+}

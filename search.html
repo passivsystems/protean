@@ -18,7 +18,7 @@
     <script type="text/javascript" src="resource/js/bootstrap.js"></script>
     <script src="resource/js/prettify/prettify.js"></script>
   </head>
-  <body class="silk-template-default silk-view-index" onload="prettyPrint();">
+  <body class="silk-template-default silk-view-search" onload="prettyPrint();">
     
     <div id="navbar-header" class="navbar navbar-default navbar-fixed-top">
       <div class="container">
@@ -75,135 +75,12 @@
     <br><br><br><br>
     <div class="container">
       
-    <div class="jumbotron">
-      <h1>
-    <span>Protean</span>
-  
-
-</h1>
-      <p>Encoding, documenting, simulating RESTful API's.</p>
-    </div>
-    <div class="row">
-      <div class="col-md-4">
-        
-  <div class="bs-sidebar" role="complementary" style="width:350px;">
-    <ul class="nav bs-sidenav">
-      <li>
-        <a data-sw-href="#path" href="#simple-codex">
-          <span data-sw-text="title">Simple codex</span>
-        </a>
-      </li><li>
-        <a data-sw-href="#path" href="#doc-codex">
-          <span data-sw-text="title">Documentation codex</span>
-        </a>
-      </li><li>
-        <a data-sw-href="#path" href="#preferences-codex">
-          <span data-sw-text="title">Preferences codex</span>
-        </a>
-      </li><li>
-        <a data-sw-href="#path" href="#multi-response-codex">
-          <span data-sw-text="title">Multiple responses codex</span>
-        </a>
-      </li>
-    </ul>
-  </div>
-
-
-
-      </div>
-      <div class="col-md-8" role="main">
-        <h2>Documentation</h2>
-
-        <p>
-          For now we present a few sample codex files for various different purposes.
-        </p>
-        <p>
-          We will push some decent docs and a tutorial soon.
-        </p>
-
-        <p>
-          Broadly codex files are written to encode (document) an API.
-        </p>
-
-        <section data-sw-nav="Simple codex" id="simple-codex" data-sw-content="">
-          <h3>Simple codex</h3>
-
-          <pre>
-{&quot;simple&quot; {&quot;path/data&quot; {:get {}}}}
-          </pre>
-
-          <p>
-            This defines a service with one endpoint <code>/simple/path/data</code> which can be called
-            with a <code>GET</code> method.
-          </p>
-        </section>
-
-        <section data-sw-nav="Documentation codex" id="doc-codex" data-sw-content="">
-          <h3>A codex with some basic documentation</h3>
-
-          <pre>
-{&quot;simple&quot; {&quot;path/data&quot; {:get {:doc &quot;A simple service&quot;}}}}
-          </pre>
-
-          <p>
-            A doc attribute lets us put basic documentation against many items in a codex.
-          </p>
-        </section>
-
-        <section data-sw-nav="Preferences codex" id="preferences-codex" data-sw-content="">
-          <h3>Defining preferences using includes</h3>
-
-          <pre>
-{
-  :includes [ &quot;defaults.edn&quot; ]
-
-  &quot;simple&quot; {
-    &quot;path/data&quot; {:get {}}
-  }
-}
-          </pre>
-
-          <p>
-            Using the defaults include for our 'organisation' or personal preferences we could override the
-            status returned by a get to be 204 or anything we choose.
-          </p>
-        </section>
-
-        <section data-sw-nav="Multiple responses codex" id="multi-response-codex" data-sw-content="">
-          <h3>A codex demonstrating multiple responses - possible errors.</h3>
-
-          <pre>
-{
-  :includes [ &quot;defaults.edn&quot; ]
-
-  &quot;simple&quot; {
-    &quot;path/data&quot; {
-      :get {
-        :rsp {
-          :200 {
-            :doc &quot;OK&quot;
-          }
-
-          :400 {
-            :doc &quot;Bad Request&quot;
-          }
-
-          :404 {
-            :doc &quot;Not Found&quot;
-          }
-        }
-      }
-    }
-  }
-}
-          </pre>
-
-          <p>
-            All possible responses, good and bad can be documented.
-          </p>
-        </section>
-      </div>
-    </div>
+    <div id="tipue_search_content"></div>
+    <script>
+      $(document).ready(function() {
+        $('#tipue_search_input').tipuesearch({'show': 6});
+      });
+    </script>
   
 
 

@@ -1,0 +1,9 @@
+{
+  "id" 1
+  "hubNetworkURI" "/hubs/1"
+  "startDateTime" "2014-10-23T07:18:23Z"
+  "endDateTime"   "2014-10-23T07:18:23Z"
+  "forecastEvents" [
+    {"startDateTime" "2014-10-23T07:18:23Z" "value" 2.3}
+  ]
+}
