@@ -17,11 +17,10 @@
   [(get-in codices [svc path method])
    (get-in codices [svc path])
    (get-in codices [svc])
-   (get-in codices [method]) ; TODO confirm position of this..
+   (get-in codices [method])
    codices]
 )
 
-; TODO can we create our own destructure to get at stuff in tree?
 (defn get-in-tree
   "returns the first result for given sequence of keys from a tree (scope)"
   [tree ks]
@@ -31,7 +30,7 @@
   "Extracts first out-ks in tree and assocs to target as in-k."
   [tree out-ks in-ks target]
   (if-let [v (get-in-tree tree out-ks)]
-    (if (empty? v) target (assoc-in target in-ks v)) ; TODO confirm is (empty?) - only applies to payload, not analysis?
+    (if (empty? v) target (assoc-in target in-ks v))
     target))
 
 (defn assoc-item->
