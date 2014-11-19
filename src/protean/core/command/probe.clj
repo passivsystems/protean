@@ -13,11 +13,7 @@
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
             [protean.core.transformation.testy-cljhttp :as tc]
-            [protean.core.command.test :as t]
-            [protean.core.command.seed :as s]
-            [protean.core.command.exemplify :as e]
-            [clojure.pprint]
-            [protean.core.command.generate :as g])
+            [protean.core.command.test :as t])
   (:import java.io.File java.net.URI java.util.UUID))
 
 ;; =============================================================================
@@ -28,32 +24,6 @@
 
 (defn- hlg [t] (println (aa/bold-green t)))
 
-(defn- show-test [level]
-  (cond
-   (= level 1) (hlr "ʘ‿ʘ I'm too young to die")
-   (= level 2) (hlr "⊙︿⊙ Hey not too rough")
-   (= level 3) (hlr "ミ●﹏☉ミ Hurt me plenty")
-   (= level 4) (hlr "✖_✖ Ultra violence")))
-
-(defn- tl-negotiation
-  "Only ever translate placeholders with seed items, no generation."
-  [tests {:keys [seed] :as corpus} codices]
-  (s/seeds tests (:seed corpus)))
-
-(defn- tl-testdoc
-  "Prefer seed items in placeholder translation then codex examples then
-   generated values."
-  [tests {:keys [seed] :as corpus} codices]
-  (->> (s/seeds tests seed)
-       (e/examples codices :required)
-       (g/generations codices)))
-
-(defn- translate
-  "Translate placeholders when visiting real nodes."
-  [tests command corpus codices]
-  (if (some #{:doc :test} (list command))
-    (tl-testdoc tests corpus codices)
-    (tl-negotiation tests corpus codices)))
 
 (defn- body [tree v] (if-let [bf (:body v)] (slurp bf) "N/A"))
 
@@ -82,10 +52,6 @@
 (defmulti config (fn [command & _] command))
 
 (defmethod config :doc [_ corpus] (hlg "building probes"))
-
-(defmethod config :test [_ corpus]
-  (show-test (get-in corpus [:config "test-level"] 1))
-  (hlg "building probes"))
 
 
 ;; =============================================================================
@@ -158,17 +124,6 @@
          (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
          (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree)))))])
 
-(defmethod build :test [_ {:keys [locs] :as corpus} codices]
-  (println "building a test probe to visit : " locs)
-  [corpus
-   (fn engage [{:keys [locs host port] :as corpus} codices res-fn]
-     (let [h (or host "localhost")
-           p (or port 3000)
-           tests (tc/clj-httpify h p codices corpus)
-           seeded (translate tests :test corpus codices)
-           results (map #(t/test! %) seeded)]
-       (res-fn results)
-       results))])
 
 (defmethod build :negotiate [_ {:keys [locs]} codices]
   (println "building a negotiation probe to visit : " locs))
@@ -198,21 +153,6 @@
   (hlg "dispatching probes")
   (doall (map (fn [x] ((last x) (first x) codices)) probes)))
 
-(defmethod dispatch :test [_ corpus codices probes]
-  (hlg "dispatching probes")
-  (let [res
-          (doall (map (fn [x] ((last x) (first x) codices res-persist!)) probes))
-        raw-posts (filter #(= (first %) 'client/post) (apply concat res))
-        ps (filter #(or (:location (nth % 2)) (:body (nth % 2))) raw-posts)
-        vs (remove nil? (map #(or (:location (nth % 2)) (:body (nth % 2))) ps))
-        locs (for [[m p] probes] (:locs m))
-        bag (assoc-in corpus [:seed "bag"] (vec vs))
-        np (doall (map #(build :test (assoc-in bag [:locs] %) codices) locs))
-        nr (doall (map (fn [x] ((last x) (first x) codices res-persist!)) np))
-        fr (remove #(or (= (first %) 'client/post) (not (some #{"seed"} (last %))))
-                   (apply concat nr))]
-    (concat (apply concat res) fr)))
-
 
 ;; =============================================================================
 ;; Probe data analysis
@@ -226,29 +166,5 @@
         silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
     (silk/spin-or-reload false silk-path false false)))
 
-(defn- get? [m] (= m 'client/get))
 
-(defn- put? [m] (= m 'client/put))
 
-(defn- del? [m] (= m 'client/delete))
-
-(defn- assess [m s phs]
-  (if phs
-    (if (some #{"dyn"} phs)
-      (cond
-        (and (get? m) (= s 200)) "fail"
-        (and (put? m) (= s 204)) "fail"
-        (and (del? m) (= s 204)) "fail"
-        :else "pass")
-      (if (= s 500) "error" "pass"))
-    "pass"))
-
-(defmethod analyse :test [_ corpus codices results]
-  (hlg "analysing probe data")
-  (doseq [[method uri mp phs] results]
-    (let [status (:status mp)
-          ass (assess method status phs)
-          so (if (or (ph/holder? uri) (ph/authzn-holder? mp))
-               (aa/bold-red "error - untested")
-               (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass)))]
-      (println "Test : " method " - " uri ", status - " status ": " so))))
