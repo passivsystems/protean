@@ -42,7 +42,7 @@
         ;; after delay (in ms)
         (fn []
           (after 3000
-                 (put "http://localhost:3000/protean-utils/echo" (:body *request*))))
+            (put "http://localhost:3000/protean-utils/echo" (:body *request*))))
 
         ;; TODO support these use cases?
 ;        (fn []

@@ -72,6 +72,9 @@
         :req {
           :query-params {:required {"name" "${name}" "status" "${status}"}}
           :body {"name" "${name}" "status" "${status}"} ; an alternative to query-params (should have required/optional?)
+          :body-schema "test-data/schemas/pet.schema.json" ; TODO rename as body and disable previous body definition.
+                                                           ; schema type is by content-type (default json) or by extension?
+
         }
         :rsp {
           :405 {
@@ -125,6 +128,8 @@
       }
 
     }
+
+   ; TODO rename these endpoints - they collide with api/pet/${petId}
 
     "api/pet/findByStatus" {
       :get {

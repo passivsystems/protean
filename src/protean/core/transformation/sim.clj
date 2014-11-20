@@ -12,6 +12,7 @@
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
             [protean.core.codex.placeholder :as ph]
+            [protean.core.transformation.validation :as v]
             [clj-http.client :as clt]
             [overtone.at-at :as at]
             [environ.core :as ec]
@@ -66,8 +67,13 @@
       true)))
 
 (defn- valid-jsn-body? [request tree]
-  (let [codex-body (d/body-req tree)]
-    (if codex-body
+  (if-let [body-schema (d/get-in-tree tree [:req :body-schema])]
+    (let [validation (v/validate body-schema (:body request))]
+      (if (:success validation)
+        true
+        (println "Request did not conform to json validation" body-schema ":" (:message validation))))
+    ; TODO deprecate old body definition
+    (if-let [codex-body (d/body-req tree)]
       (let [body-jsn (jsn/parse-string (:body request))]
         (if (map? codex-body)
           (let [expected-keys (set (keys codex-body))
