@@ -83,8 +83,6 @@
     (valid-xml-body? request tree)
     (valid-jsn-body? request tree)))
 
-
-
 (defn- pretty-str [s ctype]
   (cond
     (h/xml? ctype) (c/pretty-xml s)
@@ -101,9 +99,9 @@
 
 (defn- print-error [e] (println (aa/red (str "caught exception: " (.getMessage e)))))
 
-(def ^:dynamic tree)
-(def ^:dynamic request)
-(def ^:dynamic corpus)
+(def ^:dynamic *tree*)
+(def ^:dynamic *request*)
+(def ^:dynamic *corpus*)
 
 
 ;; =============================================================================
@@ -129,13 +127,13 @@
         execute (fn [rule]
           (if (not tree) (println "Warning - no endpoint found for" [svc endpoint method]))
           (try
-            (binding [tree tree
-                      request request
-                      corpus corpus]
+            (binding [*tree* tree
+                      *request* request
+                      *corpus* corpus]
                (apply rule nil))
             (catch Exception e (print-error e))))
         rules-response (some identity (map execute rules))
-        default-success (binding [tree tree request request corpus corpus](success))
+        default-success (binding [*tree* tree *request* request *corpus* corpus](success))
         ; we return the first non-nil response, else a success response. (TODO should be imported from a default sim.edn file)
         response (if rules-response rules-response default-success)]
     (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
@@ -147,14 +145,14 @@
 ;; DSL for sims
 ;; =============================================================================
 
-
 ; TODO provide schema in codex for xml/json, and validate against that.
 (defn valid-inputs? []
   (and
-    (valid-headers? request tree)
-    (valid-query-params? request tree)
-    (valid-form? request tree)
-    (valid-body? request tree)))
+    (valid-headers? *request* *tree*)
+    (valid-query-params? *request* *tree*)
+    (valid-form? *request* *tree*)
+    (valid-body? *request* *tree*)))
+
 
 ;; =============================================================================
 ;; Scheduling
@@ -165,16 +163,16 @@
 (defn- job
   "Creates a job to be scheduled from provided delay - will ensure dynamic bindings are preserved"
   [delayed]
-  (let [captured_tree tree
-        captured_request request
-        captured_corpus corpus]
+  (let [captured_tree *tree*
+        captured_request *request*
+        captured_corpus *corpus*]
     (fn []
       (try
         (do
           (println "timeout - executing job")
-          (binding [tree captured_tree
-                    request captured_request
-                    corpus captured_corpus]
+          (binding [*tree* captured_tree
+                    *request* captured_request
+                    *corpus* captured_corpus]
             @delayed))
       (catch Exception e (print-error e))))))
 
@@ -196,6 +194,11 @@
 (defmacro after
   [delay-ms then]
   `(after-delayed ~delay-ms (delay ~then)))
+
+
+;; =============================================================================
+;; Responses
+;; =============================================================================
 
 (defn- mime [url]
   (cond
@@ -221,14 +224,14 @@
     (println "no response found to handle request")))
 
 (defn success
-  "Returns a (randomly selected) success response as defined for endpoint"
+  "Returns a randomly selected success response as defined for endpoint"
   []
-  (format-rsp (rand-nth (d/success-status tree))))
+  (format-rsp (rand-nth (d/success-status *tree*))))
 
 (defn error
-  "Returns a (randomly selected) error response as defined for endpoint"
+  "Returns a randomly selected error response as defined for endpoint"
   []
-  (format-rsp (rand-nth (d/error-status tree))))
+  (format-rsp (rand-nth (d/error-status *tree*))))
 
 (defn respond
   "Creates a response with given status-code.
@@ -260,6 +263,7 @@
       (println "res" res)
       (if-let [log-file (:log content)]
         (log [(str "Response from " (:url content)) res] log-file))))
+
   ([method url request body]
     (let [the-request
             {:url url
@@ -269,6 +273,10 @@
              :throw-exceptions false}
           res (clt/request the-request)]
       (println "res" res))))
+
+(defn post [url body] (make-request :post url *request* body))
+
+(defn put [url body] (make-request :put url *request* body))
 
 (defn env
   "Accesses environment variables"

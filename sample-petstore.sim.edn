@@ -13,20 +13,14 @@
 
     "api/pet/${petId}" {
       :get [
-        (fn [] (log request (str (env :user-home) "/tmp/protean-requests.txt"))
+        (fn [] (log *request* (str (env :user-home) "/tmp/protean-requests.txt"))
                (Thread/sleep 2000)
                (success))
       ]
 
-      :delete [
-        #(error)
-      ]
+      :delete [#(error)]
 
-      :patch [
-        (fn []
-          (or (prob 0.5 (error))
-              (success)))
-      ]
+      :patch [(fn [] (or (prob 0.5 (error)) (success)))]
 
       :post [
 
@@ -40,19 +34,15 @@
         (fn []
           (when (valid-inputs?)
             (make-request :put "http://localhost:3000/protean-utils/echo" {
-              :content-type (get-in request [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
-              :body (:body request)
+              :content-type (get-in *request* [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
+              :body (:body *request*)
               :log (str (env :user-home) "/tmp/protean-responses.txt")})))
 
         ;; asynchronously forward request to another API, and log response
         ;; after delay (in ms)
         (fn []
-          (when true
-            (after 3000
-              (make-request :put "http://localhost:3000/protean-utils/echo" {
-                :content-type (get-in request [:headers "content-type"])
-                :body (:body request)
-                :log (str (env :user-home) "/tmp/protean-responses.txt")}))))
+          (after 3000
+                 (put "http://localhost:3000/protean-utils/echo" (:body *request*))))
 
         ;; TODO support these use cases?
 ;        (fn []

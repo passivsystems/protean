@@ -6,10 +6,8 @@
       :put [
         #(success)
 
-        ;; echo the request payload (an xml message)
-        (fn []
-          (when true
-            (println ">>>> req body : " (:body request))))
+        ;; echo a request payload
+        (fn [] (println ">>>> echo req body : " (:body *request*)))
       ]
     }
   }
