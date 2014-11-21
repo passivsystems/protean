@@ -96,6 +96,10 @@
         <a data-sw-href="#path" href="#tut-part-2">
           <span data-sw-text="title">Part 2 - encoding</span>
         </a>
+      </li><li>
+        <a data-sw-href="#path" href="#tut-part-3">
+          <span data-sw-text="title">Part 3 - encoding</span>
+        </a>
       </li>
     </ul>
   </div>
@@ -104,6 +108,10 @@
 
       </div>
       <div class="col-md-8" role="main">
+        <div class="page-header">
+          <h1>Tutorial</h1>
+        </div>
+
         <section data-sw-nav="Overview" id="tut-overview" data-sw-content="">
           <div class="page-header">
             <h2>Overview</h2>
@@ -121,7 +129,7 @@
           <div class="page-header">
             <h2>Part 1 - Encoding</h2>
           </div>
-          <p class="lead">Encoding and documenting</p>
+          <p class="lead">The basics</p>
 
           <pre class="prettyprint">
 {
@@ -161,7 +169,7 @@
           <div class="page-header">
             <h2>Part 2 - Encoding</h2>
           </div>
-          <p class="lead">Encoding and documenting</p>
+          <p class="lead">Documentation and types</p>
 
           <pre class="prettyprint">
 {
@@ -208,6 +216,75 @@ is in a cave.&quot;
             </li>
             <li>
               enter <code><kbd>lein run visit -f tutorial-2.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-2&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
+            </li>
+            <li>
+              open the <code>index.html</code> file created in <code>silk_templates/site</code>
+            </li>
+          </ol>
+        </section>
+
+        <section data-sw-nav="Part 3 - encoding" id="tut-part-3" data-sw-content="">
+          <div class="page-header">
+            <h2>Part 3 - Encoding</h2>
+          </div>
+          <p class="lead">Response bodies and simulation</p>
+
+          <pre class="prettyprint">
+{
+  :includes [&quot;defaults.edn&quot;]
+
+  :title &quot;Tutorial 3&quot;
+
+  &quot;tutorial-3&quot; {
+    &quot;play/${stateId}&quot; {
+      :get {
+        :doc &quot;A single player REST adventure world&quot;
+        :description
+&quot;A simple text adventure world for one player.
+
+Sample usage may be something like /tutorial-1/play/cave, indicating the player
+is in a cave.&quot;
+        :vars {
+          &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
+        }
+        :rsp {
+          :200 {
+            :doc &quot;OK&quot;
+            :body-example &quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;
+          }
+          :503 {
+            :doc &quot;Service Unavailable&quot;
+            :headers {&quot;Content-Type&quot; &quot;application/problem+json&quot; &quot;Content-Language&quot; &quot;en&quot;}
+            :body-example &quot;test-data/content/tutorial/tutorial-3/lazy-server-gremlins.json&quot;
+          }
+        }
+      }
+    }
+  }
+}
+          </pre>
+
+          <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
+          <p>We now add some new concepts to the previous codex definition :</p>
+          <ul>
+            <li>a response body for a 200 (OK) response</li>
+            <li>overriding the response body content type for the 404 response</li>
+          </ul>
+          <p>
+            Where it is possible for a response to have a body it is good practice to include a reference
+            example in the codex.  It is entirely possible that an error response, like the 503 defined in this
+            example could have a completely different body
+          </p>
+
+
+          <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
+          <p>Create your apidocs again.</p>
+          <ol>
+            <li>
+              copy <code>tutorial-3.cod.edn</code> from <code>public/tutorial</code> to your codex directory
+            </li>
+            <li>
+              enter <code><kbd>lein run visit -f tutorial-3.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-3&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
             </li>
             <li>
               open the <code>index.html</code> file created in <code>silk_templates/site</code>
