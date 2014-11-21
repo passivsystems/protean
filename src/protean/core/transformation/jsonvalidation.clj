@@ -1,4 +1,4 @@
-(ns protean.core.transformation.validation
+(ns protean.core.transformation.jsonvalidation
   "Tools for validating json/xml."
   (:require [clojure.java.io :as io])
   (:import [com.fasterxml.jackson.databind ObjectMapper]
