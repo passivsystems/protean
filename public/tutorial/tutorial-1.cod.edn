@@ -1,0 +1,11 @@
+;; Tutorial 1
+
+;; Introduces the basics of encoding/documenting a RESTful API
+
+{
+  :includes ["defaults.edn"]
+
+  :title "Tutorial 1"
+
+  "tutorial-1" {"play" {:get {}}}
+}
