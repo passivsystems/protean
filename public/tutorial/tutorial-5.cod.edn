@@ -1,0 +1,32 @@
+{
+  :includes ["defaults.edn"]
+
+  :title "Tutorial 5"
+
+  "tutorial-5" {
+    "play/${stateId}" {
+      :get {
+        :doc "A single player REST adventure world"
+        :description
+        "A simple text adventure world for one player.
+
+        Sample usage may be something like /tutorial-5/play/cave, indicating the player
+        is in a cave."
+        :vars {
+          "stateId" {:type :Int :doc "ID for the state of the game"}
+        }
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "test-data/content/tutorial/tutorial-3/200-ref.json"
+          }
+          :503 {
+            :doc "Service Unavailable"
+            :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
+            :body-example "test-data/content/tutorial/tutorial-3/lazy-server-gremlins.json"
+          }
+        }
+      }
+    }
+  }
+}
