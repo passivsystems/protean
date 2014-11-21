@@ -104,6 +104,10 @@
         <a data-sw-href="#path" href="#tut-part-4">
           <span data-sw-text="title">Part 4 - simulation (basics)</span>
         </a>
+      </li><li>
+        <a data-sw-href="#path" href="#tut-part-5">
+          <span data-sw-text="title">Part 5 - simulation (errors)</span>
+        </a>
       </li>
     </ul>
   </div>
@@ -129,111 +133,126 @@
           </p>
         </section>
 
-        <section data-sw-nav="Part 1 - encoding (basics)" id="tut-part-1" data-sw-content="">
-          <div class="page-header">
-            <h2>Part 1 - Encoding</h2>
-          </div>
-          <p class="lead">The basics</p>
+        
+    <section data-sw-nav="Part 1 - encoding (basics)" id="tut-part-1" data-sw-content="">
+      <div class="page-header">
+        <h2>Part 1 - Encoding</h2>
+      </div>
+      <p class="lead">The basics</p>
+      <p>
+        Protean encodes RESTful API's using a codex.  A codex is pretty much just some
+        Clojure code in a file with an extension <code>cod.edn</code>.  The codex is the
+        single point of truth.  Nothing leaks from Protean into your source code... no
+        annotations, no pollution of any kind.
+      </p>
 
-          <pre class="prettyprint">
+      <pre class="prettyprint">
+    {
+    :includes [&quot;defaults.edn&quot;]
+
+    :title &quot;Tutorial 1&quot;
+
+    &quot;tutorial-1&quot; {&quot;play&quot; {:get {}}}
+    }
+      </pre>
+
+      <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
+      <p>This is just about the simplest codex.  Out of this we get :</p>
+      <ul>
+        <li>an endpoint <code>tutorial-1/play</code></li>
+        <li>a <code>get</code> method</li>
+        <li>a nice title for the api docs</li>
+        <li>some free preferences for response status codes in 'defaults.edn'</li>
+      </ul>
+
+      <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
+      <p>We will start with creating the apidocs for the service defined in this tutorial.</p>
+      <ol>
+        <li>
+          copy <code>tutorial-1.cod.edn</code> from <code>public/tutorial</code> to your codex directory
+        </li>
+        <li>
+          enter <code><kbd>lein run visit -f tutorial-1.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-1&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
+        </li>
+        <li>
+          open the <code>index.html</code> file created in <code>silk_templates/site</code>
+        </li>
+      </ol>
+    </section>
+  
+
+
+
+        
+    <section data-sw-nav="Part 2 - encoding (docs/types)" id="tut-part-2" data-sw-content="">
+      <div class="page-header">
+        <h2>Part 2 - Encoding</h2>
+      </div>
+      <p class="lead">Documentation and types</p>
+
+      <pre class="prettyprint">
 {
-  :includes [&quot;defaults.edn&quot;]
+:includes [&quot;defaults.edn&quot;]
 
-  :title &quot;Tutorial 1&quot;
+:title &quot;Tutorial 2&quot;
 
-  &quot;tutorial-1&quot; {&quot;play&quot; {:get {}}}
-}
-          </pre>
-
-          <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
-          <p>This is just about the simplest codex.  Out of this we get :</p>
-          <ul>
-            <li>an endpoint <code>tutorial-1/play</code></li>
-            <li>a <code>get</code> method</li>
-            <li>a nice title for the api docs</li>
-            <li>some free preferences for response status codes in 'defaults.edn'</li>
-          </ul>
-
-          <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
-          <p>We will start with creating the apidocs for the service defined in this tutorial.</p>
-          <ol>
-            <li>
-              copy <code>tutorial-1.cod.edn</code> from <code>public/tutorial</code> to your codex directory
-            </li>
-            <li>
-              enter <code><kbd>lein run visit -f tutorial-1.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-1&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
-            </li>
-            <li>
-              open the <code>index.html</code> file created in <code>silk_templates/site</code>
-            </li>
-          </ol>
-        </section>
-
-        <section data-sw-nav="Part 2 - encoding (docs/types)" id="tut-part-2" data-sw-content="">
-          <div class="page-header">
-            <h2>Part 2 - Encoding</h2>
-          </div>
-          <p class="lead">Documentation and types</p>
-
-          <pre class="prettyprint">
-{
-  :includes [&quot;defaults.edn&quot;]
-
-  :title &quot;Tutorial 2&quot;
-
-  &quot;tutorial-2&quot; {
-    &quot;play/${stateId}&quot; {
-      :get {
-        :doc &quot;A single player REST adventure world&quot;
-        :description
+&quot;tutorial-2&quot; {
+&quot;play/${stateId}&quot; {
+  :get {
+    :doc &quot;A single player REST adventure world&quot;
+    :description
 &quot;A simple text adventure world for one player.
 
 Sample usage may be something like /tutorial-2/play/cave, indicating the player
 is in a cave.&quot;
-        :vars {
-          &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
-        }
-        :rsp {
-          :404 {:doc &quot;Not Found&quot;}
-        }
-      }
+    :vars {
+      &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
+    }
+    :rsp {
+      :404 {:doc &quot;Not Found&quot;}
     }
   }
 }
-          </pre>
+}
+}
+      </pre>
 
-          <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
-          <p>This adds a few things to the previous codex definition :</p>
-          <ul>
-            <li>a path parameter <code>stateId</code></li>
-            <li>a simple doc string</li>
-            <li>a multiline description for providing semantic information</li>
-            <li>some variable information defining the type of the path parameter</li>
-            <li>a 404 (Not Found) error response</li>
-          </ul>
+      <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
+      <p>This adds a few things to the previous codex definition :</p>
+      <ul>
+        <li>a path parameter <code>stateId</code></li>
+        <li>a simple doc string</li>
+        <li>a multiline description for providing semantic information</li>
+        <li>some variable information defining the type of the path parameter</li>
+        <li>a 404 (Not Found) error response</li>
+      </ul>
 
-          <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
-          <p>Create your apidocs again.</p>
-          <ol>
-            <li>
-              copy <code>tutorial-2.cod.edn</code> from <code>public/tutorial</code> to your codex directory
-            </li>
-            <li>
-              enter <code><kbd>lein run visit -f tutorial-2.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-2&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
-            </li>
-            <li>
-              open the <code>index.html</code> file created in <code>silk_templates/site</code>
-            </li>
-          </ol>
-        </section>
+      <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
+      <p>Create your apidocs again.</p>
+      <ol>
+        <li>
+          copy <code>tutorial-2.cod.edn</code> from <code>public/tutorial</code> to your codex directory
+        </li>
+        <li>
+          enter <code><kbd>lein run visit -f tutorial-2.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-2&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
+        </li>
+        <li>
+          open the <code>index.html</code> file created in <code>silk_templates/site</code>
+        </li>
+      </ol>
+    </section>
+  
 
-        <section data-sw-nav="Part 3 - encoding (response bodies)" id="tut-part-3" data-sw-content="">
-          <div class="page-header">
-            <h2>Part 3 - Encoding</h2>
-          </div>
-          <p class="lead">Response bodies</p>
 
-          <pre class="prettyprint">
+
+        
+    <section data-sw-nav="Part 3 - encoding (response bodies)" id="tut-part-3" data-sw-content="">
+      <div class="page-header">
+        <h2>Part 3 - Encoding</h2>
+      </div>
+      <p class="lead">Response bodies</p>
+
+      <pre class="prettyprint">
 {
   :includes [&quot;defaults.edn&quot;]
 
@@ -244,10 +263,10 @@ is in a cave.&quot;
       :get {
         :doc &quot;A single player REST adventure world&quot;
         :description
-&quot;A simple text adventure world for one player.
+    &quot;A simple text adventure world for one player.
 
-Sample usage may be something like /tutorial-3/play/cave, indicating the player
-is in a cave.&quot;
+    Sample usage may be something like /tutorial-3/play/cave, indicating the player
+    is in a cave.&quot;
         :vars {
           &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
         }
@@ -266,72 +285,191 @@ is in a cave.&quot;
     }
   }
 }
-          </pre>
+      </pre>
 
-          <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
-          <p>We now add some new concepts to the previous codex definition :</p>
-          <ul>
-            <li>a response body for a 200 (OK) response</li>
-            <li>overriding the response body content type for the 404 response</li>
-          </ul>
-          <p>
-            Where it is possible for a response to have a body it is good practice to include a reference
-            example in the codex.  It is entirely possible that an error response, like the 503 defined in this
-            example could have a completely different body
-          </p>
+      <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
+      <p>We now add some new concepts to the previous codex definition :</p>
+      <ul>
+        <li>a response body for a 200 (OK) response</li>
+        <li>overriding the response body content type for the 404 response</li>
+      </ul>
+      <p>
+        Where it is possible for a response to have a body it is good practice to include a reference
+        example in the codex.  It is entirely possible that an error response, like the 503 defined in this
+        example could have a completely different body
+      </p>
 
 
-          <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
-          <p>Create your apidocs again.</p>
-          <ol>
-            <li>
-              copy <code>tutorial-3.cod.edn</code> from <code>public/tutorial</code> to your codex directory
-            </li>
-            <li>
-              enter <code><kbd>lein run visit -f tutorial-3.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-3&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
-            </li>
-            <li>
-              open the <code>index.html</code> file created in <code>silk_templates/site</code>
-            </li>
-          </ol>
-        </section>
+      <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
+      <p>Create your apidocs again.</p>
+      <ol>
+        <li>
+          copy <code>tutorial-3.cod.edn</code> from <code>public/tutorial</code> to your codex directory
+        </li>
+        <li>
+          enter <code><kbd>lein run visit -f tutorial-3.cod.edn -b '{&quot;locs&quot;:[&quot;tutorial-3&quot;], &quot;commands&quot;:[&quot;doc&quot;], &quot;directory&quot;:&quot;silk_templates/data/protean-api&quot;}'</kbd></code>
+        </li>
+        <li>
+          open the <code>index.html</code> file created in <code>silk_templates/site</code>
+        </li>
+      </ol>
+    </section>
+  
 
-        <section data-sw-nav="Part 4 - simulation (basics)" id="tut-part-4" data-sw-content="">
-          <div class="page-header">
-            <h2>Part 4 - Simulation</h2>
-          </div>
-          <p class="lead">The basics</p>
 
-          <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
-          <p>You do not need to do anything to get a basic simulation for free.  It has always been available.</p>
 
-          <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
-          <p>Run the simulation, using the tutorial-3 codex which you have already copied into your codex directory.</p>
-          <ol>
-            <li>
-              run <code><kbd>protean-server</kbd></code>
-            </li>
-            <li>
-              run <code><kbd>protean services</kbd></code>
-            </li>
-            <li>
-              run <code><kbd>protean service-usage -n tutorial-3</kbd></code>
-            </li>
-            <li>
-              select the curl statement generated as output of the previous step and execute it
-            </li>
-          </ol>
-          <p>
-            You should see output like :
-          </p>
+        
+    <section data-sw-nav="Part 4 - simulation (basics)" id="tut-part-4" data-sw-content="">
+      <div class="page-header">
+        <h2>Part 4 - Simulation</h2>
+      </div>
+      <p class="lead">The basics</p>
 
-          <pre class="prettyprint">
+      <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
+      <p>You do not need to do anything to get a basic simulation for free.  It has always been available.</p>
+
+      <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
+      <p>Run the simulation, using the tutorial-3 codex which you have already copied into your codex directory.</p>
+      <ol>
+        <li>
+          run <code><kbd>protean-server</kbd></code>
+        </li>
+        <li>
+          run <code><kbd>protean services</kbd></code>
+        </li>
+        <li>
+          run <code><kbd>protean service-usage -n tutorial-3</kbd></code>
+        </li>
+        <li>
+          select the curl statement generated as output of the previous step and execute it
+        </li>
+      </ol>
+      <p>
+        You should see output like :
+      </p>
+
+      <pre class="prettyprint">
 {
-  &quot;description&quot;: &quot;You are in a cave, it is very dark&quot;
+&quot;description&quot;: &quot;You are in a cave, it is very dark&quot;
 }
+      </pre>
+    </section>
+  
 
-          </pre>
-        </section>
+
+
+        
+    <section data-sw-nav="Part 5 - simulation (errors)" id="tut-part-5" data-sw-content="">
+      <div class="page-header">
+        <h2>Part 5 - Simulation</h2>
+      </div>
+      <p class="lead">Simulating errors</p>
+      <p>
+        To override the default simulation behaviour (which returns success responses) create a
+        sim extension file.  We will re-use the codex from tutorial-3 (renaming it to tutorial-5)
+        and place the new sim extension in the same location.
+      </p>
+      <p>
+        The renamed codex is listed below.
+      </p>
+
+      <pre class="prettyprint">
+{
+  :includes [&quot;defaults.edn&quot;]
+
+  :title &quot;Tutorial 5&quot;
+
+  &quot;tutorial-5&quot; {
+    &quot;play/${stateId}&quot; {
+      :get {
+        :doc &quot;A single player REST adventure world&quot;
+        :description
+    &quot;A simple text adventure world for one player.
+
+    Sample usage may be something like /tutorial-5/play/cave, indicating the player
+    is in a cave.&quot;
+        :vars {
+          &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
+        }
+        :rsp {
+          :200 {
+            :doc &quot;OK&quot;
+            :body-example &quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;
+          }
+          :503 {
+            :doc &quot;Service Unavailable&quot;
+            :headers {&quot;Content-Type&quot; &quot;application/problem+json&quot; &quot;Content-Language&quot; &quot;en&quot;}
+            :body-example &quot;test-data/content/tutorial/tutorial-3/lazy-server-gremlins.json&quot;
+          }
+        }
+      }
+    }
+  }
+}
+      </pre>
+
+      <p>
+        Now we list our first sim extension.
+      </p>
+
+      <pre class="prettyprint">
+(refer 'protean.core.transformation.sim)
+
+{
+  &quot;tutorial-5&quot; {
+    &quot;play/${stateId}&quot; {
+      :get [#(error)]
+    }
+  }
+}
+      </pre>
+
+
+      <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
+      <p>
+        In our first sim extension example we override the get method to return
+        a random error status code, which in this case must be the 503 we defined
+        in the codex.  As you can see the general structure of the sim matches that
+        of the codex.
+      </p>
+
+
+
+      <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
+      <p>Run the simulation, using the tutorial-3 codex which you have already copied into your codex directory.</p>
+      <ol>
+        <li>
+          copy <code>tutorial-5.cod.edn</code> and <code>tutorial-5.sim.edn</code> from <code>public/tutorial</code> to your codex directory
+        </li>
+        <li>
+          run <code><kbd>protean-server</kbd></code>
+        </li>
+        <li>
+          run <code><kbd>protean services</kbd></code>
+        </li>
+        <li>
+          run <code><kbd>protean service-usage -n tutorial-5</kbd></code>
+        </li>
+        <li>
+          select the curl statement generated as output of the previous step and execute it
+        </li>
+      </ol>
+      <p>
+        You should see output like :
+      </p>
+
+      <pre class="prettyprint">
+{
+  &quot;type&quot;: &quot;http://proteanic.org/api/problems/examples/lazy-server-gremlins&quot;,
+  &quot;title&quot;: &quot;The service is unavailable - lazy server gremlins.&quot;,
+  &quot;detail&quot;: &quot;You have asked for something, but the service is unavailable, the server gremlins cannot be bothered to do any work right now.&quot;,
+  &quot;instance&quot;: &quot;http://host.port/tutorial-3/play&quot;
+}
+      </pre>
+    </section>
+  
+
+
       </div>
     </div>
   
