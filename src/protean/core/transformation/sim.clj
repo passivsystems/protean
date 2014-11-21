@@ -133,6 +133,7 @@
         request (assoc req
           ; make endpoint available in request
           :endpoint endpoint
+          :svc svc
           ; also convert body from input stream to content, since we may need to access it more than once
           :body (if body-in (slurp body-in) ""))
         corpus {}
@@ -244,12 +245,20 @@
 (defn success
   "Returns a randomly selected success response as defined for endpoint"
   []
-  (format-rsp (rand-nth (d/success-status *tree*))))
+  (let [successes (d/success-status *tree*)
+        {:keys [svc request-method uri]} *request*]
+    (if (empty? successes)
+      (println "warning - no successes found for endpoint" [svc uri request-method])
+      (format-rsp (rand-nth successes)))))
 
 (defn error
   "Returns a randomly selected error response as defined for endpoint"
   []
-  (format-rsp (rand-nth (d/error-status *tree*))))
+  (let [errors (d/error-status *tree*)
+        {:keys [svc request-method uri]} *request*]
+    (if (empty? errors)
+      (println "warning - no errors found for endpoint" [svc uri request-method])
+      (format-rsp (rand-nth errors)))))
 
 (defn respond
   "Creates a response with given status-code.

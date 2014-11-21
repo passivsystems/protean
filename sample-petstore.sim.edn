@@ -3,6 +3,9 @@
 
 ; TODO:
 ;   support emailing
+
+(def counter (atom 0))
+
 {
   "petstore" {
 
@@ -60,6 +63,15 @@
 ;          (when true
 ;            (schedule "0 0 15 ? * 5"
 ;              (transport "some body" "somewhere"))))
+      ]
+    }
+
+    "api/uploadImage" {
+      :post [
+        ; altenative to error with probability - every nth access gives error - requires server state
+        (fn []
+          (if (= 0 (mod (swap! counter inc) 3))
+            (error)))
       ]
     }
   }
