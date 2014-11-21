@@ -1,4 +1,5 @@
 (refer 'protean.core.transformation.sim)
+(refer 'protean.config)
 
 ; TODO:
 ;   support emailing
@@ -33,7 +34,7 @@
         ;; synchronously forward request to another API, and log response
         (fn []
           (when (valid-inputs?)
-            (make-request :put "http://localhost:3000/protean-utils/echo" {
+            (make-request :put "http://localhost:" (sim-port) "/protean-utils/echo" {
               :content-type (get-in *request* [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
               :body (:body *request*)
               :log (str (env :user-home) "/tmp/protean-responses.txt")})))
@@ -42,7 +43,7 @@
         ;; after delay (in ms)
         (fn []
           (after 3000
-                 (put "http://localhost:3000/protean-utils/echo" (:body *request*))))
+            (put "http://localhost:" (sim-port) "/protean-utils/echo" (:body *request*))))
 
         ;; TODO support these use cases?
 ;        (fn []
