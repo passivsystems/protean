@@ -70,7 +70,7 @@
       (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
 (defn- doc-hdrs [target-dir hdrs]
-  "Doc response headers for a given node.
+  "Doc headers for a given node.
    target-dir is the directory to write to.
    hdrs is the codex rsp headers."
   (.mkdirs (File. target-dir))
@@ -85,9 +85,11 @@
    filter-exp is a regular expression to match the status codes to include."
     (.mkdirs (File. target-dir))
     (doseq [[k v] statuses]
-      (spit (str target-dir (UUID/randomUUID) ".edn")
+      (spit (str target-dir (name k) ".edn")
             (pr-str
-              {:code (name k) :doc (:doc v) :sample-response (body tree v)}))))
+               {:code (name k) :doc (:doc v) :sample-response (body tree v)}))
+      (if (:headers v)
+          (doc-hdrs (str target-dir (name k) "/" "headers" "/") (:headers v)))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat
