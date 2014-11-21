@@ -24,12 +24,6 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- uri
-  "Swap wildcard characters for Protean Separated Value token.
-   This is subsequently seeded during an incremental test or API negotiation."
-  [s]
-  (s/replace s "*" "psv+"))
-
 (defn- body [tree payload]
   (if-let [b (d/get-in-tree tree [:req :body])]
     (assoc payload :body (c/js b))
@@ -43,25 +37,25 @@
     payload))
 
 (defn- options [{:keys [tree] :as entry} corpus payload]
-  (assoc payload :options
-         (->> {}
-              (d/assoc-tree-item-> tree [:req :headers] [:headers])
-              (d/assoc-tree-item-> tree [:req :query-params :required] [:query-params])
-              (d/assoc-tree-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
-              (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
-              (body tree)
-              (d/assoc-item-> entry [:codex] [:codex])
-              (postprocess entry))))
+  (def x (assoc payload :options
+    (->> {}
+      (d/assoc-tree-item-> tree [:req :headers] [:headers])
+      (d/assoc-tree-item-> tree [:req :query-params :required] [:query-params])
+      (d/assoc-tree-item-> tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
+      (d/assoc-tree-item-> tree [:req :form-params] [:form-params])
+      (body tree)
+      (d/assoc-item-> entry [:codex] [:codex])
+      (postprocess entry))))
+;    (println "x:" x)
+    x)
 
-(defn- payload [entry corpus]
-  (->> (update-in entry [:uri] uri)
-       (options entry corpus)))
-
+(defn- payload [{:keys [tree] :as entry} corpus]
+  (->> entry
+    (options entry corpus)))
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn build-payload [host port codices corpus]
-  (let [analysed (p/analysis-> host port codices corpus)]
-    (map #(payload % corpus) analysed)))
+(defn build-payload [corpus analysed]
+  (map #(payload % corpus) analysed))

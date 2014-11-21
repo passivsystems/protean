@@ -19,7 +19,13 @@
        (body-> res)
        (res-location res)))
 
-(defn test! [[t1 t2 t3 :as t]]
+(defn test! [[action uri tree :as t]]
   (require '[clj-http.client :as client])
+;  (println "\ntest! evaluating:")
+;  (println "\ntest! action:" action)
+;  (println "\ntest! uri:" uri)
+;  (println "\ntest! tree:" tree)
+  ; TODO if ConnectException - shouldn't fall over - just report test failure
   (let [res (eval t)]
-    [t1 t2 (result res) (get-in t3 [:codex :ph-swaps])]))
+;    (println "\ntest res:" res)
+    [action uri (result res) (get-in tree [:codex :ph-swaps])]))

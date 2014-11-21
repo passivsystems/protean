@@ -24,6 +24,30 @@
 
 (defn- hlg [t] (println (aa/bold-green t)))
 
+(defn- show-test [level]
+  (cond
+    (= level 1) (hlr "ʘ‿ʘ I'm too young to die")
+    (= level 2) (hlr "⊙︿⊙ Hey not too rough")
+    (= level 3) (hlr "ミ●﹏☉ミ Hurt me plenty")
+    (= level 4) (hlr "✖_✖ Ultra violence")))
+
+(defn- swap [ph tree]
+  (println "swap input:" ph)
+  (def xaa (-> ph
+   (ph/holder-swap ph/holder-swap-gen tree)
+   (ph/holder-swap ph/holder-swap-exp tree)))
+  (println "swap output:" xaa)
+  xaa)
+
+(defn- translate
+  "Translate placeholders when visiting real nodes."
+  [tests {:keys [seed] :as corpus}]
+  (let [get-tree (fn [[method uri {:keys [tree] :as options}]]
+     ; TODO map all inputs - not just query-params - i.e. all entries in options (except tree)
+     (println "options:" (dissoc options :tree))
+     [method uri (update-in (dissoc options :tree) [:query-params] swap tree)])] ; TODO but do we need tree further down the pipeline? it should be kept separate from the other options
+    (map get-tree tests)))
+
 
 (defn- body-example [tree v] (if-let [bf (:body-example v)] (slurp bf) "N/A"))
 
@@ -53,6 +77,9 @@
 
 (defmethod config :doc [_ corpus] (hlg "building probes"))
 
+(defmethod config :test [_ corpus]
+  (show-test (get-in corpus [:config "test-level"] 1))
+  (hlg "building probes"))
 
 ;; =============================================================================
 ;; Probe construction
@@ -126,6 +153,18 @@
          (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
          (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree)))))])
 
+(defmethod build :test [_ {:keys [locs] :as corpus} codices]
+  (println "building a test probe to visit : " locs)
+  [corpus
+    (fn engage [{:keys [locs host port] :as corpus} codices res-fn]
+     (let [h (or host "localhost")
+           p (or port 3000)
+           analysed (p/analysis-> host port codices corpus)
+           tests (tc/clj-httpify corpus analysed)
+           seeded (translate tests corpus)
+           results (map #(t/test! %) seeded)]
+       (res-fn results)
+       results))])
 
 (defmethod build :negotiate [_ {:keys [locs]} codices]
   (println "building a negotiation probe to visit : " locs))
@@ -155,6 +194,21 @@
   (hlg "dispatching probes")
   (doall (map (fn [x] ((last x) (first x) codices)) probes)))
 
+(defmethod dispatch :test [_ corpus codices probes]
+  (hlg "dispatching probes")
+  (let [res (doall (map (fn [x] ((last x) (first x) codices res-persist!)) probes))
+;        raw-posts (filter #(= (first %) 'client/post) (apply concat res))
+;        ps (filter #(or (:location (nth % 2)) (:body (nth % 2))) raw-posts)
+;        vs (remove nil? (map #(or (:location (nth % 2)) (:body (nth % 2))) ps))
+;        locs (for [[m p] probes] (:locs m))
+;        bag (assoc-in corpus [:seed "bag"] (vec vs))
+;        np (doall (map #(build :test (assoc-in bag [:locs] %) codices) locs))
+;        nr (doall (map (fn [x] ((last x) (first x) codices res-persist!)) np))
+;        fr (remove #(or (= (first %) 'client/post) (not (some #{"seed"} (last %))))  (apply concat nr))]
+       ]
+;    (concat (apply concat res) fr)))
+    (println "res" res))
+)
 
 ;; =============================================================================
 ;; Probe data analysis
@@ -169,4 +223,26 @@
     (silk/spin-or-reload false silk-path false false)))
 
 
+;(defn- get? [m] (= m 'client/get))
+;(defn- put? [m] (= m 'client/put))
+;(defn- del? [m] (= m 'client/delete))
 
+;(defn- assess [m s phs]
+;  (if phs
+;    (if (some #{"dyn"} phs)
+;      (cond
+;        (and (get? m) (= s 200)) "fail"
+;        (and (put? m) (= s 204)) "fail"
+;        (and (del? m) (= s 204)) "fail"
+;        :else "pass")
+;       (if (= s 500) "error" "pass"))
+;    "pass"))
+
+(defmethod analyse :test [_ corpus codices results]
+  (hlg "analysing probe data")
+;  (doseq [[method uri mp phs] results]
+;    (let [status (:status mp)
+;          ass (assess method status phs)
+;          so (if (or (ph/holder? uri) (ph/authzn-holder? mp)) (aa/bold-red "error - untested") (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass)))]
+;      (println "Test : " method " - " uri ", status - " status ": " so))))
+)

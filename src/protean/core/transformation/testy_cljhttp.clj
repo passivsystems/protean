@@ -15,6 +15,7 @@
            (= (:method entry) :post) 'client/post
            (= (:method entry) :put) 'client/put
            (= (:method entry) :delete) 'client/delete
+           (= (:method entry) :patch) 'client/patch
            :else 'client/get)]
     (conj payload method)))
 
@@ -35,6 +36,6 @@
 ;; Transformation functions
 ;; =============================================================================
 
-(defn clj-httpify [host port codices corpus]
-  (let [payloaded (p/build-payload host port codices corpus)]
+(defn clj-httpify [corpus analysed]
+  (let [payloaded (p/build-payload corpus analysed)]
     (map #(clj-http %) payloaded)))
