@@ -62,7 +62,7 @@
 
 (defn hdrs-rsp [c] (get-in c [:rsp :headers]))
 
-(defn body-rsp [c] (get-in c [:rsp :body]))
+(defn body-rsp [c] (get-in c [:rsp :body-example]))
 
 (defn status-matching [tree filter-exp]
   (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))]

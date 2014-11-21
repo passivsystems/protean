@@ -26,8 +26,8 @@
         :doc "Update an existing pet"
         :rsp {
           :200 {
-            ;; no need for a header, it is computed from the body file
-            :body "test-data/content/doc/responses/simple/200-ref.json"
+            ;; no need for a header, it is derived from the body file
+            :body-example "test-data/content/doc/responses/simple/200-ref.json"
           }
 
           :400 {
@@ -42,7 +42,7 @@
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "test-data/content/problems/bad-custom-domain-field.json"
+            :body-example "test-data/content/problems/bad-custom-domain-field.json"
           }
         }
       }
@@ -71,10 +71,12 @@
         :doc "Updates a pet in the store with form data"
         :req {
           :query-params {:required {"name" "${name}" "status" "${status}"}}
-          :body {"name" "${name}" "status" "${status}"} ; an alternative to query-params (should have required/optional?)
-          :body-schema "test-data/schemas/pet.schema.json" ; TODO rename as body and disable previous body definition.
-                                                           ; schema type is by content-type (default json) or by extension?
-
+          ; in practice same inputs would not appear in both :query-params and :body.
+          ; :body currently provides input for request generation, and is the descriptive way to define the payload,
+          ; :body-schema is an optional addition for payload validation - either .json for json-schema, or .xsd for xml validation.
+          :body {"name" "${name}" "status" "${status}"}
+          :body-schema "test-data/schemas/pet.schema.json"
+          :body-example "test-data/content/doc/requests/new-pet.json"
         }
         :rsp {
           :405 {
@@ -92,7 +94,9 @@
 
         :rsp {
           :200 {
-            :body "test-data/content/doc/responses/simple/200-ref.json"
+            :body         {"name" "${name}" "status" "${status}"}
+            :body-schema  "test-data/schemas/pet.schema.json"
+            :body-example "test-data/content/doc/responses/simple/200-ref.json"
           }
 
           :404 {
@@ -103,7 +107,7 @@
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body "test-data/content/problems/bad-custom-domain-field.json"
+            :body-example "test-data/content/problems/bad-custom-domain-field.json"
           }
         }
       }

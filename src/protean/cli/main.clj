@@ -58,7 +58,7 @@
         "Codex actions:"
         "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc etc)"
         "                         e.g. To generate documentation"
-        "                             visit -f sample-petstore.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"silk_templates/data/protean-api\"}'"
+        "                             visit -f sample-petstore.cod.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"silk_templates/data/protean-api\"}'"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"
