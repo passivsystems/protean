@@ -18,6 +18,9 @@
             [overtone.at-at :as at]
             [environ.core :as ec]
             [io.aviso.ansi :as aa])
+  (:use [taoensso.timbre :as timbre
+     :only (trace debug info warn error)
+     :rename {trace log-trace debug log-debug info log-info warn log-warn error log-error}])
   (:import java.io.ByteArrayInputStream))
 
 ;; =============================================================================
@@ -31,7 +34,7 @@
             received-headers (keys (:hdrs request))]
         (if (every? (set received-headers) expected-headers)
           true
-          (println "Headers not valid - expected" expected-headers "but received" received-headers)))
+          (log-info "Headers not valid - expected" expected-headers "but received" received-headers)))
       true)))
 
 (defn- valid-query-params? [request tree]
@@ -41,7 +44,7 @@
             received-qps (map name (keys (:params request)))]
         (if (every? (set received-qps) expected-qps)
           true
-          (println "Query params not valid - expected" expected-qps "but received" received-qps)))
+          (log-info "Query params not valid - expected" expected-qps "but received" received-qps)))
       true)))
 
 (defn- valid-form? [request tree]
@@ -51,7 +54,7 @@
             received-form (keys (:form-params request))]
         (if (= (set received-form) (set (keys f-keys)))
           true
-          (println "Form params not valid - expected" expected-form "but received" received-form)))
+          (log-info "Form params not valid - expected" expected-form "but received" received-form)))
       true)))
 
 (defn- zip-str [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
@@ -61,7 +64,7 @@
     (let [validation (xv/validate body-schema (:body request))]
       (if (:success validation)
         true
-        (println "Request did not conform to json validation" body-schema ":" (:message validation))))
+        (log-info "Request did not conform to json validation" body-schema ":" (:message validation))))
     ; TODO deprecate old body definition
     (if-let [codex-body (d/body-req tree)]
       (let [tags-in-str (fn [s] (map-vals (zip-str s) :tag))
@@ -69,7 +72,7 @@
             received-tags (tags-in-str (:body request))]
         (if (= received-tags expected-tags)
           true
-          (println "Xml body not valid - expected" expected-tags "but received" received-tags)))
+          (log-info "Xml body not valid - expected" expected-tags "but received" received-tags)))
       true)))
 
 (defn- valid-jsn-body? [request tree]
@@ -77,7 +80,7 @@
     (let [validation (jv/validate body-schema (:body request))]
       (if (:success validation)
         true
-        (println "Request did not conform to json validation" body-schema ":" (:message validation))))
+        (log-info "Request did not conform to json validation" body-schema ":" (:message validation))))
     ; TODO deprecate old body definition
     (if-let [codex-body (d/body-req tree)]
       (let [body-jsn (jsn/parse-string (:body request))]
@@ -86,7 +89,7 @@
                 received-keys (set (keys body-jsn))]
             (if (= received-keys expected-keys)
               true
-              (println "Json body not valid - expected" expected-keys "but received" received-keys)))
+              (log-info "Json body not valid - expected" expected-keys "but received" received-keys)))
           (contains? codex-body body-jsn)))
       true)))
 
@@ -151,12 +154,12 @@
         response (if rules-response rules-response default-success)]
     (if (not tree)
       (do
-        (println "Warning - no endpoint found for" [svc endpoint method])
+        (log-warn "Warning - no endpoint found for" [svc endpoint method])
         (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
           {:status 405 :headers {"Allow" (s/join ", " (map #(.toUpperCase (name %)) supported-methods))}}))
       (do
-        (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
-        (println "responding with" response)
+        (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
+        (log-debug "responding with" response)
         response))))
 
 
@@ -188,7 +191,7 @@
     (fn []
       (try
         (do
-          (println "timeout - executing job")
+          (log-debug "timeout - executing job")
           (binding [*tree* captured_tree
                     *request* captured_request
                     *corpus* captured_corpus]
@@ -237,10 +240,10 @@
                             headers)
           body (if body-url (slurp body-url))
           response {:status status-code :headers headers_w_ctype :body body}]
-      (println "formatting rsp:" rsp)
-      (println "returning :" response)
+      (log-debug "formatting rsp:" rsp)
+      (log-debug "returning :" response)
       response)
-    (println "no response found to handle request")))
+    (log-info "no response found to handle request")))
 
 (defn success
   "Returns a randomly selected success response as defined for endpoint"
@@ -248,7 +251,7 @@
   (let [successes (d/success-status *tree*)
         {:keys [svc request-method uri]} *request*]
     (if (empty? successes)
-      (println "warning - no successes found for endpoint" [svc uri request-method])
+      (log-warn "warning - no successes found for endpoint" [svc uri request-method])
       (format-rsp (rand-nth successes)))))
 
 (defn error
@@ -257,7 +260,7 @@
   (let [errors (d/error-status *tree*)
         {:keys [svc request-method uri]} *request*]
     (if (empty? errors)
-      (println "warning - no errors found for endpoint" [svc uri request-method])
+      (log-warn "warning - no errors found for endpoint" [svc uri request-method])
       (format-rsp (rand-nth errors)))))
 
 (defn respond
@@ -287,7 +290,7 @@
           :method method
           :throw-exceptions false)
           res (clt/request the-request)]
-      (println "res" res)
+      (log-debug "res" res)
       (if-let [log-file (:log content)]
         (log [(str "Response from " (:url content)) res] log-file))))
 
@@ -299,7 +302,7 @@
              :content-type (get-in request [:headers "content-type"])
              :throw-exceptions false}
           res (clt/request the-request)]
-      (println "res" res))))
+      (log-debug "res" res))))
 
 (defn post [url body] (make-request :post url *request* body))
 
