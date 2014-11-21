@@ -137,7 +137,7 @@
           :body (if body-in (slurp body-in) ""))
         corpus {}
         execute (fn [rule]
-          (if (not tree) (println "Warning - no endpoint found for" [svc endpoint method]))
+          (if (not tree) nil)
           (try
             (binding [*tree* tree
                       *request* request
@@ -148,9 +148,15 @@
         default-success (binding [*tree* tree *request* request *corpus* corpus](success))
         ; we return the first non-nil response, else a success response. (TODO should be imported from a default sim.edn file)
         response (if rules-response rules-response default-success)]
-    (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
-    (println "responding with" response)
-    response))
+    (if (not tree)
+      (do
+        (println "Warning - no endpoint found for" [svc endpoint method])
+        (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
+          {:status 405 :headers {"Allow" (s/join ", " (map #(.toUpperCase (name %)) supported-methods))}}))
+      (do
+        (println "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
+        (println "responding with" response)
+        response))))
 
 
 ;; =============================================================================
