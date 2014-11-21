@@ -25,7 +25,7 @@
 (defn- hlg [t] (println (aa/bold-green t)))
 
 
-(defn- body [tree v] (if-let [bf (:body v)] (slurp bf) "N/A"))
+(defn- body-example [tree v] (if-let [bf (:body-example v)] (slurp bf) "N/A"))
 
 (defn- bomb [msg]
   (println (aa/red msg))
@@ -87,9 +87,9 @@
     (doseq [[k v] statuses]
       (spit (str target-dir (name k) ".edn")
             (pr-str
-               {:code (name k) :doc (:doc v) :sample-response (body tree v)}))
-      (if (:headers v)
-          (doc-hdrs (str target-dir (name k) "/" "headers" "/") (:headers v)))))
+              {:code (name k) :doc (:doc v) :sample-response (body-example tree v)}))))
+      ;(if (:headers v)
+      ;    (doc-hdrs (str target-dir (name k) "/" "headers" "/") (:headers v)))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat

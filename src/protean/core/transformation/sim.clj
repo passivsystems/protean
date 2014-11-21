@@ -12,6 +12,8 @@
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
             [protean.core.codex.placeholder :as ph]
+            [protean.core.transformation.jsonvalidation :as jv]
+            [protean.core.transformation.xmlvalidation :as xv]
             [clj-http.client :as clt]
             [overtone.at-at :as at]
             [environ.core :as ec]
@@ -55,10 +57,15 @@
 (defn- zip-str [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
 (defn- map-vals [m k] (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))
 (defn- valid-xml-body? [request tree]
-  (let [codex-body (d/body-req tree)
-        tags-in-str (fn [s] (map-vals (zip-str s) :tag))]
-    (if codex-body
-      (let [expected-tags (tags-in-str (c/pretty-xml codex-body))
+  (if-let [body-schema (d/get-in-tree tree [:req :body-schema])]
+    (let [validation (xv/validate body-schema (:body request))]
+      (if (:success validation)
+        true
+        (println "Request did not conform to json validation" body-schema ":" (:message validation))))
+    ; TODO deprecate old body definition
+    (if-let [codex-body (d/body-req tree)]
+      (let [tags-in-str (fn [s] (map-vals (zip-str s) :tag))
+            expected-tags (tags-in-str (c/pretty-xml codex-body))
             received-tags (tags-in-str (:body request))]
         (if (= received-tags expected-tags)
           true
@@ -66,8 +73,13 @@
       true)))
 
 (defn- valid-jsn-body? [request tree]
-  (let [codex-body (d/body-req tree)]
-    (if codex-body
+  (if-let [body-schema (d/get-in-tree tree [:req :body-schema])]
+    (let [validation (jv/validate body-schema (:body request))]
+      (if (:success validation)
+        true
+        (println "Request did not conform to json validation" body-schema ":" (:message validation))))
+    ; TODO deprecate old body definition
+    (if-let [codex-body (d/body-req tree)]
       (let [body-jsn (jsn/parse-string (:body request))]
         (if (map? codex-body)
           (let [expected-keys (set (keys codex-body))

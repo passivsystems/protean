@@ -10,7 +10,7 @@
 
 
 (defn- body-> [res payload]
-  (if-let [v (:body res)]
+  (if-let [v (:body-example res)]
     (if (empty? v) payload (assoc payload :body v))
     payload))
 
