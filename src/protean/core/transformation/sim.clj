@@ -229,7 +229,7 @@
   (if rsp-entry
     (let [status-code (Integer/parseInt (name (key rsp-entry)))
           rsp (val rsp-entry)
-          body-url (:body rsp)
+          body-url (:body-example rsp)
           headers (:headers rsp)
           headers_w_ctype (if (and body-url (not (get-in headers ["Content-Type"])))
                             (assoc headers "Content-Type" (mime body-url))
