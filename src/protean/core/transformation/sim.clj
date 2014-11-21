@@ -101,8 +101,8 @@
     (h/txt? ctype) s
     :else (c/pretty-js s)))
 
-(defn- to-endpoint [requested-endpoint sim-rules svc]
-  (let [endpoints (keys (get-in sim-rules [svc]))
+(defn- to-endpoint [requested-endpoint paths svc]
+  (let [endpoints (keys (get-in paths [svc]))
         any (fn [s] "[^/]+")
         to-tuple (fn [endpoint] [(ph/replace-all-with endpoint any) endpoint])
         regexs (map to-tuple endpoints)
@@ -124,7 +124,7 @@
 (defn sim-rsp-> [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
-        endpoint (to-endpoint requested-endpoint sims svc)
+        endpoint (to-endpoint requested-endpoint paths svc)
         method (:request-method req)
         rules (get-in sims [svc endpoint method])
         tree (get-in paths [svc endpoint method])

@@ -21,6 +21,14 @@
 
     "api/pet" {
 
+      :get {
+        :doc "Finds all pets, or pets filtered by status or tags"
+        :req {
+          :query-params {:optional {"status" "${status}" "tags" "${tags}"}}
+        }
+        :vars {"tags" {:type :String :doc "Tags to filter by"}}
+      }
+
       :put {
         :description "Full description for update an existing pet"
         :doc "Update an existing pet"
@@ -133,28 +141,7 @@
 
     }
 
-   ; TODO rename these endpoints - they collide with api/pet/${petId}
-
-    "api/pet/findByStatus" {
-      :get {
-        :doc "Finds pets by status"
-        :req {
-          :query-params {:optional {"status" "${status}"}}
-        }
-      }
-    }
-
-    "api/pet/findByTags" {
-      :get {
-        :doc "Finds pets by tags"
-        :req {
-          :query-params {:required {"tags" "${tags}"}}
-        }
-        :vars {"tags" {:type :String :doc "Tags to filter by"}}
-      }
-    }
-
-    "api/pet/uploadImage" {
+    "api/uploadImage" {
       :post {
         :doc "uploads an image"
         :req {
