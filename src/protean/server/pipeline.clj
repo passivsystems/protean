@@ -92,7 +92,6 @@
 (def del-service-handled (handler del-service handle-error))
 
 (defn load-codex [f]
-
   (let [codex (r/read-codex f)
         locs (d/custom-keys codex)
         tpaths (p/paths-> codex locs)]
