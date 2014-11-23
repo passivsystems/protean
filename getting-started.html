@@ -18,7 +18,7 @@
     <script type="text/javascript" src="resource/js/bootstrap.js"></script>
     <script src="resource/js/prettify/prettify.js"></script>
   </head>
-  <body class="silk-template-default silk-view-search" onload="prettyPrint();">
+  <body class="silk-template-default silk-view-getting-started" onload="prettyPrint();">
     
     <div id="navbar-header" class="navbar navbar-default navbar-fixed-top">
       <div class="container">
@@ -89,13 +89,90 @@
     <br><br><br><br>
     <div class="container">
       
-    <div id="tipue_search_content"></div>
-    <script>
-      $(document).ready(function() {
-        $('#tipue_search_input').tipuesearch({'show': 6});
-      });
-    </script>
-  
+  <div class="row">
+    <div class="col-md-4">
+      
+  <div class="bs-sidebar" role="complementary" style="width:300px;">
+    <ul class="nav bs-sidenav">
+      <li>
+        <a data-sw-href="#path" href="#installing">
+          <span data-sw-text="title">Installing</span>
+        </a>
+      </li><li>
+        <a data-sw-href="#path" href="#starting">
+          <span data-sw-text="title">Starting</span>
+        </a>
+      </li><li>
+        <a data-sw-href="#path" href="#simulation">
+          <span data-sw-text="title">Simulation</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+
+    </div>
+    <div class="col-md-8" role="main">
+      <section data-sw-nav="Installing" id="installing" data-sw-content="">
+        <div class="page-header">
+          <h2>Installing</h2>
+        </div>
+
+        <h3>Linux</h3>
+        <p>
+          There is a tried and tested .deb for Debian/Ubuntu flavours of Linux at
+          : https://github.com/passivsystems/protean/releases/download/0.9.0-pre.7/protean_0.9.0_all.deb
+        </p>
+
+        <h3>Mac OSX</h3>
+        <p>
+          For OSX we have a brogrammer script, trust us, it is safe :-)
+          This will install to ~/bin and in a very impolite way spew a couple of files out in there.
+
+          In a terminal run <code><kbd>bash &lt;(curl -fksSL https://raw.githubusercontent.com/passivsystems/protean/develop/install/install.sh)</kbd></code>
+        </p>
+      </section>
+
+      <section data-sw-nav="Starting" id="starting" data-sw-content="">
+        <div class="page-header">
+          <h2>Starting</h2>
+        </div>
+
+        <p>
+          In a terminal run <code><kbd>protean-server</kbd></code>.  This will start the sim server.
+          You will see some output when you run this startup command, including information on where service definitions live.
+        </p>
+      </section>
+
+      <section data-sw-nav="Simulation" id="simulation" data-sw-content="">
+        <div class="page-header">
+          <h2>Simulation</h2>
+        </div>
+
+        <p>
+          Protean ships with a sample 'petstore' service for you to experiment with.  See <code>sample-petstore.cod.edn</code>
+          in the 'codex' directory which is listed in the output when you run the startup command.
+        </p>
+
+        <p>
+          You can use a command line interface CLI to play with Protean.  In a terminal run <code><kbd>protean</kbd></code>
+          to get some help with things.
+        </p>
+
+        <ul>
+          <li>
+            Run <code><kbd>protean services</kbd></code> to list all services.
+          </li>
+          <li>
+            Run <code><kbd>protean service-usage -n petstore</kbd></code> to get a list of curl commands you can hit the service with.
+          </li>
+        </ul>
+
+      </section>
+    </div>
+  </div>
+
 
 
       <script src="resource/js/application.js"></script>
