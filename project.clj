@@ -19,6 +19,7 @@
                  [clj-http "1.0.1"]
                  [io.aviso/pretty "0.1.13"]
                  [com.novemberain/pantomime "2.3.0"]
+                 [expectations "2.0.9"]
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
                  [me.rossputin/diskops "0.2.1"]
@@ -28,7 +29,8 @@
                  [org.slf4j/slf4j-simple "1.6.4"]
                  [overtone/at-at "1.2.0"]
                  [com.github.fge/json-schema-validator "2.1.7"]]
-  :plugins [[lein-ring "0.8.10"]]
+  :plugins [[lein-ring "0.8.10"]
+            [lein-expectations "0.0.7"]]
   :aot :all
   :uberjar-name ~(str (-> "project.clj" slurp read-string (nth 1)) "-" (-> "project.clj" slurp read-string (nth 2)) "-standalone.jar")
   :main protean.cli.main)
