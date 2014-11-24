@@ -61,9 +61,9 @@
 
 (defn- curly-literal-> [s payload] (str payload s))
 
-(defn- curly-uri-> [uri payload]
-  (let [one (fn [s] "1")]
-    (curly-literal-> (ph/replace-all-with uri one) payload)))
+(defn- curly-uri-> [uri tree payload]
+  (let [swapped (translate (ph/uri-holders uri) tree)]
+    (str payload (ph/replace-all-with uri #(swapped %)))))
 
 (defn- curly-query-params-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :query-params :required])
@@ -84,7 +84,7 @@
        (curly-form-> tree)
        (curly-body-> tree)
        (curly-literal-> " '")
-       (curly-uri-> uri)
+       (curly-uri-> uri tree)
        (curly-query-params-> tree)
        (curly-literal-> "'")))
 
