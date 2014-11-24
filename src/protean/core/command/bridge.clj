@@ -16,8 +16,11 @@
 
    Links expectations to probe results where outcome is a concern."
   (:require [protean.core.transformation.paths :as p]
-            [protean.core.command.probe :as pr]
-            [me.rossputin.diskops :as d]))
+            [me.rossputin.diskops :as d]
+            [protean.core.command.probe :as pb]
+            ; the multi-dispatch probes
+            [protean.core.command.docprobe]
+            [protean.core.command.testprobe]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -26,15 +29,9 @@
 (defn- paths2locs [locs corpus codices]
   (map #(str (name (:svc %)) " " (:path %)) (p/paths-> codices locs)))
 
-
 ;; =============================================================================
 ;; Commands
 ;; =============================================================================
-
-(defn- analyse
-  "Analyse a probe data."
-  [corpus codices results command]
-  (pr/analyse command corpus codices results))
 
 (defn visit
   "Construct and dispatch a range of probes of different types based on a
@@ -55,8 +52,11 @@
    values, or document or sim."
   [{:keys [host port locs commands seed] :as corpus} codices]
   (doseq [cmd commands]
-    (pr/config cmd corpus)
+    (pb/config cmd corpus)
     (let [paths (distinct (paths2locs locs corpus codices))
-          probes (doall (map #(pr/build cmd (assoc-in corpus [:locs] [%]) codices) paths))
-          results (pr/dispatch cmd corpus codices probes)]
-      (analyse corpus codices results cmd))))
+          probes (doall (map #(pb/build cmd (assoc-in corpus [:locs] [%]) codices) paths))
+          results (pb/dispatch cmd corpus codices probes)]
+      (pb/analyse cmd corpus codices results))))
+
+
+
