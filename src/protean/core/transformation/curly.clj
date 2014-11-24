@@ -56,12 +56,10 @@
                      (str " -H '" h/ctype ": " h/jsn-simple "' --data '" (jsn/generate-string (first b)) "'")))
                (= content-type-req h/txt)
                  (if b (str " --data '" (jsn/generate-string (first b)) "'") "")
-               :else "")]  ;unknown content-type             
+               :else "")]  ;unknown content-type
     (str payload data)))
 
 (defn- curly-literal-> [s payload] (str payload s))
-
-
 
 (defn- curly-uri-> [uri payload]
   (let [one (fn [s] "1")]
@@ -88,7 +86,7 @@
        (curly-literal-> " '")
        (curly-uri-> uri)
        (curly-query-params-> tree)
-       (curly-literal-> "'"))) 
+       (curly-literal-> "'")))
 
 
 ;; =============================================================================
