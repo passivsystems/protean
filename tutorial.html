@@ -118,6 +118,10 @@
         <a data-sw-href="#path" href="#tut-part-5">
           <span data-sw-text="title">Part 5 - simulation (errors)</span>
         </a>
+      </li><li>
+        <a data-sw-href="#path" href="#tut-part-6">
+          <span data-sw-text="title">Part 6 - simulation (responses)</span>
+        </a>
       </li>
     </ul>
   </div>
@@ -157,13 +161,13 @@
       </p>
 
       <pre class="prettyprint">
-    {
-    :includes [&quot;defaults.edn&quot;]
+{
+  :includes [&quot;defaults.edn&quot;]
 
-    :title &quot;Tutorial 1&quot;
+  :title &quot;Tutorial 1&quot;
 
-    &quot;tutorial-1&quot; {&quot;play&quot; {:get {}}}
-    }
+  &quot;tutorial-1&quot; {&quot;play&quot; {:get {}}}
+}
       </pre>
 
       <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
@@ -202,28 +206,28 @@
 
       <pre class="prettyprint">
 {
-:includes [&quot;defaults.edn&quot;]
+  :includes [&quot;defaults.edn&quot;]
 
-:title &quot;Tutorial 2&quot;
+  :title &quot;Tutorial 2&quot;
 
-&quot;tutorial-2&quot; {
-&quot;play/${stateId}&quot; {
-  :get {
-    :doc &quot;A single player REST adventure world&quot;
-    :description
+  &quot;tutorial-2&quot; {
+    &quot;play/${stateId}&quot; {
+      :get {
+        :doc &quot;A single player REST adventure world&quot;
+        :description
 &quot;A simple text adventure world for one player.
 
 Sample usage may be something like /tutorial-2/play/cave, indicating the player
 is in a cave.&quot;
-    :vars {
-      &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
-    }
-    :rsp {
-      :404 {:doc &quot;Not Found&quot;}
+        :vars {
+          &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
+        }
+        :rsp {
+          :404 {:doc &quot;Not Found&quot;}
+        }
+      }
     }
   }
-}
-}
 }
       </pre>
 
@@ -360,7 +364,7 @@ is in a cave.&quot;
 
       <pre class="prettyprint">
 {
-&quot;description&quot;: &quot;You are in a cave, it is very dark&quot;
+  &quot;description&quot;: &quot;You are in a cave, it is very dark&quot;
 }
       </pre>
     </section>
@@ -476,6 +480,119 @@ is in a cave.&quot;
       </pre>
     </section>
   
+
+
+
+        
+  <section data-sw-nav="Part 6 - simulation (responses)" id="tut-part-6" data-sw-content="">
+    <div class="page-header">
+      <h2>Part 6 - Simulation</h2>
+    </div>
+    <p class="lead">Simulating dynamic responses</p>
+
+    <pre class="prettyprint">
+{
+  :includes [&quot;defaults.edn&quot;]
+
+  :title &quot;Tutorial 6&quot;
+
+  &quot;tutorial-6&quot; {
+    &quot;play/${stateId}&quot; {
+      :types {
+        :StateId &quot;(cave|forest)&quot;
+      }
+      :get {
+        :doc &quot;A single player REST adventure world&quot;
+        :description
+        &quot;A simple text adventure world for one player.
+
+        Sample usage may be something like /tutorial-6/play/cave, indicating the player
+        is in a cave.&quot;
+        :vars {
+          &quot;stateId&quot; {:type :StateId :doc &quot;ID for the state of the game&quot;}
+        }
+        :rsp {
+          :200 {
+            :doc &quot;OK&quot;
+            :body-example &quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;
+          }
+          :404 {:doc &quot;Not Found&quot;}
+        }
+      }
+    }
+  }
+}
+    </pre>
+
+    <p>
+      Now the sim extension.
+    </p>
+
+    <pre class="prettyprint">
+(refer 'protean.core.transformation.sim)
+
+(defn param2rsp [{:keys [route-params]} data-path]
+(if-let [rsp (rsp-body data-path (path-param route-params) &quot;.json&quot;)]
+(slurp rsp)
+{:status 404}))
+
+{
+  &quot;tutorial-6&quot; {
+    &quot;play/${stateId}&quot; {
+      :get [
+      (fn [] (param2rsp *request* &quot;public/tutorial/6&quot;))
+      ]
+    }
+  }
+}
+    </pre>
+
+
+    <h3><span class="glyphicon glyphicon-info-sign"></span> Explanation</h3>
+    <p>
+      In the codex above we have converged on a slightly more realistic example.
+      Our endpoint includes a path parameter, and we are now provisioning for cases
+      where the resource requested does not exist.
+    </p>
+    <p>
+      We have created a custom type for our path parameter, indicating that its value can
+      be either 'cave' or 'forest'.
+    </p>
+    <p>
+      In our sim extension we now look up a response body based on the value of the path parameter.
+      We provide two nonsense responses in json files.
+    </p>
+
+    <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
+    <p>Run the simulation.</p>
+    <ol>
+      <li>
+        copy <code>tutorial-6.cod.edn</code> and <code>tutorial-6.sim.edn</code> from <code>public/tutorial</code> to your codex directory
+      </li>
+      <li>
+        run <code><kbd>protean-server</kbd></code>
+      </li>
+      <li>
+        run <code><kbd>protean services</kbd></code>
+      </li>
+      <li>
+        run <code><kbd>protean service-usage -n tutorial-6</kbd></code>
+      </li>
+      <li>
+        select the curl statement generated as output of the previous step, ensure the path parameter is either cave or forest and execute it
+      </li>
+    </ol>
+    <p>
+      You should see output like :
+    </p>
+
+    <pre class="prettyprint">
+{
+  &quot;description&quot;: &quot;You are in a cave, it is very dark&quot;
+}
+    </pre>
+  </section>
+
 
 
       </div>
