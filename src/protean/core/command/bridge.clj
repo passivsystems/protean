@@ -26,12 +26,15 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- paths2locs [locs corpus codices]
-  (map #(str (name (:svc %)) " " (:path %)) (p/paths-> codices locs)))
+(defn- path2loc [path]
+  (str (name (:svc path)) " " (:path path)))
 
 ;; =============================================================================
 ;; Commands
 ;; =============================================================================
+
+(defn- build [cmd corpus path]
+  (pb/build cmd (assoc-in corpus [:locs] (path2loc path)) path))
 
 (defn visit
   "Construct and dispatch a range of probes of different types based on a
@@ -53,10 +56,10 @@
   [{:keys [host port locs commands seed] :as corpus} codices]
   (doseq [cmd commands]
     (pb/config cmd corpus)
-    (let [paths (distinct (paths2locs locs corpus codices))
-          probes (doall (map #(pb/build cmd (assoc-in corpus [:locs] [%]) codices) paths))
-          results (pb/dispatch cmd corpus codices probes)]
-      (pb/analyse cmd corpus codices results))))
+    (let [paths (p/paths-> codices locs)
+          probes (doall (map #(build cmd corpus %) paths))
+          results (pb/dispatch cmd corpus probes)]
+      (pb/analyse cmd corpus results))))
 
 
 

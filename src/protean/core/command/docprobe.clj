@@ -97,42 +97,42 @@
         to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
   (reduce merge (map to-map ph-names))))
 
-(defmethod pb/build :doc [_ {:keys [locs] :as corpus} codices]
-  (println "building a doc probe to visit : " locs)
+(defmethod pb/build :doc [_ {:keys [locs directory] :as corpus} entry]
+  (println "building a doc probe to visit " (:method entry) ":" locs)
   (prep-docs corpus)
-  [corpus
-   (fn engage [{:keys [locs directory] :as corpus} codices]
-     (doseq [{:keys [uri method tree] :as e} (p/analysis-> "host" 1234 codices corpus)]
-       (let [safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
-             uri-path (-> (URI. (safe-uri uri)) (.getPath))
-             id (str (name method) (stg/replace uri-path #"/" "-"))
-             full {:id id
-                   :path (subs uri-path 1)
-                   :curl (cod/url-decode (c/curly-> e))
-                   :doc (d/get-in-tree tree [:doc])
-                   :desc (d/get-in-tree tree [:description])
-                   :method (name method)}]
-         (spit-to (str directory "/global/site.edn") (pr-str {:site-name (d/get-in-tree tree [:title])}))
-         (spit-to (str directory "/api/" id ".edn") (pr-str full))
-         (doc-params (str directory "/" id "/params/") (input-params tree uri))
-         (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
-         (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
-         (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree)))))])
+  [entry (fn engage []
+    (let [{:keys [svc method tree path] :as e} entry
+          uri (p/uri "host" 1234 svc path)
+          safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
+          uri-path (-> (URI. (safe-uri uri)) (.getPath))
+          id (str (name method) (stg/replace uri-path #"/" "-"))
+          full {:id id
+                :path (subs uri-path 1)
+                :curl (cod/url-decode (c/curly-> (assoc-in e [:uri] uri)))
+                :doc (d/get-in-tree tree [:doc])
+                :desc (d/get-in-tree tree [:description])
+                :method (name method)}]
+      (spit-to (str directory "/global/site.edn") (pr-str {:site-name (d/get-in-tree tree [:title])}))
+      (spit-to (str directory "/api/" id ".edn") (pr-str full))
+      (doc-params (str directory "/" id "/params/") (input-params tree uri))
+      (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
+      (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
+      (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree))))])
 
 ;; =============================================================================
 ;; Probe dispatch
 ;; =============================================================================
 
-(defmethod pb/dispatch :doc [_ corpus codices probes]
+(defmethod pb/dispatch :doc [_ corpus probes]
   (hlg "dispatching probes")
-  (doall (map (fn [x] ((last x) (first x) codices)) probes)))
+  (doall (map (fn [x] [(first x) ((second x))]) probes)))
 
 
 ;; =============================================================================
 ;; Probe data analysis
 ;; =============================================================================
 
-(defmethod pb/analyse :doc [_ corpus codices results]
+(defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
   (let [path (.getAbsolutePath (file (:directory corpus)))
         silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]

@@ -58,15 +58,14 @@
     (copy-and-swap tree [:req :body] [:body])
     (body-to-string)))
 
-(defn- prepare-requests
+(defn- prepare-request 
   "Translate placeholders when visiting real nodes."
-  [analysed {:keys [seed] :as corpus}]
-  (let [to-request (fn [{:keys [method uri options tree] :as entry}]
-    (let [parsed-uri (:uri (swap {:uri uri} tree))] ; wrapping and unwrapping uri in map to reuse holder-swap
-      (-> {:method method :uri parsed-uri :tree tree} ; TODO currently storing tree in request - should be passed separately but needs to be preserved down pipeline - should be provided to probe methods instead of codex
-          (update-in [:options] swap-options tree)
-          (update-in [:options] content-type method))))]
-    (map to-request analysed)))
+  [host port {:keys [method svc path tree] :as entry} {:keys [seed] :as corpus}]
+  (let [uri (p/uri host port svc path)
+        parsed-uri (:uri (swap {:uri uri} tree))] ; wrapping and unwrapping uri in map to reuse holder-swap
+    (-> {:method method :uri parsed-uri}
+        (update-in [:options] swap-options tree)
+        (update-in [:options] content-type method))))
 
 
 ;; =============================================================================
@@ -81,17 +80,18 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defmethod pb/build :test [_ {:keys [locs] :as corpus} codices]
-  (println "building a test probe to visit : " locs)
-  [corpus
-    (fn engage [{:keys [locs host port] :as corpus} codices res-fn]
-     (let [h (or host "localhost")
-           p (or port 3000)
-           analysed (p/analysis-> host port codices corpus)
-           requests (prepare-requests analysed corpus)
-           results (map #(t/test! %) requests)]
-       (res-fn results)
-       results))])
+(defn- uri-> [{:keys [svc path] :as entry} host port]
+  (assoc entry :uri ))
+
+(defmethod pb/build :test [_ {:keys [locs host port] :as corpus} entry]
+  (println "building a test probe to visit " (:method entry) ":" locs)
+  [entry (fn engage [res-fn]
+    (let [h (or host "localhost")
+          p (or port 3000)
+          request (prepare-request h p entry corpus)
+          result (t/test! request)]
+      (res-fn result)
+      result))])
 
 
 ;; =============================================================================
@@ -112,17 +112,20 @@
 ;; Probe dispatch
 ;; =============================================================================
 
-(defmethod pb/dispatch :test [_ corpus codices probes]
+(defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
-  (let [res (doall (map (fn [x] ((last x) (first x) codices res-persist!)) probes))
-        raw-posts (filter #(= (:method (first %)) :post) (apply concat res))
-        ps (filter #(or (:location (nth % 1)) (:body (nth % 1))) raw-posts)
-        vs (remove nil? (map #(or (:location (nth % 1)) (:body (nth % 1))) ps))
-        locs (for [[m p] probes] (:locs m))
-        bag (assoc-in corpus [:seed "bag"] (vec vs))
-        np (doall (map #(pb/build :test (assoc-in bag [:locs] %) codices) locs)) ; another call to test probe - build?
-        nr (doall (map (fn [x] ((last x) (first x) codices res-persist!)) np))
-        fr (remove #(or (= (:method (first %)) :post) (not (some #{"seed"} (last %))))  (apply concat nr))]
+  (doall (map (fn [x] [(first x) ((second x) res-persist!)]) probes)))
+
+
+;        raw-posts (filter #(= (:method (first %)) :post) (apply concat res))
+;        ps (filter #(or (:location (nth % 1)) (:body (nth % 1))) raw-posts)
+;        vs (remove nil? (map #(or (:location (nth % 1)) (:body (nth % 1))) ps))
+;        locs (for [[m p] probes] (:locs m))
+;        bag (assoc-in corpus [:seed "bag"] (vec vs))
+;        np (doall (map #(pb/build :test (assoc-in bag [:locs] %) paths) locs)) ; another call to test probe - build?
+;        nr (doall (map (fn [x] ((last x) (first x) res-persist!)) np))
+;        fr (remove #(or (= (:method (first %)) :post) (not (some #{"seed"} (last %))))  (apply concat nr))
+;]
 ;    (println "\nres" res)
 ;    (println "\nraw-posts" raw-posts)
 ;    (println "\nps" ps)
@@ -132,7 +135,8 @@
 ;    (println "\nnp" np)
 ;    (println "\nnr" nr)
 ;    (println "\nfr" fr)
-    (concat (apply concat res) fr)))
+;    (concat (apply concat res) fr)))
+;    res))
 
 ;; =============================================================================
 ;; Probe data analysis
@@ -144,16 +148,18 @@
       "pass"
       (str "fail - expected status " expected-status))))
 
-(defmethod pb/analyse :test [_ corpus codices results]
+(defmethod pb/analyse :test [_ corpus results]
   (hlg "analysing probe data")
-;  (println "analyse" results)
-  (doseq [[{:keys [method uri tree] :as request} {:keys [status] :as response}] results]
-;    (println "result - request:" (dissoc request :tree))
+  (doseq [[entry [request response]] results]
+;    (println "result - request:" request)
 ;    (println "result - response:" response)
-    (let [ass (assess method status tree)
+    (let [method (:method request)
+          uri (:uri request)
+          status (:status response)
+          tree (:tree entry)
+          ass (assess method status tree)
           so (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass))]
       (println "Test : " method " - " uri ", status - " status ": " so))))
-
 ;  (doseq [[method uri mp phs] results]
 ;    (let [status (:status mp)
 ;          ass (assess method status phs)
