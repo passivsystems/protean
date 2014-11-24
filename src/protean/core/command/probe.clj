@@ -83,13 +83,13 @@
    Directory is the data directory root.
    Resource is the current endpoint (parent of headers).
    filter-exp is a regular expression to match the status codes to include."
-    (.mkdirs (File. target-dir))
-    (doseq [[k v] statuses]
-      (spit (str target-dir (name k) ".edn")
-            (pr-str
-              {:code (name k) :doc (:doc v) :sample-response (body-example tree v)}))))
-      ;(if (:headers v)
-      ;    (doc-hdrs (str target-dir (name k) "/" "headers" "/") (:headers v)))))
+  (.mkdirs (File. target-dir))
+  (doseq [[k v] statuses]
+    (spit (str target-dir (name k) ".edn")
+      (pr-str { :code (name k)
+                :doc (:doc v)
+                :sample-response (body-example tree v)
+                :headers (if-let [h (:headers v)] (pr-str h) "N/A")}))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat
@@ -167,6 +167,3 @@
   (let [path (.getAbsolutePath (file (:directory corpus)))
         silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
     (silk/spin-or-reload false silk-path false false)))
-
-
-
