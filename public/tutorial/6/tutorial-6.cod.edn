@@ -5,6 +5,9 @@
 
   "tutorial-6" {
     "play/${stateId}" {
+      :types {
+        :StateId "(cave|forest)"
+      }
       :get {
         :doc "A single player REST adventure world"
         :description
@@ -13,7 +16,7 @@
         Sample usage may be something like /tutorial-6/play/cave, indicating the player
         is in a cave."
         :vars {
-          "stateId" {:type :Int :doc "ID for the state of the game"}
+          "stateId" {:type :StateId :doc "ID for the state of the game"}
         }
         :rsp {
           :200 {
