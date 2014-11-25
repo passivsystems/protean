@@ -112,15 +112,14 @@
       (collect-params (get-in res [:body]))))))
 
 (defn- outputs-values [tree response]
-  (println "\noutputs-values - response" response)
   (let [res (val (first (d/success-status tree)))
         f-headers (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (for [ph (map second holder)]
                (do ;(println "ph:" ph)
                  (when-let [response-value (get-in response [:headers k])]
-                   ;(println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
-                   [ph response-value])))))
+                   ;(println "pulling out" ph "from" response-value "with template" v) 
+                   [ph (last (stg/split response-value #"/"))]))))); TODO - needs to pull out of template
         f-body (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (let [response-body (get-in response [:body])
@@ -148,8 +147,6 @@
         uri (uri h p entry)
         inputs (inputs uri tree)
         outputs (outputs-names tree)]
-    (println "inputs" inputs)
-    (println "outputs" outputs "\n")
     {:entry entry
      :inputs inputs
      :outputs outputs
@@ -196,7 +193,7 @@
 
     (println " inputs:")
     (doseq [input inputs]
-      (let [seed (get-in corpus [:seed])
+      (let [seed (get-in corpus [:seed input])
             dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
             example (d/get-in-tree tree [:vars input :examples])
             gen-type (d/get-in-tree tree [:vars input :type])]
@@ -233,8 +230,7 @@
     (if probe
       (let [res ((:engage probe) bag res-persist!)
             outputs (outputs-values (:tree (:entry probe)) (second res))]
-
-(println (label probe) "outputs" outputs)
+        (println (label probe) "\noutputs" outputs "\n")
         (recur (rest probes) (merge outputs bag) (conj reses [(:entry probe) res])))
       reses)))
 
@@ -246,8 +242,9 @@
 ;    (li/view @g)
     (let [bag (get-in corpus [:seed])
           ordered-probes (la/topsort @g)]
-      (println "executing probes in order:" (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)))
-      (execute ordered-probes bag (list)))))
+      (println "\nexecuting probes in order:\n"
+        (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)) "\n")
+      (reverse (execute ordered-probes bag (list))))))
 
 ;; =============================================================================
 ;; Probe data analysis
