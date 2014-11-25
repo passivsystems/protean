@@ -13,7 +13,11 @@
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
             [protean.core.command.test :as t]
-            [protean.core.command.probe :as pb])
+            [protean.core.command.probe :as pb]
+            [loom.graph :as lg]
+            [loom.alg :as la]
+            [loom.attr :as lat]
+            [loom.io :as li])
   (:import java.io.File java.net.URI java.util.UUID))
 
 ;; =============================================================================
@@ -151,34 +155,62 @@
   (let [{:keys [method svc path] :as entry} (:entry probe)]
     (str method " " svc " " path)))
 
-(defn- analyse [corpus probes probe]
+(defn- analyse [g corpus probes probe]
   (let [tree (get-in probe [:entry :tree])
         inputs (:inputs probe)
         outputs (:outputs probe)]
     (println "\n" (label probe))
+    (swap! g lg/add-nodes probe)
+    (swap! g lat/add-attr probe :label (label probe))
+
     (println " inputs:")
     (doseq [input inputs]
       (let [seed (get-in corpus [:seed])
             dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
             example (d/get-in-tree tree [:vars input :examples])
             gen-type (d/get-in-tree tree [:vars input :type])]
-        (cond
-          seed (println "    " input "  - satisfied by seed:" seed)
-          (not (empty? dependencies)) (println "    " input "  - satisfied by dependencies:" (map label dependencies))
-          example (println "    " input "  - satisfied by example:" example)
-          gen-type (println "    " input "  - satisfied by generative type:" gen-type)
-          :else (println "    " input "  - NOT SATISFIED"))))
+
+        (println "    " input "- satisifed by")
+        (if seed
+          (println "      seed:" seed)
+          (do
+            (if (not (empty? dependencies))
+              (do
+                (println "      dependencies:" (map label dependencies))
+                (doseq [dependency dependencies]
+                  (swap! g lg/add-edges [dependency probe])
+                  (swap! g lat/add-attr [dependency probe] :label input)
+                )
+              ))
+            (if example
+              (println "      example:" example)
+              (if gen-type  (println "      generative type:" gen-type)))))))
+;          :else (println "    " input "  - NOT SATISFIED"))))
+
+
+;        (cond
+;          seed (println "    " input "  - satisfied by seed:" seed)
+;          (not (empty? dependencies)) (println "    " input "  - satisfied by dependencies:" (map label dependencies))
+;          example (println "    " input "  - satisfied by example:" example)
+;          gen-type (println "    " input "  - satisfied by generative type:" gen-type)
+;          :else (println "    " input "  - NOT SATISFIED"))))
     (println " outputs:" outputs)))
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
 
   (println "analysis:")
-  (doall (map #(analyse corpus probes %) probes))
+  (let [g (atom (lg/digraph))] ; TODO refactor out atom usage
+    (doall (map #(analyse g corpus probes %) probes))
+;    (li/view @g)
+    (let [ordered-probes (la/topsort @g)]
+      (println "executing probes in order:" (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)))
+      (let [execute (fn [probe] [(:entry probe) ((:engage probe) res-persist!)])]  
+        (doall (map execute (la/topsort @g)))))))
 
 
-  (let [execute (fn [probe] [(:entry probe) ((:engage probe) res-persist!)])]
-    (doall (map execute probes))))
+;  (let [execute (fn [probe] [(:entry probe) ((:engage probe) res-persist!)])]  
+;    (doall (map execute probes))))
 
 
 ;        raw-posts (filter #(= (:method (first %)) :post) (apply concat res))

@@ -27,7 +27,8 @@
                  [org.databene/databene-benerator "0.9.8"]
                  [org.slf4j/slf4j-simple "1.6.4"]
                  [overtone/at-at "1.2.0"]
-                 [com.github.fge/json-schema-validator "2.1.7"]]
+                 [com.github.fge/json-schema-validator "2.1.7"]
+                 [aysylu/loom "0.5.0"]]
   :plugins [[lein-ring "0.8.10"]]
   :aot :all
   :uberjar-name ~(str (-> "project.clj" slurp read-string (nth 1)) "-" (-> "project.clj" slurp read-string (nth 2)) "-standalone.jar")
