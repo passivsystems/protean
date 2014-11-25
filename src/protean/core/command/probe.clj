@@ -113,13 +113,16 @@
        (let [safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
              uri-path (-> (URI. (safe-uri uri)) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
+             main (filter #(get-in % [:title]) tree)
+             site {:site-name (d/get-in-tree main [:title])
+                   :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
              full {:id id
                    :path (subs uri-path 1)
                    :curl (cod/url-decode (c/curly-> e))
                    :doc (d/get-in-tree tree [:doc])
                    :desc (d/get-in-tree tree [:description])
                    :method (name method)}]
-         (spit-to (str directory "/global/site.edn") (pr-str {:site-name (d/get-in-tree tree [:title])}))
+         (spit-to (str directory "/global/site.edn") (pr-str site))
          (spit-to (str directory "/api/" id ".edn") (pr-str full))
          (doc-params (str directory "/" id "/params/") (input-params tree uri))
          (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))

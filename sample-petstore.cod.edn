@@ -9,6 +9,7 @@
   :includes [ "defaults.edn" ]
 
   :title "Pet Store API Docs"
+  :doc "A sample pet store is often created in RESTful toolkits to demonstrate capability."
 
   "petstore" {
 
