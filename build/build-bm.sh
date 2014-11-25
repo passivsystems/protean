@@ -11,7 +11,13 @@ mkdir -p ../target/bm
 cp ../target/*standalone* ../target/bm
 cp -r etc/* ../target/bm
 cp -r ../public ../target/bm
-cp ../sample-codex.edn ../target/bm
+cp -r ../test-data ../target/bm
+cp -r ../silk_templates ../target/bm
+cp ../defaults.edn ../target/bm
+cp ../sample-petstore.cod.edn ../target/bm
+cp ../sample-petstore.sim.edn ../target/bm
+cp ../protean-utils.cod.edn ../target/bm
+cp ../protean-utils.sim.edn ../target/bm
 cd ../target/bm
 tar cvzf protean.tgz *
 cd ../../build
