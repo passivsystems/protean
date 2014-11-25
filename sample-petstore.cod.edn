@@ -109,7 +109,7 @@
           :200 {
             :body         {"name" "${name}" "status" "${status}"}
             :body-schema  "test-data/schemas/pet.schema.json"
-            :body-example "test-data/content/doc/responses/simple/200-ref.json"
+            :body-example "test-data/content/doc/responses/simple/pet.json"
           }
 
           :404 {

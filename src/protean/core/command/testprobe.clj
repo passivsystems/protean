@@ -105,11 +105,41 @@
     (collect-params (d/get-in-tree tree [:req :headers]))
     (collect-params (d/get-in-tree tree [:req :body])))))
 
-(defn- outputs [tree]
+(defn- outputs-names [tree]
   (let [res (val (first (d/success-status tree)))]
     (distinct (concat
       (collect-params (get-in res [:headers]))
       (collect-params (get-in res [:body]))))))
+
+(defn- outputs-values [tree response]
+  (println "\noutputs-values - response" response)
+  (let [res (val (first (d/success-status tree)))
+        f-headers (fn [[k v]]
+           (when-let [holder (ph/holder? v)]
+             (for [ph (map second holder)]
+               (do ;(println "ph:" ph)
+                 (when-let [response-value (get-in response [:headers k])]
+                   ;(println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
+                   [ph response-value])))))
+        f-body (fn [[k v]]
+           (when-let [holder (ph/holder? v)]
+             (let [response-body (get-in response [:body])
+                   ct (get-in response [:headers "Content-Type"])]
+               (for [ph (map second holder)]
+                 (do ;(println "ph:" ph)
+                   (cond
+                     (= ct h/jsn) (do
+                       (let [json (co/clj response-body)]
+                         (when-let [response-value (get-in json [k])]
+                           ;(println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
+                           [ph response-value])))
+                     ))))))]
+    ;(println "output-values - headers" (get-in res [:headers]))
+    ;(println "output-values - body" (get-in res [:body]))
+    (merge
+      (into {} (mapcat f-headers (get-in res [:headers])))
+      (into {} (mapcat f-body (get-in res [:body]))))))
+
 
 (defmethod pb/build :test [_ {:keys [locs host port] :as corpus} {:keys [tree] :as entry}]
   (println "building a test probe to visit " (:method entry) ":" locs)
@@ -117,7 +147,7 @@
         p (or port 3000)
         uri (uri h p entry)
         inputs (inputs uri tree)
-        outputs (outputs tree)]
+        outputs (outputs-names tree)]
     (println "inputs" inputs)
     (println "outputs" outputs "\n")
     {:entry entry
@@ -197,44 +227,27 @@
 ;          :else (println "    " input "  - NOT SATISFIED"))))
     (println " outputs:" outputs)))
 
+
+(defn- execute [probes bag reses]
+  (let [probe (first probes)]
+    (if probe
+      (let [res ((:engage probe) bag res-persist!)
+            outputs (outputs-values (:tree (:entry probe)) (second res))]
+
+(println (label probe) "outputs" outputs)
+        (recur (rest probes) (merge outputs bag) (conj reses [(:entry probe) res])))
+      reses)))
+
+
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
-
-  (println "analysis:")
   (let [g (atom (lg/digraph))] ; TODO refactor out atom usage
     (doall (map #(analyse g corpus probes %) probes))
 ;    (li/view @g)
     (let [bag (get-in corpus [:seed])
           ordered-probes (la/topsort @g)]
       (println "executing probes in order:" (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)))
-      (let [execute (fn [probe] [(:entry probe) ((:engage probe) bag res-persist!)])]  
-        (doall (map execute (la/topsort @g)))))))
-
-
-;  (let [execute (fn [probe] [(:entry probe) ((:engage probe) res-persist!)])]  
-;    (doall (map execute probes))))
-
-
-;        raw-posts (filter #(= (:method (first %)) :post) (apply concat res))
-;        ps (filter #(or (:location (nth % 1)) (:body (nth % 1))) raw-posts)
-;        vs (remove nil? (map #(or (:location (nth % 1)) (:body (nth % 1))) ps))
-;        locs (for [[m p] probes] (:locs m))
-;        bag (assoc-in corpus [:seed "bag"] (vec vs))
-;        np (doall (map #(pb/build :test (assoc-in bag [:locs] %) paths) locs)) ; another call to test probe - build?
-;        nr (doall (map (fn [x] ((last x) (first x) res-persist!)) np))
-;        fr (remove #(or (= (:method (first %)) :post) (not (some #{"seed"} (last %))))  (apply concat nr))
-;]
-;    (println "\nres" res)
-;    (println "\nraw-posts" raw-posts)
-;    (println "\nps" ps)
-;    (println "\nvs" vs)
-;    (println "\nlocs" locs)
-;    (println "\nbag" bag)
-;    (println "\nnp" np)
-;    (println "\nnr" nr)
-;    (println "\nfr" fr)
-;    (concat (apply concat res) fr)))
-;    res))
+      (execute ordered-probes bag (list)))))
 
 ;; =============================================================================
 ;; Probe data analysis
