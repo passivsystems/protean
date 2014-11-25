@@ -52,9 +52,9 @@
   (if (string? v) (re-seq ph v) nil))
 
 
-(defn authzn-holder?
-  "Does the authzn header contain a placeholder ?"
-  [v] (if-let [auth (d/azn v)] (holder? auth) false))
+;(defn authzn-holder?
+;  "Does the authzn header contain a placeholder ?"
+;  [v] (if-let [auth (d/azn v)] (holder? auth) false))
 
 
 ;; =============================================================================

@@ -23,12 +23,24 @@
 (defn- hlr [t] (println (aa/bold-red t)))
 (defn- hlg [t] (println (aa/bold-green t)))
 
+;; =============================================================================
+;; Probe config
+;; =============================================================================
+
 (defn- show-test [level]
   (cond
     (= level 1) (hlr "ʘ‿ʘ I'm too young to die")
     (= level 2) (hlr "⊙︿⊙ Hey not too rough")
     (= level 3) (hlr "ミ●﹏☉ミ Hurt me plenty")
     (= level 4) (hlr "✖_✖ Ultra violence")))
+
+(defmethod pb/config :test [_ corpus]
+  (show-test (get-in corpus [:config "test-level"] 1))
+  (hlg "building probes"))
+
+;; =============================================================================
+;; Probe construction
+;; =============================================================================
 
 (defn- swap [ph tree]
   (-> ph
@@ -58,40 +70,60 @@
     (copy-and-swap tree [:req :body] [:body])
     (body-to-string)))
 
+(defn- uri [host port {:keys [svc path] :as entry}]
+  (p/uri host port svc path))
+
 (defn- prepare-request 
   "Translate placeholders when visiting real nodes."
-  [host port {:keys [method svc path tree] :as entry} {:keys [seed] :as corpus}]
-  (let [uri (p/uri host port svc path)
-        parsed-uri (:uri (swap {:uri uri} tree))] ; wrapping and unwrapping uri in map to reuse holder-swap
+  [uri {:keys [method tree] :as entry} {:keys [seed] :as corpus}]
+  (let [parsed-uri (:uri (swap {:uri uri} tree))] ; wrapping and unwrapping uri in map to reuse holder-swap
     (-> {:method method :uri parsed-uri}
         (update-in [:options] swap-options tree)
         (update-in [:options] content-type method))))
 
-
-;; =============================================================================
-;; Probe config
-;; =============================================================================
-
-(defmethod pb/config :test [_ corpus]
-  (show-test (get-in corpus [:config "test-level"] 1))
-  (hlg "building probes"))
-
-;; =============================================================================
-;; Probe construction
-;; =============================================================================
-
 (defn- uri-> [{:keys [svc path] :as entry} host port]
   (assoc entry :uri ))
 
-(defmethod pb/build :test [_ {:keys [locs host port] :as corpus} entry]
+(defn- collect-params [m]
+  (let [l (cond (map? m) (vals m) (list? m) m :else (list m))]
+    (mapcat (fn [v] (if (string? v) (map second (ph/holder? v))
+                      (if v (collect-params v))))
+            l)))
+
+(defn- inputs [uri tree]
+  (distinct (concat
+    (collect-params uri)
+    (collect-params (d/get-in-tree tree [:req :query-params :required]))
+    (collect-params (d/get-in-tree tree [:req :query-params :required]))
+    (collect-params (d/get-in-tree tree [:req :query-params :optional])) ; TODO only include when (corpus) test level is 2?
+    (collect-params (d/get-in-tree tree [:req :form-params]))
+    (collect-params (d/get-in-tree tree [:req :headers]))
+    (collect-params (d/get-in-tree tree [:req :body])))))
+
+(defn- outputs [tree]
+  (let [res (val (first (d/success-status tree)))]
+    (distinct (concat
+      (collect-params (get-in res [:headers]))
+      (collect-params (get-in res [:body]))))))
+
+(defmethod pb/build :test [_ {:keys [locs host port] :as corpus} {:keys [tree] :as entry}]
   (println "building a test probe to visit " (:method entry) ":" locs)
-  [entry (fn engage [res-fn]
-    (let [h (or host "localhost")
-          p (or port 3000)
-          request (prepare-request h p entry corpus)
-          result (t/test! request)]
-      (res-fn result)
-      result))])
+  (let [h (or host "localhost")
+        p (or port 3000)
+        uri (uri h p entry)
+        inputs (inputs uri tree)
+        outputs (outputs tree)]
+    (println "inputs" inputs)
+    (println "outputs" outputs "\n")
+    {:entry entry
+     :inputs inputs
+     :outputs outputs
+     :engage (fn [res-fn]
+      (let [request (prepare-request uri entry corpus)
+            result (t/test! request)]
+        (res-fn result)
+        result))
+    }))
 
 
 ;; =============================================================================
@@ -107,14 +139,15 @@
   ;;(println "TODO: reminder placeholder for persisting results")
   )
 
-
 ;; =============================================================================
 ;; Probe dispatch
 ;; =============================================================================
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
-  (doall (map (fn [x] [(first x) ((second x) res-persist!)]) probes)))
+
+  
+  (doall (map (fn [x] [(:entry x) ((:engage x) res-persist!)]) probes)))
 
 
 ;        raw-posts (filter #(= (:method (first %)) :post) (apply concat res))

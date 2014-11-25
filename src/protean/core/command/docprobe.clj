@@ -100,7 +100,8 @@
 (defmethod pb/build :doc [_ {:keys [locs directory] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
   (prep-docs corpus)
-  [entry (fn engage []
+  {:entry entry
+   :engage (fn []
     (let [{:keys [svc method tree path] :as e} entry
           uri (p/uri "host" 1234 svc path)
           safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
@@ -117,7 +118,8 @@
       (doc-params (str directory "/" id "/params/") (input-params tree uri))
       (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
       (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
-      (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree))))])
+      (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree))))
+  })
 
 ;; =============================================================================
 ;; Probe dispatch
@@ -125,7 +127,7 @@
 
 (defmethod pb/dispatch :doc [_ corpus probes]
   (hlg "dispatching probes")
-  (doall (map (fn [x] [(first x) ((second x))]) probes)))
+  (doall (map (fn [x] [(:entry x) ((:engage x))]) probes)))
 
 
 ;; =============================================================================
