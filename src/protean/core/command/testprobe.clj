@@ -112,15 +112,14 @@
       (collect-params (get-in res [:body]))))))
 
 (defn- outputs-values [tree response]
-  (println "\noutputs-values - response" response)
   (let [res (val (first (d/success-status tree)))
         f-headers (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (for [ph (map second holder)]
                (do ;(println "ph:" ph)
                  (when-let [response-value (get-in response [:headers k])]
-                   ;(println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
-                   [ph response-value])))))
+                   ;(println "pulling out" ph "from" response-value "with template" v)
+                   [ph (last (stg/split response-value #"/"))]))))); TODO - needs to pull out of template
         f-body (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (let [response-body (get-in response [:body])
@@ -128,7 +127,7 @@
                (for [ph (map second holder)]
                  (do ;(println "ph:" ph)
                    (cond
-                     (= ct h/jsn) (do
+                     (= ct h/jsn) (do ; TODO need to support all content types..
                        (let [json (co/clj response-body)]
                          (when-let [response-value (get-in json [k])]
                            ;(println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
@@ -148,8 +147,6 @@
         uri (uri h p entry)
         inputs (inputs uri tree)
         outputs (outputs-names tree)]
-    (println "inputs" inputs)
-    (println "outputs" outputs "\n")
     {:entry entry
      :inputs inputs
      :outputs outputs
@@ -196,7 +193,7 @@
 
     (println " inputs:")
     (doseq [input inputs]
-      (let [seed (get-in corpus [:seed])
+      (let [seed (get-in corpus [:seed input])
             dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
             example (d/get-in-tree tree [:vars input :examples])
             gen-type (d/get-in-tree tree [:vars input :type])]
@@ -207,7 +204,7 @@
           (do
             (if (not (empty? dependencies))
               (do
-                (println "      dependencies:" (map label dependencies))
+                (println "      dependencies:" (map label dependencies)) ; TODO may need to default to example/generative-type if forms a cyclical graph
                 (doseq [dependency dependencies]
                   (swap! g lg/add-edges [dependency probe])
                   (swap! g lat/add-attr [dependency probe] :label input)
@@ -233,8 +230,7 @@
     (if probe
       (let [res ((:engage probe) bag res-persist!)
             outputs (outputs-values (:tree (:entry probe)) (second res))]
-
-(println (label probe) "outputs" outputs)
+        (println (label probe) "\noutputs" outputs "\n")
         (recur (rest probes) (merge outputs bag) (conj reses [(:entry probe) res])))
       reses)))
 
@@ -243,11 +239,12 @@
   (hlg "dispatching probes")
   (let [g (atom (lg/digraph))] ; TODO refactor out atom usage
     (doall (map #(analyse g corpus probes %) probes))
-;    (li/view @g)
+    (li/view @g)
     (let [bag (get-in corpus [:seed])
           ordered-probes (la/topsort @g)]
-      (println "executing probes in order:" (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)))
-      (execute ordered-probes bag (list)))))
+      (println "\nexecuting probes in order:\n"
+        (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)) "\n")
+      (reverse (execute ordered-probes bag (list))))))
 
 ;; =============================================================================
 ;; Probe data analysis
@@ -270,7 +267,7 @@
           tree (:tree entry)
           ass (assess method status tree)
           so (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass))]
-      (println "Test : " method " - " uri ", status - " status ": " so))))
+      (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)
 ;  (doseq [[method uri mp phs] results]
 ;    (let [status (:status mp)
 ;          ass (assess method status phs)
