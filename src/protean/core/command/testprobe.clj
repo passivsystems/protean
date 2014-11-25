@@ -143,11 +143,42 @@
 ;; Probe dispatch
 ;; =============================================================================
 
+(defn- find-dep [input probe]
+  (if (some #{input} (:outputs probe)) probe)
+)
+
+(defn- label [probe]
+  (let [{:keys [method svc path] :as entry} (:entry probe)]
+    (str method " " svc " " path)))
+
+(defn- analyse [corpus probes probe]
+  (let [tree (get-in probe [:entry :tree])
+        inputs (:inputs probe)
+        outputs (:outputs probe)]
+    (println "\n" (label probe))
+    (println " inputs:")
+    (doseq [input inputs]
+      (let [seed (get-in corpus [:seed])
+            dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
+            example (d/get-in-tree tree [:vars input :examples])
+            gen-type (d/get-in-tree tree [:vars input :type])]
+        (cond
+          seed (println "    " input "  - satisfied by seed:" seed)
+          (not (empty? dependencies)) (println "    " input "  - satisfied by dependencies:" (map label dependencies))
+          example (println "    " input "  - satisfied by example:" example)
+          gen-type (println "    " input "  - satisfied by generative type:" gen-type)
+          :else (println "    " input "  - NOT SATISFIED"))))
+    (println " outputs:" outputs)))
+
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
 
-  
-  (doall (map (fn [x] [(:entry x) ((:engage x) res-persist!)]) probes)))
+  (println "analysis:")
+  (doall (map #(analyse corpus probes %) probes))
+
+
+  (let [execute (fn [probe] [(:entry probe) ((:engage probe) res-persist!)])]
+    (doall (map execute probes))))
 
 
 ;        raw-posts (filter #(= (:method (first %)) :post) (apply concat res))
