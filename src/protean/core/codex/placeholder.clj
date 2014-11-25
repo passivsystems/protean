@@ -81,6 +81,11 @@
     (g-val x tree)
     v))
 
+(defn holder-swap-bag [bag v]
+  (if-let [x (get-in bag [v])]
+    x
+    v))
+
 (defn holder-swap
   "Swap generative values in for placeholders."
   [m swap-fn tree]

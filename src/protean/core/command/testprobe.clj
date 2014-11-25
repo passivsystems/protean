@@ -46,14 +46,15 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defn- swap [ph tree]
+(defn- swap [ph tree bag]
   (-> ph
+     (ph/holder-swap ph/holder-swap-bag bag)
      (ph/holder-swap ph/holder-swap-gen tree)
      (ph/holder-swap ph/holder-swap-exp tree)))
 
-(defn- copy-and-swap [options tree source-keys target-keys]
+(defn- copy-and-swap [options tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
-    (assoc-in options target-keys (swap ph tree))
+    (assoc-in options target-keys (swap ph tree bag))
     options))
 
 (defn- body-to-string [options]
@@ -65,13 +66,13 @@
     (assoc-in options [:headers h/ctype]  h/jsn-simple)
     options))
 
-(defn- swap-options [options tree]
+(defn- swap-options [options tree bag]
   (-> options
-    (copy-and-swap tree [:req :query-params :required] [:query-params])
-    (copy-and-swap tree [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
-    (copy-and-swap tree [:req :form-params] [:form-params])
-    (copy-and-swap tree [:req :headers] [:headers])
-    (copy-and-swap tree [:req :body] [:body])
+    (copy-and-swap tree bag [:req :query-params :required] [:query-params])
+    (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
+    (copy-and-swap tree bag [:req :form-params] [:form-params])
+    (copy-and-swap tree bag [:req :headers] [:headers])
+    (copy-and-swap tree bag [:req :body] [:body])
     (body-to-string)))
 
 (defn- uri [host port {:keys [svc path] :as entry}]
@@ -79,10 +80,10 @@
 
 (defn- prepare-request 
   "Translate placeholders when visiting real nodes."
-  [uri {:keys [method tree] :as entry} {:keys [seed] :as corpus}]
-  (let [parsed-uri (:uri (swap {:uri uri} tree))] ; wrapping and unwrapping uri in map to reuse holder-swap
+  [uri {:keys [method tree] :as entry} bag]
+  (let [parsed-uri (:uri (swap {:uri uri} tree bag))] ; wrapping and unwrapping uri in map to reuse holder-swap
     (-> {:method method :uri parsed-uri}
-        (update-in [:options] swap-options tree)
+        (update-in [:options] swap-options tree bag)
         (update-in [:options] content-type method))))
 
 (defn- uri-> [{:keys [svc path] :as entry} host port]
@@ -122,8 +123,8 @@
     {:entry entry
      :inputs inputs
      :outputs outputs
-     :engage (fn [res-fn]
-      (let [request (prepare-request uri entry corpus)
+     :engage (fn [bag res-fn]
+      (let [request (prepare-request uri entry bag)
             result (t/test! request)]
         (res-fn result)
         result))
@@ -203,9 +204,10 @@
   (let [g (atom (lg/digraph))] ; TODO refactor out atom usage
     (doall (map #(analyse g corpus probes %) probes))
 ;    (li/view @g)
-    (let [ordered-probes (la/topsort @g)]
+    (let [bag (get-in corpus [:seed])
+          ordered-probes (la/topsort @g)]
       (println "executing probes in order:" (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)))
-      (let [execute (fn [probe] [(:entry probe) ((:engage probe) res-persist!)])]  
+      (let [execute (fn [probe] [(:entry probe) ((:engage probe) bag res-persist!)])]  
         (doall (map execute (la/topsort @g)))))))
 
 
