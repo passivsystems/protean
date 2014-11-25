@@ -83,13 +83,13 @@
    Directory is the data directory root.
    Resource is the current endpoint (parent of headers).
    filter-exp is a regular expression to match the status codes to include."
-    (.mkdirs (File. target-dir))
-    (doseq [[k v] statuses]
-      (spit (str target-dir (name k) ".edn")
-            (pr-str
-              {:code (name k) :doc (:doc v) :sample-response (body-example tree v)}))))
-      ;(if (:headers v)
-      ;    (doc-hdrs (str target-dir (name k) "/" "headers" "/") (:headers v)))))
+  (.mkdirs (File. target-dir))
+  (doseq [[k v] statuses]
+    (spit (str target-dir (name k) ".edn")
+      (pr-str { :code (name k)
+                :doc (:doc v)
+                :sample-response (body-example tree v)
+                :headers (if-let [h (:headers v)] (pr-str h) "N/A")}))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat
@@ -113,13 +113,16 @@
        (let [safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
              uri-path (-> (URI. (safe-uri uri)) (.getPath))
              id (str (name method) (stg/replace uri-path #"/" "-"))
+             main (filter #(get-in % [:title]) tree)
+             site {:site-name (d/get-in-tree main [:title])
+                   :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
              full {:id id
                    :path (subs uri-path 1)
                    :curl (cod/url-decode (c/curly-> e))
                    :doc (d/get-in-tree tree [:doc])
-                   :desc (d/get-in-tree tree [:description])
+                   :desc (if-let [d (d/get-in-tree tree [:description])] d "")
                    :method (name method)}]
-         (spit-to (str directory "/global/site.edn") (pr-str {:site-name (d/get-in-tree tree [:title])}))
+         (spit-to (str directory "/global/site.edn") (pr-str site))
          (spit-to (str directory "/api/" id ".edn") (pr-str full))
          (doc-params (str directory "/" id "/params/") (input-params tree uri))
          (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
@@ -167,6 +170,3 @@
   (let [path (.getAbsolutePath (file (:directory corpus)))
         silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
     (silk/spin-or-reload false silk-path false false)))
-
-
-
