@@ -3,6 +3,7 @@
   (:require [clojure.string :as stg]
             [clojure.java.io :refer [file]]
             [clojure.data :refer [diff]]
+            [clojure.set :refer [subset?]]
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
@@ -154,12 +155,10 @@
   (println "building a test probe to visit " (:method entry) ":" locs)
   (let [h (or host "localhost")
         p (or port 3000)
-        uri (uri h p entry)
-        inputs (inputs uri tree)
-        outputs (outputs-names tree)]
+        uri (uri h p entry)]
     {:entry entry
-     :inputs inputs
-     :outputs outputs
+     :inputs (inputs uri tree)
+     :outputs (outputs-names tree)
      :engage (fn [bag res-fn]
       (let [request (prepare-request uri entry bag)
             result (t/test! request)]
@@ -233,7 +232,8 @@
       (if ordered-probes
         (do
           (println "\nexecuting probes in order:\n"
-          (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)) "\n")
+            (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
+            "\n")
           (reverse (execute ordered-probes bag (list))))
         (hlr "no route found to traverse probes (cyclic dependencies)")
       ))))
@@ -242,11 +242,31 @@
 ;; Probe data analysis
 ;; =============================================================================
 
-(defn- assess [method status tree]
-  (let [expected-status (name (key (first (d/success-status tree))))]
-    (if (= (str status) expected-status)
-      "pass"
-      (str "fail - expected status " expected-status))))
+(defn- assess-status-> [success response errors]
+  (let [expected-status (name success)]
+    (if (not (= (str (:status response)) expected-status))
+      (conj errors (str "expected status " expected-status)))))
+
+; TODO refactor out duplication with sim
+(defn- assess-headers-> [success response errors]
+  (if-let [hdrs (:headers success)] ; TODO headers may be further up tree - not immediately in success rsp
+    (let [expected-headers (set (keys hdrs))
+          received-headers (set (keys (:headers response)))]
+      (if (subset? expected-headers received-headers)
+        errors
+        (conj errors (str "expected headers " (stg/join "," expected-headers) " (received " (stg/join "," received-headers) ")"))))
+    errors))
+
+(defn- assess-body-> [success response errors]
+  errors)
+
+
+(defn- assess [response tree]
+  (let [success (first (d/success-status tree))]
+    (->> []
+      (assess-status-> (key success) response)
+      (assess-headers-> (val success) response)
+      (assess-body-> (val success) response))))
 
 (defmethod pb/analyse :test [_ corpus results]
   (hlg "analysing probe data")
@@ -257,8 +277,8 @@
           uri (:uri request)
           status (:status response)
           tree (:tree entry)
-          ass (assess method status tree)
-          so (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass))]
+          ass (assess response tree)
+          so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (stg/join ", " ass))))]
       (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)
 ;  (doseq [[method uri mp phs] results]
 ;    (let [status (:status mp)
