@@ -124,8 +124,8 @@
                (do ;(println "ph:" ph)
                  (when-let [response-value (get-in response [:headers k])]
                    (if-let [extract (read-from v ph response-value)]
-                       [ph extract]
-                       (println "could not extract" ph "from" response-value "with template" v)))))))
+                     [ph extract]
+                     (println "could not extract" ph "from" response-value "with template" v)))))))
         f-body (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (let [response-body (get-in response [:body])
@@ -138,11 +138,9 @@
                      :else
                        (let [json (co/clj response-body)]
                          (when-let [response-value (get-in json [k])]
-                           (println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
-                           [ph response-value]))
-                     ))))))]
-    ;(println "output-values - headers" (get-in res [:headers]))
-    ;(println "output-values - body" (get-in res [:body]))
+                           (if-let [extract (read-from v ph response-value)]
+                             [ph extract]
+                             (println "could not extract" ph "from" response-value "with template" v))))))))))]
     (merge
       (into {} (mapcat f-headers (get-in res [:headers])))
       (into {} (mapcat f-body (get-in res [:body]))))))
