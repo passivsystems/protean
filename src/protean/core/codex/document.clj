@@ -24,7 +24,7 @@
 (defn get-in-tree
   "returns the first result for given sequence of keys from a tree (scope)"
   [tree ks]
-  (some identity (map #(get-in % ks) tree)))
+  (first (remove nil? (map #(get-in % ks) tree))))
 
 (defn assoc-tree-item->
   "Extracts first out-ks in tree and assocs to target as in-k."

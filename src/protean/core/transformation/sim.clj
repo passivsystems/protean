@@ -29,34 +29,31 @@
 ;; =============================================================================
 
 (defn- valid-headers? [request tree]
-  (let [hdrs (d/hdrs-req tree)]
-    (if hdrs
-      (let [expected-headers (map s/lower-case (keys hdrs))
-            received-headers (keys (:headers request))]
-        (if (every? (set received-headers) expected-headers)
-          true
-          (log-info "Headers not valid - expected" expected-headers "but received" received-headers)))
-      true)))
+  (if-let [hdrs (d/hdrs-req tree)]
+    (let [expected-headers (map s/lower-case (keys hdrs))
+          received-headers (keys (:headers request))]
+      (if (every? (set received-headers) expected-headers)
+        true
+        (log-info "Headers not valid - expected" expected-headers "but received" received-headers)))
+    true))
 
 (defn- valid-query-params? [request tree]
-  (let [rpms (d/qp tree)]
-    (if rpms
-      (let [expected-qps (keys rpms)
-            received-qps (map name (keys (:params request)))]
-        (if (every? (set received-qps) expected-qps)
-          true
-          (log-info "Query params not valid - expected" expected-qps "but received" received-qps)))
-      true)))
+  (if-let [rpms (:required (d/qp tree))]
+    (let [expected-qps (keys rpms)
+          received-qps (map name (keys (:params request)))]
+      (if (every? (set received-qps) expected-qps)
+        true
+        (log-info "Query params not valid - expected" expected-qps "but received" received-qps)))
+    true))
 
 (defn- valid-form? [request tree]
-  (let [f-keys (d/fp tree)]
-    (if f-keys
-      (let [expected-form (keys f-keys)
-            received-form (keys (:form-params request))]
-        (if (= (set received-form) (set (keys f-keys)))
-          true
-          (log-info "Form params not valid - expected" expected-form "but received" received-form)))
-      true)))
+  (if-let [f-keys (:required (d/fp tree))]
+    (let [expected-form (keys f-keys)
+          received-form (keys (:form-params request))]
+      (if (= (set received-form) (set (keys f-keys)))
+        true
+        (log-info "Form params not valid - expected" expected-form "but received" received-form)))
+    true))
 
 (defn- zip-str [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
 (defn- map-vals [m k] (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))

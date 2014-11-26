@@ -87,6 +87,8 @@
                  (list uri)
                  (map val (d/get-in-tree tree [:req :query-params :required]))
                  (map val (d/get-in-tree tree [:req :query-params :optional]))
+                 (map val (d/get-in-tree tree [:req :form-params :required]))
+                 (map val (d/get-in-tree tree [:req :form-params :optional]))
                  (map val (d/get-in-tree tree [:req :body]))
                  (map val (d/get-in-tree tree [:req :headers])))
         extract-ph-names (fn [input]

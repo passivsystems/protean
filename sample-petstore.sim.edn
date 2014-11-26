@@ -14,7 +14,10 @@
         #(-> {:status 200 :headers {"Content-Type" "application/json"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
       ]
       :post [
-        #(-> {:status 201 :headers {"Location" "/pet/yyyy"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
+        (fn []
+          (if (valid-inputs?)
+            {:status 201 :headers {"Location" "/pet/yyyy"}}
+            (respond 400)))
       ]
     }
 

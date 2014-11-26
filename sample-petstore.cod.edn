@@ -15,8 +15,11 @@
 
     :types {
       :Status "(available|pending|sold)"
+      :PetId "[0-9a-zA-Z]{3,7}"
     }
     :vars {
+      "petId" {:type :PetId :doc "ID of pet" :gen false}
+      "name" {:type :String :doc "Updated name of the pet"}
       "status" {:type :Status :doc "Updated status of the pet"}
     }
 
@@ -58,6 +61,13 @@
 
       :post {
         :doc "Add a new pet to the store"
+        :req {
+          ; :body currently provides input for request generation, and is the descriptive way to define the payload,
+          ; :body-schema is an optional addition for payload validation - either .json for json-schema, or .xsd for xml validation.
+          :body {"name" "${name}" "status" "${status}"}
+          :body-schema "test-data/schemas/pet.schema.json"
+          :body-example "test-data/content/doc/requests/new-pet.json"
+        }
         :rsp {
           :201 {
             :doc "Created"
@@ -74,33 +84,16 @@
 
     "api/pet/${petId}" {
 
-      :types {
-        :PetId "[0-9a-zA-Z]{3,7}"
-      }
-      :vars {
-        "petId" {:type :PetId :doc "ID of pet"}
-      }
-
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
-          :query-params {:required {"name" "${name}" "status" "${status}"}}
-          ; in practice same inputs would not appear in both :query-params and :body.
-          ; :body currently provides input for request generation, and is the descriptive way to define the payload,
-          ; :body-schema is an optional addition for payload validation - either .json for json-schema, or .xsd for xml validation.
-          :body {"name" "${name}" "status" "${status}"}
-          :body-schema "test-data/schemas/pet.schema.json"
-          :body-example "test-data/content/doc/requests/new-pet.json"
+          :form-params {:required {"name" "${name}" "status" "${status}"}}
         }
         :rsp {
           :200 { :doc "Updated" }
           :405 {
             :doc "Validation exception"
           }
-        }
-        :vars {
-          "name" {:type :String :doc "Updated name of the pet"}
-          "status" {:type :Status :doc "Updated status of the pet"}
         }
       }
 

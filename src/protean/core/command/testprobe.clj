@@ -50,7 +50,7 @@
 
 (defn- copy-and-swap [payload tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
-    (assoc-in payload target-keys (ph/swap ph tree bag))
+    (assoc-in payload target-keys (ph/swap ph tree bag)) ; TODO if all placeholders are not swapped - then bomb
     payload))
 
 (defn- content-type-> [payload method]
@@ -74,7 +74,8 @@
     (-> {:method method :uri parsed-uri}
         (copy-and-swap tree bag [:req :query-params :required] [:query-params])
         (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
-        (copy-and-swap tree bag [:req :form-params] [:form-params])
+        (copy-and-swap tree bag [:req :form-params :required] [:form-params])
+        (copy-and-swap tree bag [:req :form-params :optional] [:form-params])
         (copy-and-swap tree bag [:req :headers] [:headers])
         (copy-and-swap tree bag [:req :body] [:body])
         (content-type-> method)
@@ -82,9 +83,10 @@
 
 (defn- collect-params [m]
   (let [l (cond (map? m) (vals m) (list? m) m :else (list m))]
-    (mapcat (fn [v] (if (string? v)
-                      (map second (ph/holder? v))
-                      (if v (collect-params v))))
+    (mapcat (fn [v] (cond
+                      (string? v) (map second (ph/holder? v))
+                      (map? v) (collect-params v)
+                      :else v))
       l)))
 
 (defn- inputs [uri tree]
@@ -124,8 +126,8 @@
                (do ;(println "ph:" ph)
                  (when-let [response-value (get-in response [:headers k])]
                    (if-let [extract (read-from v ph response-value)]
-                       [ph extract]
-                       (println "could not extract" ph "from" response-value "with template" v)))))))
+                     [ph extract]
+                     (println "could not extract" ph "from" response-value "with template" v)))))))
         f-body (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (let [response-body (get-in response [:body])
@@ -138,15 +140,12 @@
                      :else
                        (let [json (co/clj response-body)]
                          (when-let [response-value (get-in json [k])]
-                           (println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
-                           [ph response-value]))
-                     ))))))]
-    ;(println "output-values - headers" (get-in res [:headers]))
-    ;(println "output-values - body" (get-in res [:body]))
+                           (if-let [extract (read-from v ph response-value)]
+                             [ph extract]
+                             (println "could not extract" ph "from" response-value "with template" v))))))))))]
     (merge
       (into {} (mapcat f-headers (get-in res [:headers])))
       (into {} (mapcat f-body (get-in res [:body]))))))
-
 
 (defn- uri [host port {:keys [svc path] :as entry}]
   (p/uri host port svc path))
@@ -202,39 +201,17 @@
     (swap! g lg/add-nodes probe)
     (swap! g lat/add-attr probe :label (label probe))
 
-    (println " inputs:")
+    ; all inputs that cannot be generated (or have been seeded)
+    ; form a dependency on endpoint that produces them as outpus
     (doseq [input inputs]
       (let [seed (get-in corpus [:seed input])
             dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
-            example (d/get-in-tree tree [:vars input :examples])
-            gen-type (d/get-in-tree tree [:vars input :type])]
-
-        (println "    " input "- satisifed by")
-        (if seed
-          (println "      seed:" seed)
-          (do
-            (if (not (empty? dependencies))
-              (do
-                (println "      dependencies:" (map label dependencies)) ; TODO may need to default to example/generative-type if forms a cyclical graph
-                (doseq [dependency dependencies]
-                  (swap! g lg/add-edges [dependency probe])
-                  (swap! g lat/add-attr [dependency probe] :label input)
-                )
-              ))
-            (if example
-              (println "      example:" example)
-              (if gen-type  (println "      generative type:" gen-type)))))))
-;          :else (println "    " input "  - NOT SATISFIED"))))
-
-
-;        (cond
-;          seed (println "    " input "  - satisfied by seed:" seed)
-;          (not (empty? dependencies)) (println "    " input "  - satisfied by dependencies:" (map label dependencies))
-;          example (println "    " input "  - satisfied by example:" example)
-;          gen-type (println "    " input "  - satisfied by generative type:" gen-type)
-;          :else (println "    " input "  - NOT SATISFIED"))))
-    (println " outputs:" outputs)))
-
+            can-gen (d/get-in-tree tree [:vars input :gen])]
+        (when (and (not seed) (= false can-gen))
+          (if (empty? dependencies) (hlr "No endpoint available to provide " input "!"))
+          (doseq [dependency dependencies]
+            (swap! g lg/add-edges [dependency probe])
+            (swap! g lat/add-attr [dependency probe] :label input)))))))
 
 (defn- execute [probes bag reses]
   (let [probe (first probes)]
@@ -253,9 +230,13 @@
 ;    (li/view @g) ; uncomment to open image of graph
     (let [bag (get-in corpus [:seed])
           ordered-probes (la/topsort @g)]
-      (println "\nexecuting probes in order:\n"
-        (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)) "\n")
-      (reverse (execute ordered-probes bag (list))))))
+      (if ordered-probes
+        (do
+          (println "\nexecuting probes in order:\n"
+          (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)) "\n")
+          (reverse (execute ordered-probes bag (list))))
+        (hlr "no route found to traverse probes (cyclic dependencies)")
+      ))))
 
 ;; =============================================================================
 ;; Probe data analysis
