@@ -115,7 +115,9 @@
                 :curl (cod/url-decode (c/curly-> (assoc-in e [:uri] uri)))
                 :doc (d/get-in-tree tree [:doc])
                 :desc (if-let [d (d/get-in-tree tree [:description])] d "")
-                :method (name method)}]
+                :method (name method)
+                :req-body-example (if-let [d (d/get-in-tree tree [:req :body-example])] (slurp d) "N/A")
+                :req-body-schema (if-let [d (d/get-in-tree tree [:req :body-schema])] (slurp d) "N/A")}]
       (spit-to (str directory "/global/site.edn") (pr-str site))
       (spit-to (str directory "/api/" id ".edn") (pr-str full))
       (doc-params (str directory "/" id "/params/") (input-params tree uri))
