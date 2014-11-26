@@ -55,34 +55,42 @@
   (if (string? v) (re-seq ph v) nil))
 
 
-(defn authzn-holder?
-  "Does the authzn header contain a placeholder ?"
-  [v] (if-let [auth (d/azn v)] (holder? auth) false))
+;(defn authzn-holder?
+;  "Does the authzn header contain a placeholder ?"
+;  [v] (if-let [auth (d/azn v)] (holder? auth) false))
 
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
+(defn- replace-loop [func s matches]
+  (if (empty? matches)
+    s
+    (let [match (first matches)
+          to-be-replaced (first match)
+          term (second match)
+          applied (func term)]
+      (recur func (if applied
+           (stg/replace-first s to-be-replaced applied)
+           s) (rest matches)))))
+
 (defn replace-all-with
   "replace all occurrences in s of placeholder with result of applying func to the placeholder name"
   [s func]
-  (if-let [match (holder? s)]
-    (let [term (nth (first match) 1)
-          applied (func term)
-          replaced (stg/replace-first s ph applied)]
-      (recur replaced func))
-    s))
+  (replace-loop func s (holder? s)))
 
 (defn holder-swap-exp [tree v]
   (if-let [x (d/get-in-tree tree [:vars v :examples])]
-    (first x)
-    v))
+    (first x)))
 
 (defn holder-swap-gen [tree v]
   (if-let [x (d/get-in-tree tree [:vars v :type])]
-    (g-val x tree)
-    v))
+    (g-val x tree)))
+
+(defn holder-swap-bag [bag v]
+  (if-let [x (get-in bag [v])]
+    x))
 
 (defn holder-swap
   "Swap generative values in for placeholders."

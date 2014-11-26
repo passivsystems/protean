@@ -1,4 +1,4 @@
-(ns protean.core.command.probe
+(ns protean.core.command.docprobe
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as stg]
             [clojure.java.io :refer [file]]
@@ -12,8 +12,8 @@
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
-            [protean.core.transformation.testy-cljhttp :as tc]
-            [protean.core.command.test :as t])
+            [protean.core.command.test :as t]
+            [protean.core.command.probe :as pb])
   (:import java.io.File java.net.URI java.util.UUID))
 
 ;; =============================================================================
@@ -21,11 +21,7 @@
 ;; =============================================================================
 
 (defn- hlr [t] (println (aa/bold-red t)))
-
 (defn- hlg [t] (println (aa/bold-green t)))
-
-
-(defn- body-example [tree v] (if-let [bf (:body-example v)] (slurp bf) "N/A"))
 
 (defn- bomb [msg]
   (println (aa/red msg))
@@ -49,16 +45,11 @@
 ;; Probe config
 ;; =============================================================================
 
-(defmulti config (fn [command & _] command))
-
-(defmethod config :doc [_ corpus] (hlg "building probes"))
-
+(defmethod pb/config :doc [_ corpus] (hlg "building probes"))
 
 ;; =============================================================================
 ;; Probe construction
 ;; =============================================================================
-
-(defmulti build (fn [command & _] command))
 
 (defn- doc-params [target-dir params]
   "Doc query params for a given node.
@@ -77,6 +68,8 @@
   (doseq [[k v] hdrs]
     (spit (str target-dir (UUID/randomUUID) ".edn")
           (pr-str {:title k :value v}))))
+
+(defn- body-example [tree v] (if-let [bf (:body-example v)] (slurp bf) "N/A"))
 
 (defn- doc-status-codes [target-dir tree statuses]
   "Doc response headers for a given node.
@@ -104,69 +97,49 @@
         to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
   (reduce merge (map to-map ph-names))))
 
-(defmethod build :doc [_ {:keys [locs] :as corpus} codices]
-  (println "building a doc probe to visit : " locs)
+(defmethod pb/build :doc [_ {:keys [locs directory] :as corpus} entry]
+  (println "building a doc probe to visit " (:method entry) ":" locs)
   (prep-docs corpus)
-  [corpus
-   (fn engage [{:keys [locs directory] :as corpus} codices]
-     (doseq [{:keys [uri method tree] :as e} (p/analysis-> "host" 1234 codices corpus)]
-       (let [safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
-             uri-path (-> (URI. (safe-uri uri)) (.getPath))
-             id (str (name method) (stg/replace uri-path #"/" "-"))
-             main (filter #(get-in % [:title]) tree)
-             site {:site-name (d/get-in-tree main [:title])
-                   :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
-             full {:id id
-                   :path (subs uri-path 1)
-                   :curl (cod/url-decode (c/curly-> e))
-                   :doc (d/get-in-tree tree [:doc])
-                   :desc (if-let [d (d/get-in-tree tree [:description])] d "")
-                   :method (name method)}]
-         (spit-to (str directory "/global/site.edn") (pr-str site))
-         (spit-to (str directory "/api/" id ".edn") (pr-str full))
-         (doc-params (str directory "/" id "/params/") (input-params tree uri))
-         (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
-         (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
-         (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree)))))])
-
-
-(defmethod build :negotiate [_ {:keys [locs]} codices]
-  (println "building a negotiation probe to visit : " locs))
-
-
-;; =============================================================================
-;; Probe result handlers
-;; =============================================================================
-
-(defn- res-simple! [result] (println "doing nothing"))
-
-(defn- res-persist!
-  "Persist result in its interim state to a store.
-   In this protoype the store is the disk."
-  [result]
-  ;;(println "TODO: reminder placeholder for persisting results")
-  )
-
+  {:entry entry
+   :engage (fn []
+    (let [{:keys [svc method tree path] :as e} entry
+          uri (p/uri "host" 1234 svc path)
+          safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
+          uri-path (-> (URI. (safe-uri uri)) (.getPath))
+          id (str (name method) (stg/replace uri-path #"/" "-"))
+          main (filter #(get-in % [:title]) tree)
+          site {:site-name (d/get-in-tree main [:title])
+                :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
+          full {:id id
+                :path (subs uri-path 1)
+                :curl (cod/url-decode (c/curly-> (assoc-in e [:uri] uri)))
+                :doc (d/get-in-tree tree [:doc])
+                :desc (if-let [d (d/get-in-tree tree [:description])] d "")
+                :method (name method)}]
+      (spit-to (str directory "/global/site.edn") (pr-str site))
+      (spit-to (str directory "/api/" id ".edn") (pr-str full))
+      (doc-params (str directory "/" id "/params/") (input-params tree uri))
+      (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
+      (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
+      (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree))))
+  })
 
 ;; =============================================================================
 ;; Probe dispatch
 ;; =============================================================================
 
-(defmulti dispatch (fn [command & _] command))
-
-(defmethod dispatch :doc [_ corpus codices probes]
+(defmethod pb/dispatch :doc [_ corpus probes]
   (hlg "dispatching probes")
-  (doall (map (fn [x] ((last x) (first x) codices)) probes)))
+  (doall (map (fn [x] [(:entry x) ((:engage x))]) probes)))
 
 
 ;; =============================================================================
 ;; Probe data analysis
 ;; =============================================================================
 
-(defmulti analyse (fn [command & _] command))
-
-(defmethod analyse :doc [_ corpus codices result]
+(defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
   (let [path (.getAbsolutePath (file (:directory corpus)))
         silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
     (silk/spin-or-reload false silk-path false false)))
+

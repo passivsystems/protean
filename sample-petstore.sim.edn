@@ -13,6 +13,9 @@
       :put [
         #(-> {:status 200 :headers {"Content-Type" "application/json"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
       ]
+      :post [
+        #(-> {:status 201 :headers {"Location" "/pet/yyyy"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
+      ]
     }
 
     "api/pet/${petId}" {
@@ -46,7 +49,7 @@
         ;; after delay (in ms)
         (fn []
           (after 3000
-            (put "http://localhost:" (sim-port) "/protean-utils/echo" (:body *request*))))
+            (put (str "http://localhost:" (sim-port) "/protean-utils/echo") (:body *request*))))
 
         ;; TODO support these use cases?
 ;        (fn []
