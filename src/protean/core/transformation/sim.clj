@@ -6,6 +6,7 @@
             [clojure.main :as m]
             [clojure.xml :as x]
             [clojure.zip :as z]
+            [clojure.java.io :refer [file]]
             [cheshire.core :as jsn]
             [protean.core.protocol.http :as h]
             [protean.core.protocol.protean :as p]
@@ -219,6 +220,16 @@
 
 
 ;; =============================================================================
+;; Requests
+;; =============================================================================
+
+(defn path-param
+  "Simplisticly grabs the last part of a uri"
+  [route-params]
+  (last (s/split (:* route-params) #"/")))
+
+
+;; =============================================================================
 ;; Responses
 ;; =============================================================================
 
@@ -272,6 +283,12 @@
       :body (slurp body-url)
       :headers {"Content-Type" (mime body-url)}}
     {:status status-code}))
+
+(defn rsp-body
+  "Look in a directory structure 'data-path' for a file 'f-name' with given ext"
+  [data-path f-name ext]
+  (let [fs (file-seq (file data-path))]
+    (first (filter #(= (.getName %) (str f-name ext)) fs))))
 
 (defmacro prob
   "Will evaluate the provided function with specified probability"

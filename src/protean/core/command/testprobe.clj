@@ -239,7 +239,7 @@
   (hlg "dispatching probes")
   (let [g (atom (lg/digraph))] ; TODO refactor out atom usage
     (doall (map #(analyse g corpus probes %) probes))
-    (li/view @g)
+;    (li/view @g) ; uncomment to open image of graph
     (let [bag (get-in corpus [:seed])
           ordered-probes (la/topsort @g)]
       (println "\nexecuting probes in order:\n"

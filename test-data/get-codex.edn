@@ -2,4 +2,7 @@
 ;;
 ;; Represents the simplest possible example of a codex service/path
 
-{"sample" {"simple" {:get {}}}}
+{
+  :includes ["defaults.edn"]
+  "sample" {"simple" {:get {}}}
+}

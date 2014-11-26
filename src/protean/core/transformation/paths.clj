@@ -20,7 +20,8 @@
   "
   (:require [clojure.string :as stg]
             [clojure.pprint]
-            [protean.core.codex.document :as d]))
+            [protean.core.codex.document :as d]
+            [protean.core.protocol.http :as h]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -32,13 +33,10 @@
    :method method
    :tree (d/to-seq codex svc path method)})
 
-(defn- is-http-method? [c]
-  (some #{c} #{:get :post :put :delete :patch :head}))
-
 (defn- methods-range [svc paths codices]
   (let [endpoints (first (vals paths))
-        http-methods (filter is-http-method? (map #(key %) endpoints))]
-    (map #(encode svc (first (keys paths)) % codices) http-methods)))
+        methods (filter h/method? (map #(key %) endpoints))]
+    (map #(encode svc (first (keys paths)) % codices) methods)))
 
 (defn- combi-paths [codices combi]
   (let [svc (first combi)

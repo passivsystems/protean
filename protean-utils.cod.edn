@@ -3,7 +3,8 @@
 {
   :includes [ "defaults.edn" ]
 
-  :title "Useful functions codex"
+  :title "Protean Utils"
+  :doc "Useful endpoints to aid simulation."
 
   "protean-utils" {
     "echo" {:put {:doc "An echo endpoint for testing this SIM"}}

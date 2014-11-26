@@ -2,6 +2,7 @@
   "Placeholder functionality, swapping codex examples, generating."
   (:refer-clojure :exclude [long int])
   (:require [clojure.string :as stg]
+            [clojure.set :refer [map-invert]]
             [clojure.pprint]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c])
@@ -40,7 +41,9 @@
 
 
 (defn replace-placeholders [s r]
-  (stg/replace s ph r)) 
+  (stg/replace s ph r))
+
+(defn uri-holders [s] (map-invert (into {} (re-seq ph s))))
 
 ;; =============================================================================
 ;; Truthiness functions
@@ -98,4 +101,3 @@
       (map? v)(holder-swap v swap-fn tree)
       :else v
     )})))
-
