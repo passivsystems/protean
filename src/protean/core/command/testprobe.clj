@@ -2,6 +2,7 @@
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as stg]
             [clojure.java.io :refer [file]]
+            [clojure.data :refer [diff]]
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
@@ -52,28 +53,16 @@
      (ph/holder-swap ph/holder-swap-gen tree)
      (ph/holder-swap ph/holder-swap-exp tree)))
 
-(defn- copy-and-swap [options tree bag source-keys target-keys]
+(defn- copy-and-swap [payload tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
-    (assoc-in options target-keys (swap ph tree bag))
-    options))
+    (assoc-in payload target-keys (swap ph tree bag))
+    payload))
 
-(defn- body-to-string [options]
-  (update-in options [:body] co/js)) ; TODO check content-type and set as appropriate..
-
-(defn- content-type [options method]
+(defn- content-type-> [payload method]
   (if (and (some #{method} [:post :put])
-           (not (get-in options [:headers "Content-Type"])))
-    (assoc-in options [:headers h/ctype]  h/jsn-simple)
-    options))
-
-(defn- swap-options [options tree bag]
-  (-> options
-    (copy-and-swap tree bag [:req :query-params :required] [:query-params])
-    (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
-    (copy-and-swap tree bag [:req :form-params] [:form-params])
-    (copy-and-swap tree bag [:req :headers] [:headers])
-    (copy-and-swap tree bag [:req :body] [:body])
-    (body-to-string)))
+           (not (get-in payload [:headers "Content-Type"])))
+    (assoc-in payload [:headers h/ctype]  h/jsn-simple)
+    payload))
 
 (defn- uri [host port {:keys [svc path] :as entry}]
   (p/uri host port svc path))
@@ -83,8 +72,13 @@
   [uri {:keys [method tree] :as entry} bag]
   (let [parsed-uri (:uri (swap {:uri uri} tree bag))] ; wrapping and unwrapping uri in map to reuse holder-swap
     (-> {:method method :uri parsed-uri}
-        (update-in [:options] swap-options tree bag)
-        (update-in [:options] content-type method))))
+        (copy-and-swap tree bag [:req :query-params :required] [:query-params])
+        (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
+        (copy-and-swap tree bag [:req :form-params] [:form-params])
+        (copy-and-swap tree bag [:req :headers] [:headers])
+        (copy-and-swap tree bag [:req :body] [:body])
+        (update-in [:body] co/js) ; TODO check content-type and set as appropriate..
+        (content-type-> method))))
 
 (defn- uri-> [{:keys [svc path] :as entry} host port]
   (assoc entry :uri ))
@@ -118,8 +112,18 @@
              (for [ph (map second holder)]
                (do ;(println "ph:" ph)
                  (when-let [response-value (get-in response [:headers k])]
-                   ;(println "pulling out" ph "from" response-value "with template" v)
-                   [ph (last (stg/split response-value #"/"))]))))); TODO - needs to pull out of template
+;                   (println "pulling out" ph "from" response-value "with template" v)
+                   (let [diff (diff (char-array v) (char-array response-value))
+                         left (stg/join (first diff))
+                         right (stg/join (second diff))
+                         diff-match (re-matches ph/ph left)]
+                     ; note currently only works until first mismatch.
+                     ; Which only works if our placeholder is the only placeholder, and is at the end of the string.
+                     ; e.g. abc${def} - ok
+                     ;      abc${def}ghi - not ok
+                     (if (= (second diff-match) ph)
+                       [ph right]
+                       (println "could not extract" ph "from" response-value "with template" v))))))))
         f-body (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (let [response-body (get-in response [:body])
