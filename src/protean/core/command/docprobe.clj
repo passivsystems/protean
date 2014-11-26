@@ -69,8 +69,6 @@
     (spit (str target-dir (UUID/randomUUID) ".edn")
           (pr-str {:title k :value v}))))
 
-(defn- body-example [tree v] (if-let [bf (:body-example v)] (slurp bf) "N/A"))
-
 (defn- doc-status-codes [target-dir tree statuses]
   "Doc response headers for a given node.
    Directory is the data directory root.
@@ -81,7 +79,7 @@
     (spit (str target-dir (name k) ".edn")
       (pr-str { :code (name k)
                 :doc (:doc v)
-                :sample-response (body-example tree v)
+                :sample-response (if-let [s (:body-example v)] (slurp s) "N/A")
                 :headers (if-let [h (:headers v)] (pr-str h) "N/A")}))))
 
 (defn- input-params [tree uri]
@@ -142,4 +140,3 @@
   (let [path (.getAbsolutePath (file (:directory corpus)))
         silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
     (silk/spin-or-reload false silk-path false false)))
-
