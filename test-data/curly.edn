@@ -3,16 +3,17 @@
 ;; Illustrates response body etc
 
 {
+  :includes ["defaults.edn"]
   "curly" {
     "query-params" {
       :get {
+        :vars {"blurb" {:type :String :doc "A sample request param"}}
         :req {
-          :query-params {:required {"blurb" "flibble"}}
+          :query-params {:required {"blurb" "${blurb}"}}
         }
         :rsp {
-          :body {
-            "k1" "v1"
-            "k2" "v2"
+          :200 {
+            :body-example "test-data/content/doc/responses/simple/200-ref.json"
           }
         }
       }
