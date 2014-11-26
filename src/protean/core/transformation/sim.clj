@@ -32,7 +32,7 @@
   (let [hdrs (d/hdrs-req tree)]
     (if hdrs
       (let [expected-headers (map s/lower-case (keys hdrs))
-            received-headers (keys (:hdrs request))]
+            received-headers (keys (:headers request))]
         (if (every? (set received-headers) expected-headers)
           true
           (log-info "Headers not valid - expected" expected-headers "but received" received-headers)))
@@ -61,11 +61,12 @@
 (defn- zip-str [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
 (defn- map-vals [m k] (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))
 (defn- valid-xml-body? [request tree]
+  (println "body-schema : " (d/get-in-tree tree [:req :body-schema]))
   (if-let [body-schema (d/get-in-tree tree [:req :body-schema])]
     (let [validation (xv/validate body-schema (:body request))]
       (if (:success validation)
         true
-        (log-info "Request did not conform to json validation" body-schema ":" (:message validation))))
+        (log-info "Request did not conform to xml validation" body-schema ":" (:message validation))))
     ; TODO deprecate old body definition
     (if-let [codex-body (d/body-req tree)]
       (let [tags-in-str (fn [s] (map-vals (zip-str s) :tag))

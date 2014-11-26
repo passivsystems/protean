@@ -17,6 +17,5 @@
   (try
     (.validate (validator schema)
       (StreamSource. (StringReader. data)))
-      true
-    (catch SAXException e false)))
-
+    {:success true}
+    (catch SAXException e {:success false :message (.getMessage e)})))
