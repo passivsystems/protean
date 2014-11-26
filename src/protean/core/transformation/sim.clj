@@ -9,7 +9,7 @@
             [clojure.java.io :refer [file]]
             [cheshire.core :as jsn]
             [protean.core.protocol.http :as h]
-            [protean.core.protocol.protean :as p]
+            [protean.core.protocol.protean :as pp]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
             [protean.core.codex.placeholder :as ph]
@@ -95,7 +95,7 @@
       true)))
 
 (defn- valid-body? [request tree]
-  (if (h/xml? (p/ctype request))
+  (if (h/xml? (pp/ctype request))
     (valid-xml-body? request tree)
     (valid-jsn-body? request tree)))
 
