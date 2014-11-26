@@ -16,13 +16,9 @@
 
 (defn- translate [phs tree]
   (if phs
-    (let [res
-          (-> phs
-              (ph/holder-swap ph/holder-swap-gen tree)
-              ; Note, placeholder generation will be different each time we request them
-              ; also may not be url friendly (though we will encode them)
-              (ph/holder-swap ph/holder-swap-exp tree)
-           )]
+    ; Note, placeholder generation will be different each time we request them
+    ; also may not be url friendly (though we will encode them)
+    (let [res (ph/swap phs tree {})]
       (if (vector? res) (first res) res))))
 
 (defn- curly-method-> [method payload]

@@ -47,15 +47,9 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defn- swap [ph tree bag]
-  (-> ph
-     (ph/holder-swap ph/holder-swap-bag bag)
-     (ph/holder-swap ph/holder-swap-gen tree)
-     (ph/holder-swap ph/holder-swap-exp tree)))
-
 (defn- copy-and-swap [payload tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
-    (assoc-in payload target-keys (swap ph tree bag))
+    (assoc-in payload target-keys (ph/swap ph tree bag))
     payload))
 
 (defn- content-type-> [payload method]
@@ -64,13 +58,10 @@
     (assoc-in payload [:headers h/ctype]  h/jsn-simple)
     payload))
 
-(defn- uri [host port {:keys [svc path] :as entry}]
-  (p/uri host port svc path))
-
 (defn- prepare-request 
   "Translate placeholders when visiting real nodes."
   [uri {:keys [method tree] :as entry} bag]
-  (let [parsed-uri (:uri (swap {:uri uri} tree bag))] ; wrapping and unwrapping uri in map to reuse holder-swap
+  (let [parsed-uri (:uri (ph/swap {:uri uri} tree bag))] ; wrapping and unwrapping uri in map to reuse swap
     (-> {:method method :uri parsed-uri}
         (copy-and-swap tree bag [:req :query-params :required] [:query-params])
         (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
@@ -80,14 +71,12 @@
         (update-in [:body] co/js) ; TODO check content-type and set as appropriate..
         (content-type-> method))))
 
-(defn- uri-> [{:keys [svc path] :as entry} host port]
-  (assoc entry :uri ))
-
 (defn- collect-params [m]
   (let [l (cond (map? m) (vals m) (list? m) m :else (list m))]
-    (mapcat (fn [v] (if (string? v) (map second (ph/holder? v))
+    (mapcat (fn [v] (if (string? v)
+                      (map second (ph/holder? v))
                       (if v (collect-params v))))
-            l)))
+      l)))
 
 (defn- inputs [uri tree]
   (distinct (concat
@@ -143,6 +132,9 @@
       (into {} (mapcat f-headers (get-in res [:headers])))
       (into {} (mapcat f-body (get-in res [:body]))))))
 
+
+(defn- uri [host port {:keys [svc path] :as entry}]
+  (p/uri host port svc path))
 
 (defmethod pb/build :test [_ {:keys [locs host port] :as corpus} {:keys [tree] :as entry}]
   (println "building a test probe to visit " (:method entry) ":" locs)

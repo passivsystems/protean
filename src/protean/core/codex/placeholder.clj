@@ -55,11 +55,6 @@
   (if (string? v) (re-seq ph v) nil))
 
 
-;(defn authzn-holder?
-;  "Does the authzn header contain a placeholder ?"
-;  [v] (if-let [auth (d/azn v)] (holder? auth) false))
-
-
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
@@ -80,15 +75,15 @@
   [s func]
   (replace-loop func s (holder? s)))
 
-(defn holder-swap-exp [tree v]
+(defn- holder-swap-exp [tree v]
   (if-let [x (d/get-in-tree tree [:vars v :examples])]
     (first x)))
 
-(defn holder-swap-gen [tree v]
+(defn- holder-swap-gen [tree v]
   (if-let [x (d/get-in-tree tree [:vars v :type])]
     (g-val x tree)))
 
-(defn holder-swap-bag [bag v]
+(defn- holder-swap-bag [bag v]
   (if-let [x (get-in bag [v])]
     x))
 
@@ -101,3 +96,9 @@
       (map? v)(holder-swap v swap-fn tree)
       :else v
     )})))
+
+(defn swap [ph tree bag]
+  (-> ph
+     (holder-swap holder-swap-bag bag)
+     (holder-swap holder-swap-gen tree)
+     (holder-swap holder-swap-exp tree)))
