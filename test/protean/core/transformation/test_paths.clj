@@ -3,6 +3,10 @@
             [protean.core.transformation.paths :refer [paths->]]
             [expectations :refer :all]))
 
+;; =============================================================================
+;; Testing computation of endpoints from codex
+;; =============================================================================
+
 (let [paths (paths-> (d/read-edn "get-codex-paths.edn") ["sample simple test"])]
   (expect 2 (count paths))
   (expect ["sample" "sample"] (map #(:svc %) paths))
