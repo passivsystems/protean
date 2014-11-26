@@ -21,11 +21,11 @@
 
 
 (defn test! [request]
-;  (println "test! evaluating:" request)
   (let [the-request (assoc request
                       :url (:uri request)
                       :throw-exceptions false)
         response (clt/request the-request)]
+;    (println "test! evaluating:" the-request)
     ; TODO if ConnectException - shouldn't fall over - just report test failure
 ;    (println "response" response)
     [request response]))

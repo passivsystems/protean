@@ -2,6 +2,7 @@
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as stg]
             [clojure.java.io :refer [file]]
+            [clojure.data :refer [diff]]
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
@@ -9,6 +10,7 @@
             [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as ph]
             [protean.core.protocol.http :as h]
+            [protean.core.protocol.protean :as pp]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
@@ -46,54 +48,44 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defn- swap [ph tree bag]
-  (-> ph
-     (ph/holder-swap ph/holder-swap-bag bag)
-     (ph/holder-swap ph/holder-swap-gen tree)
-     (ph/holder-swap ph/holder-swap-exp tree)))
-
-(defn- copy-and-swap [options tree bag source-keys target-keys]
+(defn- copy-and-swap [payload tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
-    (assoc-in options target-keys (swap ph tree bag))
-    options))
+    (assoc-in payload target-keys (ph/swap ph tree bag))
+    payload))
 
-(defn- body-to-string [options]
-  (update-in options [:body] co/js)) ; TODO check content-type and set as appropriate..
-
-(defn- content-type [options method]
+(defn- content-type-> [payload method]
   (if (and (some #{method} [:post :put])
-           (not (get-in options [:headers "Content-Type"])))
-    (assoc-in options [:headers h/ctype]  h/jsn-simple)
-    options))
+           (not (pp/ctype payload)))
+    (assoc-in payload [:headers h/ctype] h/jsn-simple)
+    payload))
 
-(defn- swap-options [options tree bag]
-  (-> options
-    (copy-and-swap tree bag [:req :query-params :required] [:query-params])
-    (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
-    (copy-and-swap tree bag [:req :form-params] [:form-params])
-    (copy-and-swap tree bag [:req :headers] [:headers])
-    (copy-and-swap tree bag [:req :body] [:body])
-    (body-to-string)))
-
-(defn- uri [host port {:keys [svc path] :as entry}]
-  (p/uri host port svc path))
+(defn- content-> [payload]
+  (let [ctype (pp/ctype payload)
+        f (cond
+            (h/txt? ctype) identity
+            (h/xml? ctype) co/xml
+            :else co/js)]
+    (update-in payload [:body] f)))
 
 (defn- prepare-request 
   "Translate placeholders when visiting real nodes."
   [uri {:keys [method tree] :as entry} bag]
-  (let [parsed-uri (:uri (swap {:uri uri} tree bag))] ; wrapping and unwrapping uri in map to reuse holder-swap
+  (let [parsed-uri (:uri (ph/swap {:uri uri} tree bag))] ; wrapping and unwrapping uri in map to reuse swap
     (-> {:method method :uri parsed-uri}
-        (update-in [:options] swap-options tree bag)
-        (update-in [:options] content-type method))))
-
-(defn- uri-> [{:keys [svc path] :as entry} host port]
-  (assoc entry :uri ))
+        (copy-and-swap tree bag [:req :query-params :required] [:query-params])
+        (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
+        (copy-and-swap tree bag [:req :form-params] [:form-params])
+        (copy-and-swap tree bag [:req :headers] [:headers])
+        (copy-and-swap tree bag [:req :body] [:body])
+        (content-type-> method)
+        (content->))))
 
 (defn- collect-params [m]
   (let [l (cond (map? m) (vals m) (list? m) m :else (list m))]
-    (mapcat (fn [v] (if (string? v) (map second (ph/holder? v))
+    (mapcat (fn [v] (if (string? v)
+                      (map second (ph/holder? v))
                       (if v (collect-params v))))
-            l)))
+      l)))
 
 (defn- inputs [uri tree]
   (distinct (concat
@@ -111,6 +103,19 @@
       (collect-params (get-in res [:headers]))
       (collect-params (get-in res [:body]))))))
 
+(defn- read-from [template ph s]
+;  (println "pulling out" ph "from" s "with template" template)
+  (let [diff (diff (char-array template) (char-array s))
+        left (stg/join (first diff))
+        right (stg/join (second diff))
+        diff-match (re-matches ph/ph left)]
+        ; note currently only works until first mismatch.
+        ; Which only works if our placeholder is the only placeholder, and is at the end of the string.
+        ; e.g. abc${def} - ok
+        ;      abc${def}ghi - not ok
+    (if (= (second diff-match) ph)
+      right)))
+
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))
         f-headers (fn [[k v]]
@@ -118,20 +123,23 @@
              (for [ph (map second holder)]
                (do ;(println "ph:" ph)
                  (when-let [response-value (get-in response [:headers k])]
-                   ;(println "pulling out" ph "from" response-value "with template" v)
-                   [ph (last (stg/split response-value #"/"))]))))); TODO - needs to pull out of template
+                   (if-let [extract (read-from v ph response-value)]
+                       [ph extract]
+                       (println "could not extract" ph "from" response-value "with template" v)))))))
         f-body (fn [[k v]]
            (when-let [holder (ph/holder? v)]
              (let [response-body (get-in response [:body])
-                   ct (get-in response [:headers "Content-Type"])]
+                   ctype (pp/ctype response)]
                (for [ph (map second holder)]
                  (do ;(println "ph:" ph)
                    (cond
-                     (= ct h/jsn) (do ; TODO need to support all content types..
+                     (h/txt? ctype) (read-from v ph response-body)
+                     (h/xml? ctype) nil ; TODO read from xml
+                     :else
                        (let [json (co/clj response-body)]
                          (when-let [response-value (get-in json [k])]
-                           ;(println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
-                           [ph response-value])))
+                           (println "pulling out" ph "from" response-value "with template" v) ; TODO - currently just returning all response-value
+                           [ph response-value]))
                      ))))))]
     ;(println "output-values - headers" (get-in res [:headers]))
     ;(println "output-values - body" (get-in res [:body]))
@@ -139,6 +147,9 @@
       (into {} (mapcat f-headers (get-in res [:headers])))
       (into {} (mapcat f-body (get-in res [:body]))))))
 
+
+(defn- uri [host port {:keys [svc path] :as entry}]
+  (p/uri host port svc path))
 
 (defmethod pb/build :test [_ {:keys [locs host port] :as corpus} {:keys [tree] :as entry}]
   (println "building a test probe to visit " (:method entry) ":" locs)

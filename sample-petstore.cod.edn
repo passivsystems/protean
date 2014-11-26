@@ -93,6 +93,7 @@
           :body-example "test-data/content/doc/requests/new-pet.json"
         }
         :rsp {
+          :200 { :doc "Updated" }
           :405 {
             :doc "Validation exception"
           }

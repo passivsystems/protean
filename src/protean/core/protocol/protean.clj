@@ -2,8 +2,6 @@
   "Our own concise derived protocol for req/rsp."
   (:require [protean.core.protocol.http :as h]))
 
-;; TODO: deprecate for Ring ?
-
 ;; =============================================================================
 ;; Lense functions
 ;; =============================================================================
@@ -11,4 +9,5 @@
 ;; Request
 ;;;;;;;;;;
 
-(defn ctype [req] (get-in req [:hdrs "content-type"]))
+(defn ctype [req] (or (get-in req [:headers "content-type"])
+                      (get-in req [:headers "Content-Type"])))
