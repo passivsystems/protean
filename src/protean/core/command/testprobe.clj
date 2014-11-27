@@ -1,9 +1,8 @@
 (ns protean.core.command.testprobe
   "Building probes and handling persisting/presenting raw results."
-  (:require [clojure.string :as stg]
+  (:require [clojure.string :as s]
             [clojure.java.io :refer [file]]
             [clojure.data :refer [diff]]
-            [clojure.set :refer [subset?]]
             [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
@@ -15,6 +14,7 @@
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
+            [protean.core.transformation.validation :as v]
             [protean.core.command.test :as t]
             [protean.core.command.probe :as pb]
             [loom.graph :as lg]
@@ -109,8 +109,8 @@
 (defn- read-from [template ph s]
 ;  (println "pulling out" ph "from" s "with template" template)
   (let [diff (diff (char-array template) (char-array s))
-        left (stg/join (first diff))
-        right (stg/join (second diff))
+        left (s/join (first diff))
+        right (s/join (second diff))
         diff-match (re-matches ph/ph left)]
         ; note currently only works until first mismatch.
         ; Which only works if our placeholder is the only placeholder, and is at the end of the string.
@@ -232,7 +232,7 @@
       (if ordered-probes
         (do
           (println "\nexecuting probes in order:\n"
-            (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
+            (s/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
             "\n")
           (reverse (execute ordered-probes bag (list))))
         (hlr "no route found to traverse probes (cyclic dependencies)")
@@ -242,31 +242,14 @@
 ;; Probe data analysis
 ;; =============================================================================
 
-(defn- assess-status-> [success response errors]
-  (let [expected-status (name success)]
-    (if (not (= (str (:status response)) expected-status))
-      (conj errors (str "expected status " expected-status)))))
-
-; TODO refactor out duplication with sim
-(defn- assess-headers-> [success response errors]
-  (if-let [hdrs (:headers success)] ; TODO headers may be further up tree - not immediately in success rsp
-    (let [expected-headers (set (keys hdrs))
-          received-headers (set (keys (:headers response)))]
-      (if (subset? expected-headers received-headers)
-        errors
-        (conj errors (str "expected headers " (stg/join "," expected-headers) " (received " (stg/join "," received-headers) ")"))))
-    errors))
-
-(defn- assess-body-> [success response errors]
-  errors)
-
-
 (defn- assess [response tree]
-  (let [success (first (d/success-status tree))]
+  (let [success-rsp (first (d/success-status tree))
+        success-rsp-code (name (key success-rsp))
+        success (val success-rsp)]
     (->> []
-      (assess-status-> (key success) response)
-      (assess-headers-> (val success) response)
-      (assess-body-> (val success) response))))
+      (v/validate-status-> success-rsp-code response)
+      (v/validate-headers (:headers success) response) ; TODO headers may be further up tree - not immediately in success rsp response)
+      (v/validate-body response (:body-schema success) (:body success))))) ; similarly for schema, codex-body?
 
 (defmethod pb/analyse :test [_ corpus results]
   (hlg "analysing probe data")
@@ -278,7 +261,7 @@
           status (:status response)
           tree (:tree entry)
           ass (assess response tree)
-          so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (stg/join ", " ass))))]
+          so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (s/join ", " ass))))]
       (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)
 ;  (doseq [[method uri mp phs] results]
 ;    (let [status (:status mp)
