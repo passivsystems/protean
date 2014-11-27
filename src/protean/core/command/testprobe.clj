@@ -192,24 +192,32 @@
   (let [{:keys [method svc path] :as entry} (:entry probe)]
     (str method " " svc " " path)))
 
-(defn- analyse [g corpus probes probe]
-  (let [tree (get-in probe [:entry :tree])
-        inputs (:inputs probe)
-        outputs (:outputs probe)]
-    (swap! g lg/add-nodes probe)
-    (swap! g lat/add-attr probe :label (label probe))
+(defn- get-dependencies [corpus probes probe]
+  (let [dependency-for (fn [input]
+    (let [tree (get-in probe [:entry :tree])
+          seed (get-in corpus [:seed input])
+          dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
+          can-gen (d/get-in-tree tree [:vars input :gen])]
+      (when (and (not seed) (= false can-gen))
+        (if (empty? dependencies)
+            (hlr "No endpoint available to provide " input "!")
+          (map #(->[input %]) dependencies)))))]
+  (mapcat dependency-for (:inputs probe))))
 
-    ; all inputs that cannot be generated (or have been seeded)
-    ; form a dependency on endpoint that produces them as outpus
-    (doseq [input inputs]
-      (let [seed (get-in corpus [:seed input])
-            dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
-            can-gen (d/get-in-tree tree [:vars input :gen])]
-        (when (and (not seed) (= false can-gen))
-          (if (empty? dependencies) (hlr "No endpoint available to provide " input "!"))
-          (doseq [dependency dependencies]
-            (swap! g lg/add-edges [dependency probe])
-            (swap! g lat/add-attr [dependency probe] :label input)))))))
+(defn- build-dependency-graph [g corpus probes probe]
+  (let [tree (get-in probe [:entry :tree])
+        dependencies (get-dependencies corpus probes probe)
+        add-dependencies (fn [g [input dependency]]
+            (-> g
+              (lg/add-edges [dependency probe])
+              (lat/add-attr [dependency probe] :label input)))]
+    (reduce add-dependencies 
+      (-> g
+        (lg/add-nodes probe)
+        (lat/add-attr probe :label (label probe)))
+      ; all inputs that cannot be generated (or have been seeded)
+      ; form a dependency on endpoint that produces them as outpus
+      dependencies)))
 
 (defn- execute [probes bag reses]
   (let [probe (first probes)]
@@ -220,14 +228,18 @@
         (recur (rest probes) (merge outputs bag) (conj reses [(:entry probe) res])))
       reses)))
 
+(defn- analyse [g corpus next-probes probes]
+  (if (empty? next-probes) g
+    (let [probe (first next-probes)]
+      (-> (build-dependency-graph g corpus probes probe)
+        (recur corpus (rest next-probes) probes)))))
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
-  (let [g (atom (lg/digraph))] ; TODO refactor out atom usage
-    (doall (map #(analyse g corpus probes %) probes))
-;    (li/view @g) ; uncomment to open image of graph
+  (let [g (analyse (lg/digraph) corpus probes probes)]
+;    (li/view g) ; uncomment to open image of graph
     (let [bag (get-in corpus [:seed])
-          ordered-probes (la/topsort @g)]
+          ordered-probes (la/topsort g)]
       (if ordered-probes
         (do
           (println "\nexecuting probes in the following order:\n"
