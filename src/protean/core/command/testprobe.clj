@@ -52,7 +52,7 @@
 (defn- copy-and-swap [payload tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
     (let [res (assoc-in payload target-keys (ph/swap ph tree bag))]
-       (if (ph/holder? res) (hlr (str "Could not resolve all placeholders:" (ph/holder? res))))
+       (if (ph/holder? res) (hlr (str "Could not resolve all placeholders:" (ph/holder? res)))) ; TODO should mark test status as fail..
        res)
     payload))
 
@@ -189,10 +189,6 @@
 ;; Probe dispatch
 ;; =============================================================================
 
-(defn- find-dep [input probe]
-  (if (some #{input} (:outputs probe)) probe)
-)
-
 (defn- label [probe]
   (let [{:keys [method svc path] :as entry} (:entry probe)]
     (str method " " svc " " path)))
@@ -204,7 +200,8 @@
   (let [dependency-for (fn [input]
     (let [tree (get-in probe [:entry :tree])
           seed (get-in corpus [:seed input])
-          dependencies (remove #{probe} (remove nil? (map #(find-dep input %) probes)))
+          find-dep (fn [probe] (if (some #{input} (:outputs probe)) probe))
+          dependencies (remove #{probe} (remove nil? (map find-dep probes)))
           can-gen (d/get-in-tree tree [:vars input :gen])]
       (when (and (not seed) (= false can-gen))
         (if (empty? dependencies)
