@@ -49,24 +49,55 @@
 
 (defn fp [t] (get-in-tree t [:req :form-params]))
 
-(defn hdrs-req [t] (get-in-tree t [:req :headers]))
+(defn- codex-req-hdrs [tree]
+  (get-in-tree tree [:req :headers]))
+
+(defn req-ctype [tree]
+  (let [hdrs (codex-req-hdrs tree)
+        ctype (get-in hdrs h/ctype)
+        body-schema (get-in-tree tree [:req :body-schema])
+        body-example (get-in-tree tree [:req :body-example])]
+    (cond
+      ctype ctype
+      body-schema (h/mime-schema body-schema)
+      body-example (h/mime body-example))))
+
+(defn req-hdrs [tree]
+  (let [ctype (req-ctype tree)
+        ctype-hdr (if ctype {h/ctype ctype} {})]
+    (merge ctype-hdr (codex-req-hdrs tree))))
 
 (defn body-req [t] (get-in-tree t [:req :body]))
-
 
 ;; =============================================================================
 ;; Codex response
 ;; =============================================================================
 
-(defn rsp-type [c] (get-in c [:rsp :headers h/ctype]))
+(defn- codex-rsp-hdrs [rsp-code tree]
+  (merge
+    (get-in-tree tree [:rsp :headers])
+    (get-in-tree tree [:rsp rsp-code :headers])))
 
-(defn hdrs-rsp [c] (get-in c [:rsp :headers]))
+(defn rsp-ctype [rsp-code tree]
+  (let [ctype (get-in (codex-rsp-hdrs rsp-code tree) h/ctype)
+        body-schema (get-in-tree tree [:rsp rsp-code :body-schema])
+        body-example (get-in-tree tree [:rsp rsp-code :body-example])]
+    (cond
+      ctype ctype
+      body-schema (h/mime-schema body-schema)
+      body-example (h/mime body-example))))
 
-(defn body-rsp [c] (get-in c [:rsp :body-example]))
+(defn rsp-hdrs [rsp-code tree]
+  (let [ctype (rsp-ctype rsp-code tree)
+        ctype-hdr (if ctype {h/ctype ctype} {})]
+    (merge ctype-hdr (codex-rsp-hdrs rsp-code tree))))
 
 (defn status-matching [tree filter-exp]
-  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))]
-    (some identity (map filter tree))))
+  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))
+        statuses (some identity (map filter tree))
+        include-defaults (fn [[k v]]
+      [k (update-in v [:headers] #(merge (get-in-tree tree [:rsp :headers]) %))])]
+    (seq (into {} (map include-defaults statuses)))))
 
 (defn success-status [tree]
   (status-matching tree #"2\d\d"))

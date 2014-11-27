@@ -75,12 +75,12 @@
    Resource is the current endpoint (parent of headers).
    filter-exp is a regular expression to match the status codes to include."
   (.mkdirs (File. target-dir))
-  (doseq [[k v] statuses]
-    (spit (str target-dir (name k) ".edn")
-      (pr-str { :code (name k)
+  (doseq [[rsp-code v] statuses]
+    (spit (str target-dir (name rsp-code) ".edn")
+      (pr-str { :code (name rsp-code)
                 :doc (:doc v)
                 :sample-response (if-let [s (:body-example v)] (slurp s) "N/A")
-                :headers (if-let [h (:headers v)] (pr-str h) "N/A")}))))
+                :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")}))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat
@@ -121,7 +121,7 @@
       (spit-to (str directory "/global/site.edn") (pr-str site))
       (spit-to (str directory "/api/" id ".edn") (pr-str full))
       (doc-params (str directory "/" id "/params/") (input-params tree uri))
-      (doc-hdrs (str directory "/" id "/headers/") (d/get-in-tree tree [:rsp :headers]))
+      (doc-hdrs (str directory "/" id "/headers/") (d/req-hdrs tree))
       (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
       (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree))))
   })

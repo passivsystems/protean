@@ -1,6 +1,6 @@
 (ns protean.core.command.testprobe
   "Building probes and handling persisting/presenting raw results."
-  (:require [clojure.string :as stg]
+  (:require [clojure.string :as s]
             [clojure.java.io :refer [file]]
             [clojure.data :refer [diff]]
             [ring.util.codec :as cod]
@@ -14,6 +14,7 @@
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
+            [protean.core.transformation.validation :as v]
             [protean.core.command.test :as t]
             [protean.core.command.probe :as pb]
             [loom.graph :as lg]
@@ -108,8 +109,8 @@
 (defn- read-from [template ph s]
 ;  (println "pulling out" ph "from" s "with template" template)
   (let [diff (diff (char-array template) (char-array s))
-        left (stg/join (first diff))
-        right (stg/join (second diff))
+        left (s/join (first diff))
+        right (s/join (second diff))
         diff-match (re-matches ph/ph left)]
         ; note currently only works until first mismatch.
         ; Which only works if our placeholder is the only placeholder, and is at the end of the string.
@@ -154,12 +155,10 @@
   (println "building a test probe to visit " (:method entry) ":" locs)
   (let [h (or host "localhost")
         p (or port 3000)
-        uri (uri h p entry)
-        inputs (inputs uri tree)
-        outputs (outputs-names tree)]
+        uri (uri h p entry)]
     {:entry entry
-     :inputs inputs
-     :outputs outputs
+     :inputs (inputs uri tree)
+     :outputs (outputs-names tree)
      :engage (fn [bag res-fn]
       (let [request (prepare-request uri entry bag)
             result (t/test! request)]
@@ -197,7 +196,6 @@
   (let [tree (get-in probe [:entry :tree])
         inputs (:inputs probe)
         outputs (:outputs probe)]
-    (println "\n" (label probe))
     (swap! g lg/add-nodes probe)
     (swap! g lat/add-attr probe :label (label probe))
 
@@ -232,8 +230,9 @@
           ordered-probes (la/topsort @g)]
       (if ordered-probes
         (do
-          (println "\nexecuting probes in order:\n"
-          (stg/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes)) "\n")
+          (println "\nexecuting probes in the following order:\n"
+            (s/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
+            "\n")
           (reverse (execute ordered-probes bag (list))))
         (hlr "no route found to traverse probes (cyclic dependencies)")
       ))))
@@ -242,11 +241,15 @@
 ;; Probe data analysis
 ;; =============================================================================
 
-(defn- assess [method status tree]
-  (let [expected-status (name (key (first (d/success-status tree))))]
-    (if (= (str status) expected-status)
-      "pass"
-      (str "fail - expected status " expected-status))))
+(defn- assess [response tree]
+  (let [success-rsp (first (d/success-status tree))
+        success-rsp-code (key success-rsp)
+        success (val success-rsp)
+        expected-ctype (d/rsp-ctype success-rsp-code tree)]
+    (->> []
+      (v/validate-status-> (name success-rsp-code) response)
+      (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
+      (v/validate-body response expected-ctype (:body-schema success) (:body success)))))
 
 (defmethod pb/analyse :test [_ corpus results]
   (hlg "analysing probe data")
@@ -257,11 +260,7 @@
           uri (:uri request)
           status (:status response)
           tree (:tree entry)
-          ass (assess method status tree)
-          so (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass))]
+          ass (assess response tree)
+          so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (s/join "\n" ass))))]
       (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)
-;  (doseq [[method uri mp phs] results]
-;    (let [status (:status mp)
-;          ass (assess method status phs)
-;          so (if (or (ph/holder? uri) (ph/authzn-holder? mp)) (aa/bold-red "error - untested") (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass)))]
-;      (println "Test : " method " - " uri ", status - " status ": " so))))
+

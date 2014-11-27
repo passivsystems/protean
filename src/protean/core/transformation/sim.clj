@@ -4,98 +4,19 @@
             [clojure.set :as st]
             [clojure.pprint]
             [clojure.main :as m]
-            [clojure.xml :as x]
-            [clojure.zip :as z]
             [clojure.java.io :refer [file]]
-            [cheshire.core :as jsn]
             [protean.core.protocol.http :as h]
-            [protean.core.protocol.protean :as pp]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
             [protean.core.codex.placeholder :as ph]
-            [protean.core.transformation.jsonvalidation :as jv]
-            [protean.core.transformation.xmlvalidation :as xv]
+            [protean.core.transformation.validation :as v]
             [clj-http.client :as clt]
             [overtone.at-at :as at]
             [environ.core :as ec]
             [io.aviso.ansi :as aa])
   (:use [taoensso.timbre :as timbre
      :only (trace debug info warn error)
-     :rename {trace log-trace debug log-debug info log-info warn log-warn error log-error}])
-  (:import java.io.ByteArrayInputStream))
-
-;; =============================================================================
-;; Verify request functions
-;; =============================================================================
-
-(defn- valid-headers? [request tree]
-  (if-let [hdrs (d/hdrs-req tree)]
-    (let [expected-headers (map s/lower-case (keys hdrs))
-          received-headers (keys (:headers request))]
-      (if (every? (set received-headers) expected-headers)
-        true
-        (log-info "Headers not valid - expected" expected-headers "but received" received-headers)))
-    true))
-
-(defn- valid-query-params? [request tree]
-  (if-let [rpms (:required (d/qp tree))]
-    (let [expected-qps (keys rpms)
-          received-qps (map name (keys (:params request)))]
-      (if (every? (set received-qps) expected-qps)
-        true
-        (log-info "Query params not valid - expected" expected-qps "but received" received-qps)))
-    true))
-
-(defn- valid-form? [request tree]
-  (if-let [f-keys (:required (d/fp tree))]
-    (let [expected-form (keys f-keys)
-          received-form (keys (:form-params request))]
-      (if (= (set received-form) (set (keys f-keys)))
-        true
-        (log-info "Form params not valid - expected" expected-form "but received" received-form)))
-    true))
-
-(defn- zip-str [s] (z/xml-zip (x/parse (ByteArrayInputStream. (.getBytes s)))))
-(defn- map-vals [m k] (set (keep k (tree-seq #(or (map? %) (vector? %)) identity m))))
-(defn- valid-xml-body? [request tree]
-  (println "body-schema : " (d/get-in-tree tree [:req :body-schema]))
-  (if-let [body-schema (d/get-in-tree tree [:req :body-schema])]
-    (let [validation (xv/validate body-schema (:body request))]
-      (if (:success validation)
-        true
-        (log-info "Request did not conform to xml validation" body-schema ":" (:message validation))))
-    ; TODO deprecate old body definition
-    (if-let [codex-body (d/body-req tree)]
-      (let [tags-in-str (fn [s] (map-vals (zip-str s) :tag))
-            expected-tags (tags-in-str (c/pretty-xml codex-body))
-            received-tags (tags-in-str (:body request))]
-        (if (= received-tags expected-tags)
-          true
-          (log-info "Xml body not valid - expected" expected-tags "but received" received-tags)))
-      true)))
-
-(defn- valid-jsn-body? [request tree]
-  (if-let [body-schema (d/get-in-tree tree [:req :body-schema])]
-    (let [validation (jv/validate body-schema (:body request))]
-      (if (:success validation)
-        true
-        (log-info "Request did not conform to json validation" body-schema ":" (:message validation))))
-    ; TODO deprecate old body definition
-    (if-let [codex-body (d/body-req tree)]
-      (let [body-jsn (jsn/parse-string (:body request))]
-        (if (map? codex-body)
-          (let [expected-keys (set (keys codex-body))
-                received-keys (set (keys body-jsn))]
-            (if (= received-keys expected-keys)
-              true
-              (log-info "Json body not valid - expected" expected-keys "but received" received-keys)))
-          (contains? codex-body body-jsn)))
-      true)))
-
-(defn- valid-body? [request tree]
-  (if (h/xml? (pp/ctype request))
-    (valid-xml-body? request tree)
-    (valid-jsn-body? request tree)))
+     :rename {trace log-trace debug log-debug info log-info warn log-warn error log-error}]))
 
 (defn- pretty-str [s ctype]
   (cond
@@ -149,7 +70,7 @@
             (catch Exception e (print-error e))))
         rules-response (some identity (map execute rules))
         default-success (binding [*tree* tree *request* request *corpus* corpus](success))
-        ; we return the first non-nil response, else a success response. (TODO should be imported from a default sim.edn file)
+        ; we return the first non-nil response, else a success response.
         response (if rules-response rules-response default-success)]
     (if (not tree)
       (do
@@ -166,14 +87,22 @@
 ;; DSL for sims
 ;; =============================================================================
 
-; TODO provide schema in codex for xml/json, and validate against that.
-(defn valid-inputs? []
-  (and
-    (valid-headers? *request* *tree*)
-    (valid-query-params? *request* *tree*)
-    (valid-form? *request* *tree*)
-    (valid-body? *request* *tree*)))
+(defn- validate-body [request tree errors]
+  (let [expected-ctype (d/req-ctype tree)
+        schema (d/get-in-tree tree [:req :body-schema])
+        codex-body (d/body-req tree)]
+    (v/validate-body request expected-ctype schema codex-body [])))
 
+(defn valid-inputs? []
+ (let [errors
+   (->> []
+     (v/validate-headers (d/req-hdrs *tree*) *request*)
+     (v/validate-query-params *request* *tree*)
+     (v/validate-form-params *request* *tree*)
+     (validate-body *request* *tree*))]
+   (if (empty? errors)
+     true
+     (log-info (s/join "," errors)))))
 
 ;; =============================================================================
 ;; Scheduling
@@ -231,21 +160,14 @@
 ;; Responses
 ;; =============================================================================
 
-(defn- mime [url]
-  (cond
-    (.endsWith url ".json") h/jsn
-    (.endsWith url ".xml") h/xml
-    (.endsWith url ".txt") h/txt
-    :else h/bin))
-
 (defn- format-rsp [rsp-entry]
   (if rsp-entry
     (let [status-code (Integer/parseInt (name (key rsp-entry)))
           rsp (val rsp-entry)
           body-url (:body-example rsp)
           headers (:headers rsp)
-          headers_w_ctype (if (and body-url (not (get-in headers ["Content-Type"])))
-                            (assoc headers "Content-Type" (mime body-url))
+          headers_w_ctype (if (and body-url (not (get-in headers [h/ctype])))
+                            (assoc headers h/ctype (h/mime body-url))
                             headers)
           body (if body-url (slurp body-url))
           response {:status status-code :headers headers_w_ctype :body body}]
@@ -279,7 +201,7 @@
   (if body-url
     {:status status-code
       :body (slurp body-url)
-      :headers {"Content-Type" (mime body-url)}}
+      :headers {h/ctype (h/mime body-url)}}
     {:status status-code}))
 
 (defn rsp-body
