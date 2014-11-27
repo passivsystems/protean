@@ -92,7 +92,7 @@
                  (map val (d/get-in-tree tree [:req :body]))
                  (map val (d/get-in-tree tree [:req :headers])))
         extract-ph-names (fn [input]
-            (map #(nth % 1) (ph/holder? input)))
+            (map second (ph/holder? input)))
         ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
         to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
   (reduce merge (map to-map ph-names))))

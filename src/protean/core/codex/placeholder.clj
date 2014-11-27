@@ -1,7 +1,7 @@
 (ns protean.core.codex.placeholder
   "Placeholder functionality, swapping codex examples, generating."
   (:refer-clojure :exclude [long int])
-  (:require [clojure.string :as stg]
+  (:require [clojure.string :as s]
             [clojure.set :refer [map-invert]]
             [clojure.pprint]
             [protean.core.codex.document :as d]
@@ -37,43 +37,44 @@
       :Uuid (.toString (UUID/randomUUID))
     (generate v))))
 
-(defn- qp? [type] (= type :query-params))
-
-
 (defn replace-placeholders [s r]
-  (stg/replace s ph r))
-
-(defn uri-holders [s] (map-invert (into {} (re-seq ph s))))
+  (s/replace s ph r))
 
 ;; =============================================================================
 ;; Truthiness functions
 ;; =============================================================================
 
 (defn holder?
-  "Does a simple value contain a placeholder ?"
+  "Does a value contain a placeholder?"
   [v]
-  (if (string? v) (re-seq ph v) nil))
+  (cond
+    (string? v) (re-seq ph v)
+    (map? v)(seq (mapcat holder? (vals v)))
+    :else nil))
 
+(defn map-holders [s]
+  (map-invert (into {} (holder? s))))
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn- replace-loop [func s matches]
+(defn- replace-loop [s func matches]
   (if (empty? matches)
     s
     (let [match (first matches)
           to-be-replaced (first match)
           term (second match)
           applied (func term)]
-      (recur func (if applied
-           (stg/replace-first s to-be-replaced applied)
-           s) (rest matches)))))
+      (recur
+        (if applied (s/replace-first s to-be-replaced applied) s)
+        func
+        (rest matches)))))
 
 (defn replace-all-with
-  "replace all occurrences in s of placeholder with result of applying func to the placeholder name"
+  "replace all occurrences in string of placeholder with result of applying func to the placeholder name"
   [s func]
-  (replace-loop func s (holder? s)))
+  (replace-loop s func (holder? s)))
 
 (defn- holder-swap-exp [tree v]
   (if-let [x (d/get-in-tree tree [:vars v :examples])]
@@ -88,14 +89,15 @@
     x))
 
 (defn holder-swap
-  "Swap generative values in for placeholders."
+  "Swap generative values in m of placeholders."
   [m swap-fn tree]
-  (into {} (for [[k v] m]
-    {k (cond
-      (string? v)(replace-all-with v (partial swap-fn tree))
-      (map? v)(holder-swap v swap-fn tree)
-      :else v
-    )})))
+  (cond
+    (string? m)(replace-all-with m (partial swap-fn tree))
+    (map? m)(into {} (for [[k v] m]
+      {k (holder-swap v swap-fn tree)}))
+    (seq? m)(map holder-swap m)
+    (vector? m)(map holder-swap m)
+    :else m))
 
 (defn swap [ph tree bag]
   (-> ph

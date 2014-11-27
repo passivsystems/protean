@@ -89,7 +89,6 @@
 
 (defn validate-body [payload expected-ctype schema codex-body errors]
   (let [ctype (pp/ctype payload)]
-    (println "expected-ctype" expected-ctype "ctype" ctype)
     (cond
       (and expected-ctype ctype (not (= expected-ctype ctype)))
         (conj errors (str "expected content-type " expected-ctype " (was " ctype ")"))
