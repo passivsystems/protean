@@ -58,7 +58,6 @@
         errors
         (conj errors
           (str "Payload did not conform to xml schema " schema " : " (:message validation)))))
-    ; TODO deprecate old body definition
     (if codex-body
       (let [tags-in-str (fn [s] (map-vals (zip-str s) :tag))
             expected-tags (tags-in-str (c/pretty-xml codex-body))
@@ -75,8 +74,7 @@
       (if (:success validation)
         errors
         (conj errors
-          (str "Request did not conform to json schema " schema " : " (:message validation)))))
-    ; TODO deprecate old body definition
+          (str "Payload did not conform to json schema " schema " : " (:message validation)))))
     (if codex-body
       (let [body-jsn (jsn/parse-string (:body payload))]
         (if (map? codex-body)
@@ -84,13 +82,22 @@
                 received-keys (set (keys body-jsn))]
             (if (= received-keys expected-keys)
               errors
-              (conj
+              (conj errors
                 (str "Json body not valid - expected " expected-keys " but received " received-keys))))
           (contains? codex-body body-jsn)))
       errors)))
 
-(defn validate-body [payload schema codex-body errors]
-  (if (h/xml? (pp/ctype payload))
-    (validate-xml-body payload schema codex-body errors)
-    (validate-jsn-body payload schema codex-body errors)))
+(defn validate-body [payload expected-ctype schema codex-body errors]
+  (let [ctype (pp/ctype payload)]
+    (println "expected-ctype" expected-ctype "ctype" ctype)
+    (cond
+      (and expected-ctype ctype (not (= expected-ctype ctype)))
+        (conj errors (str "expected content-type " expected-ctype " (was " ctype ")"))
+      (h/xml? ctype)
+        (validate-xml-body payload schema codex-body errors)
+      (h/txt? ctype)
+        errors
+      ; TODO should we validate that the ctype is set as json?
+      :else
+        (validate-jsn-body payload schema codex-body errors))))
 

@@ -70,7 +70,7 @@
             (catch Exception e (print-error e))))
         rules-response (some identity (map execute rules))
         default-success (binding [*tree* tree *request* request *corpus* corpus](success))
-        ; we return the first non-nil response, else a success response. (TODO should be imported from a default sim.edn file)
+        ; we return the first non-nil response, else a success response.
         response (if rules-response rules-response default-success)]
     (if (not tree)
       (do
@@ -88,14 +88,15 @@
 ;; =============================================================================
 
 (defn- validate-body [request tree errors]
-  (let [schema (d/get-in-tree tree [:req :body-schema])
+  (let [expected-ctype (d/req-ctype tree)
+        schema (d/get-in-tree tree [:req :body-schema])
         codex-body (d/body-req tree)]
-    (v/validate-body request schema codex-body [])))
+    (v/validate-body request expected-ctype schema codex-body [])))
 
 (defn valid-inputs? []
  (let [errors
    (->> []
-     (v/validate-headers (d/hdrs-req *tree*) *request*)
+     (v/validate-headers (d/req-hdrs *tree*) *request*)
      (v/validate-query-params *request* *tree*)
      (v/validate-form-params *request* *tree*)
      (validate-body *request* *tree*))]
@@ -159,21 +160,14 @@
 ;; Responses
 ;; =============================================================================
 
-(defn- mime [url]
-  (cond
-    (.endsWith url ".json") h/jsn
-    (.endsWith url ".xml") h/xml
-    (.endsWith url ".txt") h/txt
-    :else h/bin))
-
 (defn- format-rsp [rsp-entry]
   (if rsp-entry
     (let [status-code (Integer/parseInt (name (key rsp-entry)))
           rsp (val rsp-entry)
           body-url (:body-example rsp)
           headers (:headers rsp)
-          headers_w_ctype (if (and body-url (not (get-in headers ["Content-Type"])))
-                            (assoc headers "Content-Type" (mime body-url))
+          headers_w_ctype (if (and body-url (not (get-in headers [h/ctype])))
+                            (assoc headers h/ctype (h/mime body-url))
                             headers)
           body (if body-url (slurp body-url))
           response {:status status-code :headers headers_w_ctype :body body}]
@@ -207,7 +201,7 @@
   (if body-url
     {:status status-code
       :body (slurp body-url)
-      :headers {"Content-Type" (mime body-url)}}
+      :headers {h/ctype (h/mime body-url)}}
     {:status status-code}))
 
 (defn rsp-body

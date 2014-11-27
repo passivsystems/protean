@@ -42,6 +42,19 @@
 ;; Helper functions
 ;; =============================================================================
 
+(defn mime [url]
+  (cond
+    (.endsWith url ".json") jsn
+    (.endsWith url ".xml") xml
+    (.endsWith url ".txt") txt
+    :else bin))
+
+(defn mime-schema [url]
+  (cond
+    (.endsWith url ".json") jsn
+    (.endsWith url ".xsd") xml
+    :else bin))
+
 ;; Method
 ;;;;;;;;;
 

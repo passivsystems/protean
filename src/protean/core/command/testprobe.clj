@@ -196,7 +196,6 @@
   (let [tree (get-in probe [:entry :tree])
         inputs (:inputs probe)
         outputs (:outputs probe)]
-    (println "\n" (label probe))
     (swap! g lg/add-nodes probe)
     (swap! g lat/add-attr probe :label (label probe))
 
@@ -231,7 +230,7 @@
           ordered-probes (la/topsort @g)]
       (if ordered-probes
         (do
-          (println "\nexecuting probes in order:\n"
+          (println "\nexecuting probes in the following order:\n"
             (s/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
             "\n")
           (reverse (execute ordered-probes bag (list))))
@@ -244,12 +243,13 @@
 
 (defn- assess [response tree]
   (let [success-rsp (first (d/success-status tree))
-        success-rsp-code (name (key success-rsp))
-        success (val success-rsp)]
+        success-rsp-code (key success-rsp)
+        success (val success-rsp)
+        expected-ctype (d/rsp-ctype success-rsp-code tree)]
     (->> []
-      (v/validate-status-> success-rsp-code response)
-      (v/validate-headers (:headers success) response) ; TODO headers may be further up tree - not immediately in success rsp response)
-      (v/validate-body response (:body-schema success) (:body success))))) ; similarly for schema, codex-body?
+      (v/validate-status-> (name success-rsp-code) response)
+      (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
+      (v/validate-body response expected-ctype (:body-schema success) (:body success)))))
 
 (defmethod pb/analyse :test [_ corpus results]
   (hlg "analysing probe data")
@@ -261,10 +261,6 @@
           status (:status response)
           tree (:tree entry)
           ass (assess response tree)
-          so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (s/join ", " ass))))]
+          so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (s/join "\n" ass))))]
       (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)
-;  (doseq [[method uri mp phs] results]
-;    (let [status (:status mp)
-;          ass (assess method status phs)
-;          so (if (or (ph/holder? uri) (ph/authzn-holder? mp)) (aa/bold-red "error - untested") (if (= ass "pass") (aa/bold-green ass) (aa/bold-red ass)))]
-;      (println "Test : " method " - " uri ", status - " status ": " so))))
+
