@@ -6,6 +6,7 @@
             [clojure.main :as m]
             [clojure.java.io :refer [file]]
             [protean.core.protocol.http :as h]
+            [protean.core.protocol.protean :as p]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
             [protean.core.codex.placeholder :as ph]
@@ -204,11 +205,26 @@
       :headers {h/ctype (h/mime body-url)}}
     {:status status-code}))
 
-(defn rsp-body
+(defn rsp-body-file
   "Look in a directory structure 'data-path' for a file 'f-name' with given ext"
   [data-path f-name ext]
   (let [fs (file-seq (file data-path))]
     (first (filter #(= (.getName %) (str f-name ext)) fs))))
+
+(defn rsp-body-state
+  "Look in a piece of state s for a key k"
+  [s k] (first (filter #(= (:id %) k) s)))
+
+(defn encode
+  "Encode d using header content type information in request"
+  [d request]
+  (println "request : " request)
+  (println "accept : " (get-in request [:headers "accept"]))
+  (let [accept (p/accept request)]
+  (cond
+    (= accept h/xml) (c/xml d)
+    (= accept h/txt) (str d)
+    :else (c/js d))))
 
 (defmacro prob
   "Will evaluate the provided function with specified probability"
