@@ -93,8 +93,11 @@
     (merge ctype-hdr (codex-rsp-hdrs rsp-code tree))))
 
 (defn status-matching [tree filter-exp]
-  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))]
-    (some identity (map filter tree))))
+  (let [filter (fn [m] (seq (filter #(re-matches filter-exp (name (key %))) (:rsp m))))
+        statuses (some identity (map filter tree))
+        include-defaults (fn [[k v]]
+      [k (update-in v [:headers] #(merge (get-in-tree tree [:rsp :headers]) %))])]
+    (seq (into {} (map include-defaults statuses)))))
 
 (defn success-status [tree]
   (status-matching tree #"2\d\d"))
