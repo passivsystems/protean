@@ -51,7 +51,9 @@
 
 (defn- copy-and-swap [payload tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
-    (assoc-in payload target-keys (ph/swap ph tree bag)) ; TODO if all placeholders are not swapped - then bomb
+    (let [res (assoc-in payload target-keys (ph/swap ph tree bag))]
+       (if (ph/holder? res) (hlr (str "Could not resolve all placeholders:" (ph/holder? res))))
+       res)
     payload))
 
 (defn- content-type-> [payload method]
@@ -71,7 +73,7 @@
 (defn- prepare-request 
   "Translate placeholders when visiting real nodes."
   [uri {:keys [method tree] :as entry} bag]
-  (let [parsed-uri (:uri (ph/swap {:uri uri} tree bag))] ; wrapping and unwrapping uri in map to reuse swap
+  (let [parsed-uri (ph/swap uri tree bag)]
     (-> {:method method :uri parsed-uri}
         (copy-and-swap tree bag [:req :query-params :required] [:query-params])
         (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
@@ -206,7 +208,7 @@
           can-gen (d/get-in-tree tree [:vars input :gen])]
       (when (and (not seed) (= false can-gen))
         (if (empty? dependencies)
-            (hlr "No endpoint available to provide " input "!")
+            (hlr (str "No endpoint available to provide " input "!")) ; TODO should mark test status as fail..
           (map #(->[input %]) dependencies)))))]
   (mapcat dependency-for (:inputs probe))))
 
@@ -242,7 +244,7 @@
             (s/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
             "\n")
           (reverse (second (reduce execute [bag (list)] ordered-probes))))
-        (hlr "no route found to traverse probes (cyclic dependencies)")
+        (hlr "no route found to traverse probes (cyclic dependencies)") ; TODO should mark test status as fail..
       ))))
 
 ;; =============================================================================
@@ -270,5 +272,5 @@
           tree (:tree entry)
           ass (assess response tree)
           so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (s/join "\n" ass))))]
-      (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)
+      (println "Test : " method " - " uri ", status - " status ": " so))))
 

@@ -18,8 +18,7 @@
   (if phs
     ; Note, placeholder generation will be different each time we request them
     ; also may not be url friendly (though we will encode them)
-    (let [res (ph/swap phs tree {})]
-      (if (vector? res) (first res) res))))
+    (ph/swap phs tree {})))
 
 (defn- curly-method-> [method payload]
   (if (= method :get)
@@ -33,7 +32,7 @@
     (str payload hstr)))
 
 (defn- curly-form-> [tree payload]
-  (let [phs (d/get-in-tree tree [:req :form-params])
+  (let [phs (d/get-in-tree tree [:req :form-params :required])
         data (if-let [rp (translate phs tree)]
                (str " --data '" (s/join "&" (map #(str (key %) "=" (val %)) rp)) "'"))]
     (str payload data)))
@@ -58,8 +57,7 @@
 (defn- curly-literal-> [s payload] (str payload s))
 
 (defn- curly-uri-> [uri tree payload]
-  (let [swapped (translate (ph/uri-holders uri) tree)]
-    (str payload (ph/replace-all-with uri #(swapped %)))))
+  (str payload (translate uri tree)))
 
 (defn- curly-query-params-> [tree payload]
   (let [phs (d/get-in-tree tree [:req :query-params :required])
