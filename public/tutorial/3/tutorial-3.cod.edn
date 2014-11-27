@@ -6,6 +6,7 @@
   :includes ["defaults.edn"]
 
   :title "Tutorial 3"
+  :doc "Demonstrates response headers and bodies"
 
   "tutorial-3" {
     "play/${stateId}" {

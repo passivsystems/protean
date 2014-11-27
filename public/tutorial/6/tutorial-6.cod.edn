@@ -2,6 +2,7 @@
   :includes ["defaults.edn"]
 
   :title "Tutorial 6"
+  :doc "Demonstrates dynamic responses"
 
   "tutorial-6" {
     "play/${stateId}" {

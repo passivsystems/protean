@@ -6,6 +6,7 @@
   :includes ["defaults.edn"]
 
   :title "Tutorial 2"
+  :doc "Demonstrates types and variables"
 
   "tutorial-2" {
     "play/${stateId}" {

@@ -6,6 +6,7 @@
   :includes ["defaults.edn"]
 
   :title "Tutorial 1"
+  :doc "Demonstrates the simplest possible codex structure"
 
   "tutorial-1" {"play" {:get {}}}
 }
