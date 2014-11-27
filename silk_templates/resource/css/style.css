@@ -84,19 +84,21 @@ a.company-brand {
   color:#ff6600;
 }
 
-pre.text {
-  border: 0px;
-  background-color: #fff;
-  margin: 0px;
-  padding: 2px;
-}
-
 pre {
   white-space: pre-wrap;       /* css-3 */
   white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
   white-space: -pre-wrap;      /* Opera 4-6 */
   white-space: -o-pre-wrap;    /* Opera 7 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  max-height: 200px;
+}
+
+pre.text {
+  border: 0px;
+  background-color: #fff;
+  margin: 0px;
+  padding: 2px;
+  max-height: 100%;
 }
 
 table.response td {

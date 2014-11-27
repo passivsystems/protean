@@ -69,8 +69,6 @@
     (spit (str target-dir (UUID/randomUUID) ".edn")
           (pr-str {:title k :value v}))))
 
-(defn- body-example [tree v] (if-let [bf (:body-example v)] (slurp bf) "N/A"))
-
 (defn- doc-status-codes [target-dir tree statuses]
   "Doc response headers for a given node.
    Directory is the data directory root.
@@ -81,7 +79,7 @@
     (spit (str target-dir (name k) ".edn")
       (pr-str { :code (name k)
                 :doc (:doc v)
-                :sample-response (body-example tree v)
+                :sample-response (if-let [s (:body-example v)] (slurp s) "N/A")
                 :headers (if-let [h (:headers v)] (pr-str h) "N/A")}))))
 
 (defn- input-params [tree uri]
@@ -117,7 +115,9 @@
                 :curl (cod/url-decode (c/curly-> (assoc-in e [:uri] uri)))
                 :doc (d/get-in-tree tree [:doc])
                 :desc (if-let [d (d/get-in-tree tree [:description])] d "")
-                :method (name method)}]
+                :method (name method)
+                :req-body-example (if-let [d (d/get-in-tree tree [:req :body-example])] (slurp d) "N/A")
+                :req-body-schema (if-let [d (d/get-in-tree tree [:req :body-schema])] (slurp d) "N/A")}]
       (spit-to (str directory "/global/site.edn") (pr-str site))
       (spit-to (str directory "/api/" id ".edn") (pr-str full))
       (doc-params (str directory "/" id "/params/") (input-params tree uri))
@@ -144,4 +144,3 @@
   (let [path (.getAbsolutePath (file (:directory corpus)))
         silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
     (silk/spin-or-reload false silk-path false false)))
-
