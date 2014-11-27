@@ -83,12 +83,13 @@
         (content->))))
 
 (defn- collect-params [m]
-  (let [l (cond (map? m) (vals m) (list? m) m :else (list m))]
-    (mapcat (fn [v] (cond
-                      (string? v) (map second (ph/holder? v))
-                      (map? v) (collect-params v)
-                      :else v))
-      l)))
+  (let [l (cond (map? m) (vals m) (list? m) m :else (list m))
+        collect (fn [v]
+          (cond
+            (string? v) (map second (ph/holder? v))
+            (map? v) (collect-params v)
+            :else v))]
+    (mapcat collect l)))
 
 (defn- inputs [uri tree]
   (distinct (concat
@@ -119,34 +120,36 @@
     (if (= (second diff-match) ph)
       right)))
 
+(defn- outputs-hdrs [response [k v]]
+  (when-let [holder (ph/holder? v)]
+    (for [ph (map second holder)]
+      (do ;(println "ph:" ph)
+        (when-let [response-value (get-in response [:headers k])]
+          (if-let [extract (read-from v ph response-value)]
+            [ph extract]
+            (println "could not extract" ph "from" response-value "with template" v)))))))
+
+(defn- outputs-body [response [k v]]
+ (when-let [holder (ph/holder? v)]
+   (let [response-body (get-in response [:body])
+         ctype (pp/ctype response)]
+     (for [ph (map second holder)]
+       (do ;(println "ph:" ph)
+         (cond
+           (h/txt? ctype) (read-from v ph response-body)
+           (h/xml? ctype) nil ; TODO read from xml
+           :else
+             (let [json (co/clj response-body)]
+               (when-let [response-value (get-in json [k])]
+                 (if-let [extract (read-from v ph response-value)]
+                   [ph extract]
+                   (println "could not extract" ph "from" response-value "with template" v))))))))))
+
 (defn- outputs-values [tree response]
-  (let [res (val (first (d/success-status tree)))
-        f-headers (fn [[k v]]
-           (when-let [holder (ph/holder? v)]
-             (for [ph (map second holder)]
-               (do ;(println "ph:" ph)
-                 (when-let [response-value (get-in response [:headers k])]
-                   (if-let [extract (read-from v ph response-value)]
-                     [ph extract]
-                     (println "could not extract" ph "from" response-value "with template" v)))))))
-        f-body (fn [[k v]]
-           (when-let [holder (ph/holder? v)]
-             (let [response-body (get-in response [:body])
-                   ctype (pp/ctype response)]
-               (for [ph (map second holder)]
-                 (do ;(println "ph:" ph)
-                   (cond
-                     (h/txt? ctype) (read-from v ph response-body)
-                     (h/xml? ctype) nil ; TODO read from xml
-                     :else
-                       (let [json (co/clj response-body)]
-                         (when-let [response-value (get-in json [k])]
-                           (if-let [extract (read-from v ph response-value)]
-                             [ph extract]
-                             (println "could not extract" ph "from" response-value "with template" v))))))))))]
+  (let [res (val (first (d/success-status tree)))]
     (merge
-      (into {} (mapcat f-headers (get-in res [:headers])))
-      (into {} (mapcat f-body (get-in res [:body]))))))
+      (into {} (mapcat (partial outputs-hdrs response) (get-in res [:headers])))
+      (into {} (mapcat (partial outputs-body response) (get-in res [:body]))))))
 
 (defn- uri [host port {:keys [svc path] :as entry}]
   (p/uri host port svc path))
@@ -193,6 +196,9 @@
     (str method " " svc " " path)))
 
 (defn- get-dependencies [corpus probes probe]
+  "Returns seq of vectors [input dependency]."
+  "All inputs that cannot be generated (or have been seeded)"
+  "form a dependency on endpoint that produces them as outpus"
   (let [dependency-for (fn [input]
     (let [tree (get-in probe [:entry :tree])
           seed (get-in corpus [:seed input])
@@ -207,36 +213,26 @@
 (defn- build-dependency-graph [g corpus probes probe]
   (let [tree (get-in probe [:entry :tree])
         dependencies (get-dependencies corpus probes probe)
+        add-node (fn [g probe]
+          (-> g
+            (lg/add-nodes probe)
+            (lat/add-attr probe :label (label probe))))
         add-dependencies (fn [g [input dependency]]
-            (-> g
-              (lg/add-edges [dependency probe])
-              (lat/add-attr [dependency probe] :label input)))]
-    (reduce add-dependencies 
-      (-> g
-        (lg/add-nodes probe)
-        (lat/add-attr probe :label (label probe)))
-      ; all inputs that cannot be generated (or have been seeded)
-      ; form a dependency on endpoint that produces them as outpus
-      dependencies)))
+          (-> g
+            (lg/add-edges [dependency probe])
+            (lat/add-attr [dependency probe] :label input)))]
+    (reduce add-dependencies (add-node g probe) dependencies)))
 
-(defn- execute [probes bag reses]
-  (let [probe (first probes)]
-    (if probe
-      (let [res ((:engage probe) bag res-persist!)
-            outputs (outputs-values (:tree (:entry probe)) (second res))]
-        (println (label probe) "\noutputs" outputs "\n")
-        (recur (rest probes) (merge outputs bag) (conj reses [(:entry probe) res])))
-      reses)))
-
-(defn- analyse [g corpus next-probes probes]
-  (if (empty? next-probes) g
-    (let [probe (first next-probes)]
-      (-> (build-dependency-graph g corpus probes probe)
-        (recur corpus (rest next-probes) probes)))))
+(defn- execute [[bag reses] probe]
+  (let [res ((:engage probe) bag res-persist!)
+        outputs (outputs-values (:tree (:entry probe)) (second res))]
+    (println (label probe) "\noutputs" outputs "\n")
+    [(merge outputs bag) (conj reses [(:entry probe) res])]))
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
-  (let [g (analyse (lg/digraph) corpus probes probes)]
+  (let [analyse (fn [g probe] (build-dependency-graph g corpus probes probe))
+        g (reduce analyse (lg/digraph) probes)]
 ;    (li/view g) ; uncomment to open image of graph
     (let [bag (get-in corpus [:seed])
           ordered-probes (la/topsort g)]
@@ -245,7 +241,7 @@
           (println "\nexecuting probes in the following order:\n"
             (s/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
             "\n")
-          (reverse (execute ordered-probes bag (list))))
+          (reverse (second (reduce execute [bag (list)] ordered-probes))))
         (hlr "no route found to traverse probes (cyclic dependencies)")
       ))))
 
