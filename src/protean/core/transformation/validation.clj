@@ -76,15 +76,17 @@
         (conj errors
           (str "Payload did not conform to json schema " schema " : " (:message validation)))))
     (if codex-body
-      (let [body-jsn (jsn/parse-string (:body payload))]
-        (if (map? codex-body)
-          (let [expected-keys (set (keys codex-body))
-                received-keys (set (keys body-jsn))]
-            (if (= received-keys expected-keys)
-              errors
-              (conj errors
-                (str "Json body not valid - expected " expected-keys " but received " received-keys))))
-          (contains? codex-body body-jsn)))
+      (try
+        (let [body-jsn (jsn/parse-string (:body payload))]
+          (if (map? codex-body)
+            (let [expected-keys (set (keys codex-body))
+                  received-keys (set (keys body-jsn))]
+              (if (= received-keys expected-keys)
+                errors
+                (conj errors
+                  (str "Json body not valid - expected " expected-keys " but received " received-keys))))
+            (contains? codex-body body-jsn)))
+        (catch Exception e (conj errors (str "Could not parse json:" (:body payload) "\n" (.getMessage e)))))
       errors)))
 
 (defn validate-body [payload expected-ctype schema codex-body errors]
@@ -99,4 +101,3 @@
       ; TODO should we validate that the ctype is set as json?
       :else
         (validate-jsn-body payload schema codex-body errors))))
-

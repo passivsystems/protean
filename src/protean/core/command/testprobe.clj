@@ -84,10 +84,7 @@
           (map? m) (vals m)
           (list? m) m
           :else (list m)))
-        collect (fn [v] (cond
-          (string? v) (map second (ph/holder? v))
-          (map? v) (collect-params v)
-          :else v))]
+        collect (fn [v] (map second (ph/holder? v)))]
     (mapcat collect (tolist m))))
 
 (defn- inputs [uri tree]
