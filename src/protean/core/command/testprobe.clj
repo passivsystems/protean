@@ -14,6 +14,7 @@
             [protean.core.transformation.validation :as v]
             [protean.core.command.test :as t]
             [protean.core.command.probe :as pb]
+            [protean.core.command.junit :as j]
             [loom.graph :as lg]
             [loom.alg :as la]
             [loom.attr :as lat]
@@ -210,10 +211,10 @@
     (reduce add-dependencies (add-node g probe) dependencies)))
 
 (defn- execute [[bag reses] probe]
-  (let [res ((:engage probe) bag)
-        outputs (outputs-values (:tree (:entry probe)) (second res))]
+  (let [[req resp] ((:engage probe) bag)
+        outputs (outputs-values (:tree (:entry probe)) resp)]
     (println (label probe) "\noutputs" outputs "\n")
-    [(merge outputs bag) (conj reses [(:entry probe) res])]))
+    [(merge outputs bag) (conj reses [(:entry probe) req resp])]))
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
@@ -236,27 +237,33 @@
 ;; Probe data analysis
 ;; =============================================================================
 
-(defn- assess [response tree]
+(defn- assess [[{:keys [tree] :as entry} request response]]
   (if-let [error (:error response)]
-    [error]
+    {:error error}
     (let [success-rsp (first (d/success-status tree))
           success-rsp-code (key success-rsp)
           success (val success-rsp)
           expected-ctype (d/rsp-ctype success-rsp-code tree)]
-      (->> []
+      {:failures (->> []
         (v/validate-status-> (name success-rsp-code) response)
         (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
-        (v/validate-body response expected-ctype (:body-schema success) (:body success))))))
+        (v/validate-body response expected-ctype (:body-schema success) (:body success)))})))
+
+(defn- print-result [[entry request response ass]]
+  ;      (println "result - request:" request)
+  ;      (println "result - response:" response)
+  (let [name (str (:method entry) " " (:svc entry) " " (:path entry))
+        status (:status response)
+        so (cond
+          (:error ass) (aa/bold-red (str "error - " (:error ass)))
+          (:failures ass) (aa/bold-red (str "fail - " (s/join "\n" (:failures ass))))
+          :else (aa/bold-green "pass"))]
+    (println "Test : " name ", status - " status ": " so)))
 
 (defmethod pb/analyse :test [_ corpus results]
   (hlg "analysing probe data")
-  (doseq [[entry [request response]] results]
-;    (println "result - request:" request)
-;    (println "result - response:" response)
-    (let [method (if request (:method request) (:method entry))
-          uri (if request (:uri request) (str (:svc entry) (:path entry)))
-          status (:status response)
-          tree (:tree entry)
-          ass (assess response tree)
-          so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (s/join "\n" ass))))]
-      (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)
+  (let [assessed (map conj results (map assess results))]
+    (doall (map print-result assessed))
+    (j/write-report assessed)
+  )
+)
