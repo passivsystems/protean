@@ -45,11 +45,9 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defn- copy-and-swap [payload tree bag source-keys target-keys]
-  (if-let [ph (d/get-in-tree tree source-keys)]
-    (let [res (assoc-in payload target-keys (ph/swap ph tree bag))]
-       (if (ph/holder? res) (hlr "Could not resolve all placeholders:" (ph/holder? res))) ; TODO should mark test status as fail..
-       res)
+(defn- copy-> [payload tree source-keys target-keys]
+  (if-let [kvs (d/get-in-tree tree source-keys)]
+    (assoc-in payload target-keys kvs)
     payload))
 
 (defn- content-type-> [payload method]
@@ -67,18 +65,18 @@
     (update-in payload [:body] f)))
 
 (defn- prepare-request
-  "Translate placeholders when visiting real nodes."
-  [uri {:keys [method tree] :as entry} bag]
-  (let [parsed-uri (ph/swap uri tree bag)]
-    (-> {:method method :uri parsed-uri}
-        (copy-and-swap tree bag [:req :query-params :required] [:query-params])
-        (copy-and-swap tree bag [:req :query-params :optional] [:query-params]) ; TODO only include when (corpus) test level is 2?
-        (copy-and-swap tree bag [:req :form-params :required] [:form-params])
-        (copy-and-swap tree bag [:req :form-params :optional] [:form-params])
-        (copy-and-swap tree bag [:req :headers] [:headers])
-        (copy-and-swap tree bag [:req :body] [:body])
-        (content-type-> method)
-        (content->))))
+  "Prepare payload - may still contain placeholders."
+  [uri {:keys [method tree] :as entry}]
+  (-> {:method method :uri uri}
+      ; TODO only include when (corpus) test level is 2?
+      (copy-> tree [:req :query-params :required] [:query-params])
+      (copy-> tree [:req :query-params :optional] [:query-params])
+      (copy-> tree [:req :form-params :required] [:form-params])
+      (copy-> tree [:req :form-params :optional] [:form-params])
+      (copy-> tree [:req :headers] [:headers])
+      (copy-> tree [:req :body] [:body])
+      (content-type-> method)
+      (content->)))
 
 (defn- collect-params [m]
   (let [tolist (fn [m] (cond
@@ -129,7 +127,7 @@
         (when-let [response-value (get-in response [:headers k])]
           (if-let [extract (read-from v ph response-value)]
             [ph extract]
-            (println "could not extract" ph "from" response-value "with template" v)))))))
+            (hlr "could not extract" ph "from" response-value "with template" v)))))))
 
 (defn- outputs-body [response [k v]]
  (when-let [holder (ph/holder? v)]
@@ -145,7 +143,7 @@
                (when-let [response-value (get-in json [k])]
                  (if-let [extract (read-from v ph response-value)]
                    [ph extract]
-                   (println "could not extract" ph "from" response-value "with template" v))))))))))
+                   (hlr "could not extract" ph "from" response-value "with template" v))))))))))
 
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))]
@@ -160,13 +158,17 @@
   (println "building a test probe to visit " (:method entry) ":" locs)
   (let [h (or host "localhost")
         p (or port 3000)
-        uri (uri h p entry)]
+        uri (uri h p entry)
+        request-template (prepare-request uri entry)
+        engage-fn (fn [bag]
+          (let [request (ph/swap request-template tree bag)]
+            (if-let [phs (ph/holder? request)]
+              [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
+              (t/test! request))))]
     {:entry entry
      :inputs (inputs uri tree)
      :outputs (outputs-names tree)
-     :engage (fn [bag]
-      (let [request (prepare-request uri entry bag)]
-        (t/test! request)))
+     :engage engage-fn
     }))
 
 
