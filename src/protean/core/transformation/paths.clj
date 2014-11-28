@@ -68,10 +68,9 @@
 (defn paths->
   "Get all service paths or specified combinations of service/path | service."
   [codices locs]
-  (def res (locs-range codices locs))
-  (if (empty? res) (println "WARNING locs" locs "did not resolve to any path"))
-  res)
+  (let [res (locs-range codices locs)]
+    (if (empty? res) (println "WARNING locs" locs "did not resolve to any path"))
+    res))
 
 (defn uri [host port svc path]
   (str "http://" host ":" port "/" svc "/" path))
-

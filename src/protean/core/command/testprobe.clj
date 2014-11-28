@@ -3,10 +3,7 @@
   (:require [clojure.string :as s]
             [clojure.java.io :refer [file]]
             [clojure.data :refer [diff]]
-            [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
-            [me.rossputin.diskops :as dsk]
-            [silk.cli.api :as silk]
             [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as ph]
             [protean.core.protocol.http :as h]
@@ -20,15 +17,14 @@
             [loom.graph :as lg]
             [loom.alg :as la]
             [loom.attr :as lat]
-            [loom.io :as li])
-  (:import java.io.File java.net.URI java.util.UUID))
+            [loom.io :as li]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn- hlr [t] (println (aa/bold-red t)))
-(defn- hlg [t] (println (aa/bold-green t)))
+(defn- hlr [& more] (println (aa/bold-red (s/join " " more))))
+(defn- hlg [& more] (println (aa/bold-green (s/join " " more))))
 
 ;; =============================================================================
 ;; Probe config
@@ -52,7 +48,7 @@
 (defn- copy-and-swap [payload tree bag source-keys target-keys]
   (if-let [ph (d/get-in-tree tree source-keys)]
     (let [res (assoc-in payload target-keys (ph/swap ph tree bag))]
-       (if (ph/holder? res) (hlr (str "Could not resolve all placeholders:" (ph/holder? res)))) ; TODO should mark test status as fail..
+       (if (ph/holder? res) (hlr "Could not resolve all placeholders:" (ph/holder? res))) ; TODO should mark test status as fail..
        res)
     payload))
 
@@ -85,23 +81,27 @@
         (content->))))
 
 (defn- collect-params [m]
-  (let [l (cond (map? m) (vals m) (list? m) m :else (list m))
-        collect (fn [v]
-          (cond
-            (string? v) (map second (ph/holder? v))
-            (map? v) (collect-params v)
-            :else v))]
-    (mapcat collect l)))
+  (let [tolist (fn [m] (cond
+          (map? m) (vals m)
+          (list? m) m
+          :else (list m)))
+        collect (fn [v] (cond
+          (string? v) (map second (ph/holder? v))
+          (map? v) (collect-params v)
+          :else v))]
+    (mapcat collect (tolist m))))
 
 (defn- inputs [uri tree]
-  (distinct (concat
-    (collect-params uri)
-    (collect-params (d/get-in-tree tree [:req :query-params :required]))
-    (collect-params (d/get-in-tree tree [:req :query-params :required]))
-    (collect-params (d/get-in-tree tree [:req :query-params :optional])) ; TODO only include when (corpus) test level is 2?
-    (collect-params (d/get-in-tree tree [:req :form-params]))
-    (collect-params (d/get-in-tree tree [:req :headers]))
-    (collect-params (d/get-in-tree tree [:req :body])))))
+  (let [phs (list
+              uri
+              ; TODO only include optional when (corpus) test level is 2?
+              (d/get-in-tree tree [:req :query-params :required])
+              (d/get-in-tree tree [:req :query-params :optional])
+              (d/get-in-tree tree [:req :form-params :required])
+              (d/get-in-tree tree [:req :form-params :optional])
+              (d/get-in-tree tree [:req :headers])
+              (d/get-in-tree tree [:req :body]))]
+    (mapcat collect-params phs)))
 
 (defn- outputs-names [tree]
   (let [res (val (first (d/success-status tree)))]
@@ -164,26 +164,11 @@
     {:entry entry
      :inputs (inputs uri tree)
      :outputs (outputs-names tree)
-     :engage (fn [bag res-fn]
-      (let [request (prepare-request uri entry bag)
-            result (t/test! request)]
-        (res-fn result)
-        result))
+     :engage (fn [bag]
+      (let [request (prepare-request uri entry bag)]
+        (t/test! request)))
     }))
 
-
-;; =============================================================================
-;; Probe result handlers
-;; =============================================================================
-
-(defn- res-simple! [result] (println "doing nothing"))
-
-(defn- res-persist!
-  "Persist result in its interim state to a store.
-   In this protoype the store is the disk."
-  [result]
-  ;;(println "TODO: reminder placeholder for persisting results")
-  )
 
 ;; =============================================================================
 ;; Probe dispatch
@@ -205,8 +190,8 @@
           can-gen (d/get-in-tree tree [:vars input :gen])]
       (when (and (not seed) (= false can-gen))
         (if (empty? dependencies)
-            (hlr (str "No endpoint available to provide " input "!")) ; TODO should mark test status as fail..
-          (map #(->[input %]) dependencies)))))]
+            (hlr "No endpoint available to provide" input "!")) ; TODO should mark test status as fail..
+          (map #(->[input %]) dependencies))))]
   (mapcat dependency-for (:inputs probe))))
 
 (defn- build-dependency-graph [g corpus probes probe]
@@ -223,7 +208,7 @@
     (reduce add-dependencies (add-node g probe) dependencies)))
 
 (defn- execute [[bag reses] probe]
-  (let [res ((:engage probe) bag res-persist!)
+  (let [res ((:engage probe) bag)
         outputs (outputs-values (:tree (:entry probe)) (second res))]
     (println (label probe) "\noutputs" outputs "\n")
     [(merge outputs bag) (conj reses [(:entry probe) res])]))
@@ -235,13 +220,14 @@
 ;    (li/view g) ; uncomment to open image of graph
     (let [bag (get-in corpus [:seed])
           ordered-probes (la/topsort g)]
-      (if ordered-probes
+      (if (empty? ordered-probes)
+        (let [response {:error "no route found to traverse probes (cyclic dependencies)"}]
+          (map #(-> [(:entry %) [nil response]]) probes))
         (do
           (println "\nexecuting probes in the following order:\n"
             (s/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
             "\n")
           (reverse (second (reduce execute [bag (list)] ordered-probes))))
-        (hlr "no route found to traverse probes (cyclic dependencies)") ; TODO should mark test status as fail..
       ))))
 
 ;; =============================================================================
@@ -249,22 +235,24 @@
 ;; =============================================================================
 
 (defn- assess [response tree]
-  (let [success-rsp (first (d/success-status tree))
-        success-rsp-code (key success-rsp)
-        success (val success-rsp)
-        expected-ctype (d/rsp-ctype success-rsp-code tree)]
-    (->> []
-      (v/validate-status-> (name success-rsp-code) response)
-      (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
-      (v/validate-body response expected-ctype (:body-schema success) (:body success)))))
+  (if-let [error (:error response)]
+    [error]
+    (let [success-rsp (first (d/success-status tree))
+          success-rsp-code (key success-rsp)
+          success (val success-rsp)
+          expected-ctype (d/rsp-ctype success-rsp-code tree)]
+      (->> []
+        (v/validate-status-> (name success-rsp-code) response)
+        (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
+        (v/validate-body response expected-ctype (:body-schema success) (:body success))))))
 
 (defmethod pb/analyse :test [_ corpus results]
   (hlg "analysing probe data")
   (doseq [[entry [request response]] results]
 ;    (println "result - request:" request)
 ;    (println "result - response:" response)
-    (let [method (:method request)
-          uri (:uri request)
+    (let [method (if request (:method request) (:method entry))
+          uri (if request (:uri request) (str (:svc entry) (:path entry)))
           status (:status response)
           tree (:tree entry)
           ass (assess response tree)
