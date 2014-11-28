@@ -70,7 +70,7 @@
             :else co/js)]
     (update-in payload [:body] f)))
 
-(defn- prepare-request 
+(defn- prepare-request
   "Translate placeholders when visiting real nodes."
   [uri {:keys [method tree] :as entry} bag]
   (let [parsed-uri (ph/swap uri tree bag)]
@@ -269,5 +269,4 @@
           tree (:tree entry)
           ass (assess response tree)
           so (if (empty? ass) (aa/bold-green "pass") (aa/bold-red (str "fail - " (s/join "\n" ass))))]
-      (println "Test : " method " - " uri ", status - " status ": " so))))
-
+      (println "Test : " method " - " uri ", status - " status ": " so)))) ; TODO need to identify if couldnt run cos dependencies not met? (currently exp/gen seem to catch all)

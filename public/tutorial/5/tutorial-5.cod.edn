@@ -2,6 +2,7 @@
   :includes ["defaults.edn"]
 
   :title "Tutorial 5"
+  :doc "Introduces Sim Extensions"
 
   "tutorial-5" {
     "play/${stateId}" {

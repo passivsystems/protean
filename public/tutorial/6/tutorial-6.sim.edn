@@ -1,7 +1,7 @@
 (refer 'protean.core.transformation.sim)
 
 (defn param2rsp [{:keys [route-params]} data-path]
-  (if-let [rsp (rsp-body data-path (path-param route-params) ".json")]
+  (if-let [rsp (rsp-body-file data-path (path-param route-params) ".json")]
     (slurp rsp)
     {:status 404}))
 
