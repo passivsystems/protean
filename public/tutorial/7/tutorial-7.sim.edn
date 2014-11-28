@@ -1,65 +1,58 @@
 (refer 'protean.core.transformation.sim)
 
-(def state
-  (atom
-    [
-      {
-        :id "cave"
-        :description "You are in a cave, it is dark"
-        :links [
-          {:href "tutorial-7/play/forest" :title "forest"}
-        ]
-      }
-      {
-        :id "forest"
-        :description "You are in a forest, it is scary"
-        :links [
-          {:href "tutorial-7/play/cave" :title "cave"}
-          {:href "tutorial-7/play/meadow" :title "meadow"}
-        ]
-      }
-      {
-        :id "meadow"
-        :description "You are in a meadow, it is shiny"
-        :links [
-          {:href "tutorial-7/play/village" :title "village"}
-        ]
-      }
-      {
-        :id "village"
-        :description "You are in a village, there is a goblin behind the cheese shop"
-        :links [
-          {:href "tutorial-7/play/slap-goblin" :title "slap the goblin"}
-          {:href "tutorial-7/play/cave" :title "cave"}
-        ]
-      }
-      {
-        :id "slap-goblin"
-        :description "You slapped the goblin, he kinda liked it"
-        :links [
-        {:href "tutorial-7/play/slap-goblin-again" :title "slap the goblin"}
-          {:href "tutorial-7/play/cave" :title "cave"}
-        ]
-      }
-      {
-        :id "slap-goblin-again"
-        :description "You slapped the goblin, he kinda didn't like it"
-        :links [
-        {:href "tutorial-7/play/slap-goblin" :title "slap the goblin"}
-        {:href "tutorial-7/play/cave" :title "cave"}
-        ]
-      }
-    ]))
+(defn spel-print [list] (map (fn [x] (symbol (name x))) list))
 
-(defn param2rsp [{:keys [route-params]}]
-  (if-let [x (dissoc (rsp-body-state @state (path-param route-params)) :id)]
-    {:status 200 :body (encode x *request*)}
-    {:status 404}))
+(def world (atom
+{
+  'office-cubicle '((you are in your office cubicle)
+    (west exit walkway))
+  'walkway '((you are in the walkway at the side of the office -
+    there is a photocopier in front of you -)
+    (east exit office-cubicle)
+    (north exit reception)
+    (south exit bobs-office))
+  'reception '((you are in reception -
+    there is a receptionist droning on repetitively -)
+    (south exit walkway))
+  'bobs-office '((you in the Bobs office -
+    there are two bobs expenctantly waiting to talk to you -)
+    (north exit walkway))
+}))
 
-  {
-    "tutorial-7" {
-      "play/${stateId}" {
-        :get [#(param2rsp *request*)]
-      }
+(def location (atom 'office-cubicle))
+
+(defn describe-location [location world] (first (location world)))
+
+(defn describe-path [path]
+  `(there is an ~(second path) going ~(first path) from here -))
+
+(defn describe-paths [location world]
+  (apply concat (map describe-path (rest (get world location)))))
+
+(defn look []
+  (spel-print (concat (describe-location @location @world)
+                      (describe-paths @location @world))))
+
+(defn go-direction [direction]
+  (let [next (first (filter (fn [x] (= direction (first x))) (rest (@location @world))))]
+    (cond next (do (def location (atom (nth next 2))) (look))
+          :else '(you cannot go that way -))))
+
+(defmacro defspel [& rest] `(defmacro ~@rest))
+
+(defspel go [direction] `(go-direction '~direction))
+
+
+(defn get []
+  (println "looking : " (look))
+  (println "go : " (go west))
+  (println "go : " (go north))
+  {:status 200})
+
+{
+  "tutorial-7" {
+    "play/${stateId}" {
+      :get [#(get)]
     }
   }
+}

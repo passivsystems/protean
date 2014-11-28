@@ -5,6 +5,14 @@
   :doc "Demonstrates state in a sim extension"
 
   "tutorial-7" {
+    "help" {
+      :get {
+        :200 {
+          :doc "Get help with how to play the game"
+          :body-example "public/tutorial/7/help.json"
+        }
+      }
+    }
     "play/${stateId}" {
       :types {
         :StateId "(cave|forest)"
