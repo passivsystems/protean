@@ -195,6 +195,16 @@
       (log-warn "warning - no errors found for endpoint" [svc uri request-method])
       (format-rsp (rand-nth errors)))))
 
+(defn encode
+  "Encode d using header content type information in request"
+  [d]
+  (println "accept : " (get-in *request* [:headers "accept"]))
+  (let [accept (p/accept *request*)]
+  (cond
+    (= accept h/xml) (c/xml d)
+    (= accept h/txt) (str d)
+    :else (c/js d))))
+
 (defn respond
   "Creates a response with given status-code.
    If body-url is provided, will include the content and inferred content-type."
@@ -205,26 +215,29 @@
       :headers {h/ctype (h/mime body-url)}}
     {:status status-code}))
 
+;; TODO: polymorphic slurp of body based on understanding if it is path or data
+;; TODO: construct rsp (ctype etc) headers based on request accept header etc
+(defn rsp
+  "Creates rsp inferring status and content type from request.
+   Defaults to org or personal prefs in includes."
+   [body]
+   (let [status 200
+         headers {h/ctype h/jsn}]
+     {:status status :headers headers :body body ;(encode body)
+     }))
+
+
+;; TODO: rename, this is not forming a response, merely grabbing a body
 (defn rsp-body-file
   "Look in a directory structure 'data-path' for a file 'f-name' with given ext"
   [data-path f-name ext]
   (let [fs (file-seq (file data-path))]
     (first (filter #(= (.getName %) (str f-name ext)) fs))))
 
+;; TODO: rename, this is not forming a response, merely grabbing a body
 (defn rsp-body-state
   "Look in a piece of state s for a key k"
   [s k] (first (filter #(= (:id %) k) s)))
-
-(defn encode
-  "Encode d using header content type information in request"
-  [d request]
-  (println "request : " request)
-  (println "accept : " (get-in request [:headers "accept"]))
-  (let [accept (p/accept request)]
-  (cond
-    (= accept h/xml) (c/xml d)
-    (= accept h/txt) (str d)
-    :else (c/js d))))
 
 (defmacro prob
   "Will evaluate the provided function with specified probability"

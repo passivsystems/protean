@@ -1,10 +1,11 @@
 (refer 'protean.core.transformation.sim)
+(require '[clojure.string :refer [join]])
 
-(defn spel-print [list] (map (fn [x] (symbol (name x))) list))
+(defn format [list] (join " " (map #(symbol (name %)) list)))
 
 (def world (atom
 {
-  'office-cubicle '((you are in your office cubicle)
+  'office-cubicle '((you are in your office cubicle -)
     (west exit walkway))
   'walkway '((you are in the walkway at the side of the office -
     there is a photocopier in front of you -)
@@ -30,29 +31,21 @@
   (apply concat (map describe-path (rest (get world location)))))
 
 (defn look []
-  (spel-print (concat (describe-location @location @world)
+  (format (concat (describe-location @location @world)
                       (describe-paths @location @world))))
 
-(defn go-direction [direction]
+(defn go [direction]
   (let [next (first (filter (fn [x] (= direction (first x))) (rest (@location @world))))]
     (cond next (do (def location (atom (nth next 2))) (look))
           :else '(you cannot go that way -))))
 
-(defmacro defspel [& rest] `(defmacro ~@rest))
-
-(defspel go [direction] `(go-direction '~direction))
-
-
-(defn get []
-  (println "looking : " (look))
-  (println "go : " (go west))
-  (println "go : " (go north))
-  {:status 200})
+(defn go-rest []
+  (let [dir (symbol (get-in *request* [:query-params "direction"]))]
+    (rsp (go dir))))
 
 {
   "tutorial-7" {
-    "play/${stateId}" {
-      :get [#(get)]
-    }
+    "look" {:get [#(rsp (look))]}
+    "go" {:put [#(go-rest)]}
   }
 }
