@@ -40,6 +40,17 @@
     (if (empty? v) target (assoc-in target in-ks v))
     target))
 
+(defn- is-relative [path]
+  (try
+    (clojure.java.io/as-relative-path path)
+    (catch Exception e false)))
+
+(defn to-path
+  "Resolves relative paths to absolute"
+  [path tree]
+  (let [codex-dir (get-in-tree tree [:codex-dir])]
+    ; TODO if relative to codex-dir is not found, then try relative to current root (codex-dir ""), else protean home.
+    (if (is-relative path) (str codex-dir "/" path) path)))
 
 ;; =============================================================================
 ;; Codex request

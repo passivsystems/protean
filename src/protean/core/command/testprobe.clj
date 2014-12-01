@@ -65,6 +65,13 @@
             :else co/js)]
     (update-in payload [:body] f)))
 
+(defn- transform-query-params-> [payload tree]
+  (if (d/qp-json? tree)
+    (let [to-json (fn [[k v]] [k (co/js v)])
+          qp-to-json (fn [m] (into {} (map to-json m)))]
+      (update-in payload [:query-params] qp-to-json))
+    payload))
+
 (defn- prepare-request
   "Prepare payload - may still contain placeholders."
   [uri {:keys [method tree] :as entry}]
@@ -76,6 +83,7 @@
       (copy-> tree [:req :form-params :optional] [:form-params])
       (copy-> tree [:req :headers] [:headers])
       (copy-> tree [:req :body] [:body])
+      (transform-query-params-> tree)
       (content-type-> method)
       (content->)))
 
@@ -137,11 +145,13 @@
            (h/txt? ctype) (read-from v ph response-body)
            (h/xml? ctype) nil ; TODO read from xml
            :else
-             (let [json (co/clj response-body)]
-               (when-let [response-value (get-in json [k])]
-                 (if-let [extract (read-from v ph response-value)]
-                   [ph extract]
-                   (hlr "could not extract" ph "from" response-value "with template" v))))))))))
+             (try
+               (let [json (co/clj response-body)]
+                 (when-let [response-value (get-in json [k])]
+                   (if-let [extract (read-from v ph response-value)]
+                     [ph extract]
+                     (hlr "could not extract" ph "from" response-value "with template" v))))
+                (catch Exception e (hlr (str "Could not parse json:" response-body "\n" (.getMessage e)))))))))))
 
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))]
@@ -211,49 +221,50 @@
   (let [[req resp] ((:engage probe) bag)
         outputs (outputs-values (:tree (:entry probe)) resp)]
     (println (label probe) "\noutputs" outputs "\n")
-    [(merge outputs bag) (conj reses [(:entry probe) req resp])]))
+    [(merge outputs bag) (conj reses {:entry (:entry probe) :request req :response resp})]))
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
   (let [analyse (fn [g probe] (build-dependency-graph g corpus probes probe))
-        g (reduce analyse (lg/digraph) probes)]
-;    (li/view g) ; uncomment to open image of graph
-    (let [bag (get-in corpus [:seed])
-          ordered-probes (la/topsort g)]
+        g (reduce analyse (lg/digraph) probes)
+        bag (get-in corpus [:seed])
+        ordered-probes (la/topsort g)
+        no-route-response {:error "no route found to traverse probes (cyclic dependencies)"}
+        print-inputs-outputs (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p)))]
+;      (li/view g) ; uncomment to open image of graph
       (if (empty? ordered-probes)
-        (let [response {:error "no route found to traverse probes (cyclic dependencies)"}]
-          (map #(-> [(:entry %) [nil response]]) probes))
+        (map #(-> {:entry (:entry %) :request nil :response no-route-response}) probes)
         (do
           (println "\nexecuting probes in the following order:\n"
-            (s/join "\n" (map (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p))) ordered-probes))
+            (s/join "\n" (map print-inputs-outputs ordered-probes))
             "\n")
-          (reverse (second (reduce execute [bag (list)] ordered-probes))))
-      ))))
+          (reverse (second (reduce execute [bag (list)] ordered-probes)))))))
 
 ;; =============================================================================
 ;; Probe data analysis
 ;; =============================================================================
 
-(defn- assess [[{:keys [tree] :as entry} request response]]
+(defn- assess [{:keys [entry request response]}]
   (if-let [error (:error response)]
     {:error error}
-    (let [success-rsp (first (d/success-status tree))
+    (let [tree (:tree entry)
+          success-rsp (first (d/success-status tree))
           success-rsp-code (key success-rsp)
           success (val success-rsp)
           expected-ctype (d/rsp-ctype success-rsp-code tree)]
       {:failures (->> []
         (v/validate-status-> (name success-rsp-code) response)
         (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
-        (v/validate-body response expected-ctype (:body-schema success) (:body success)))})))
+        (v/validate-body response expected-ctype (d/to-path (:body-schema success) tree) (:body success)))})))
 
-(defn- print-result [[entry request response ass]]
+(defn- print-result [{:keys [entry request response error failures]}]
   ;      (println "result - request:" request)
   ;      (println "result - response:" response)
   (let [name (str (:method entry) " " (:svc entry) " " (:path entry))
         status (:status response)
         so (cond
-          (:error ass) (aa/bold-red (str "error - " (:error ass)))
-          (:failures ass) (aa/bold-red (str "fail - " (s/join "\n" (:failures ass))))
+          error (aa/bold-red (str "error - " error))
+          failures (aa/bold-red (str "fail - " (s/join "\n" failures)))
           :else (aa/bold-green "pass"))]
     (println "Test : " name ", status - " status ": " so)))
 
@@ -261,6 +272,4 @@
   (hlg "analysing probe data")
   (let [assessed (map conj results (map assess results))]
     (doall (map print-result assessed))
-    (j/write-report assessed)
-  )
-)
+    (j/write-report assessed)))

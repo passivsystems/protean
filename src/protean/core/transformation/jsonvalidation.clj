@@ -50,4 +50,3 @@
         report (.validate schema parsed-data)]
     {:success (.isSuccess report)
      :message (str report)}))
-

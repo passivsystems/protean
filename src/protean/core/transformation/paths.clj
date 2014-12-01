@@ -18,7 +18,7 @@
       :spec {:doc Simplest example of a resource - doc is optional}
     }
   "
-  (:require [clojure.string :as stg]
+  (:require [clojure.string :as s]
             [clojure.pprint]
             [protean.core.codex.document :as d]
             [protean.core.protocol.http :as h]))
@@ -55,8 +55,8 @@
     '()))
 
 (defn- locs-range [codices locs]
-  (let [groups ((juxt filter remove) #(= (count (stg/split % #" ")) 1) locs)
-        combi (map #(stg/split (apply str %) #" ") (second groups))
+  (let [groups ((juxt filter remove) #(= (count (s/split % #" ")) 1) locs)
+        combi (map #(s/split (apply str %) #" ") (second groups))
         combi-paths (proc-group codices (second groups) combi-paths combi)
         svc-paths (proc-group codices (first groups) svc-paths (first groups))]
     (concat combi-paths svc-paths)))
