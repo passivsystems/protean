@@ -13,9 +13,12 @@
     (south exit bobs-office))
   'reception '((you are in reception -
     it is drab -)
+    (west exit miltons-cubicle)
     (south exit walkway))
   'bobs-office '((you in the Bobs office -)
     (north exit walkway))
+  'miltons-cubicle '((you are in miltons office -)
+    (east exit reception))
 }))
 
 (def location (atom 'office-cubicle))

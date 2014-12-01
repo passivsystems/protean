@@ -2,7 +2,7 @@
   :includes ["defaults.edn"]
 
   :title "Tutorial 7"
-  :doc "Demonstrates state in a sim extension"
+  :doc "Walk and look at a game world"
 
   "tutorial-7" {
     "help" {
