@@ -95,8 +95,8 @@
     (string? m)(replace-all-with m (partial swap-fn tree))
     (map? m)(into {} (for [[k v] m]
       {k (holder-swap v swap-fn tree)}))
-    (seq? m)(map holder-swap m)
-    (vector? m)(map holder-swap m)
+    (seq? m)(map #(holder-swap % swap-fn tree) m)
+    (vector? m)(map #(holder-swap % swap-fn tree) m)
     :else m))
 
 (defn swap [ph tree bag]
