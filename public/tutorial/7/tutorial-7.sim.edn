@@ -7,8 +7,7 @@
 {
   'office-cubicle '((you are in your office cubicle -)
     (west exit walkway))
-  'walkway '((you are in the walkway at the side of the office -
-    there is a photocopier in front of you -)
+  'walkway '((you are in the walkway at the side of the office -)
     (east exit office-cubicle)
     (north exit reception)
     (south exit bobs-office))
