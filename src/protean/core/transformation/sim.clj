@@ -223,8 +223,7 @@
    [body]
    (let [status 200
          headers {h/ctype h/jsn}]
-     {:status status :headers headers :body body ;(encode body)
-     }))
+     {:status status :headers headers :body body}))
 
 
 ;; TODO: rename, this is not forming a response, merely grabbing a body
