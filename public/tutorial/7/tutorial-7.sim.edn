@@ -12,10 +12,9 @@
     (north exit reception)
     (south exit bobs-office))
   'reception '((you are in reception -
-    there is a receptionist droning on repetitively -)
+    it is drab -)
     (south exit walkway))
-  'bobs-office '((you in the Bobs office -
-    there are two bobs expenctantly waiting to talk to you -)
+  'bobs-office '((you in the Bobs office -)
     (north exit walkway))
 }))
 
