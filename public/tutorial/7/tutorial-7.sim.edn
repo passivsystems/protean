@@ -11,8 +11,7 @@
     (east exit office-cubicle)
     (north exit reception)
     (south exit bobs-office))
-  'reception '((you are in reception -
-    it is drab -)
+  'reception '((you are in reception - it is drab -)
     (west exit miltons-cubicle)
     (south exit walkway))
   'bobs-office '((you in the Bobs office -)
