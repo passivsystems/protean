@@ -1,0 +1,85 @@
+(refer 'protean.core.transformation.sim)
+(require '[clojure.string :refer [join]])
+
+(defn format [list] (join " " (map #(symbol (name %)) list)))
+
+(def world (atom
+{
+  'office-cubicle '((you are in your office cubicle -)
+    (west exit walkway))
+  'walkway '((you are in the walkway at the side of the office -)
+    (east exit office-cubicle)
+    (north exit reception)
+    (south exit bobs-office))
+  'reception '((you are in reception - it is drab -)
+    (west exit miltons-cubicle)
+    (south exit walkway))
+  'bobs-office '((you in the Bobs office -)
+    (north exit walkway))
+  'miltons-cubicle '((you are in miltons office -)
+    (east exit reception))
+}))
+
+(def location (atom 'office-cubicle))
+
+(defn describe-location [location world] (first (location world)))
+
+(defn describe-path [path]
+  `(there is an ~(second path) going ~(first path) from here -))
+
+(defn describe-paths [location world]
+  (apply concat (map describe-path (rest (get world location)))))
+
+(def items (atom '(photocopier red-stapler)))
+
+(def item-locations (atom
+{
+  'photocopier 'walkway
+  'red-stapler 'miltons-cubicle
+}))
+
+(defn is-at? [obj loc obj-loc] (= (obj obj-loc) loc))
+
+(defn describe-floor [loc objs obj-loc]
+  (apply concat (map (fn [x] `(you see a ~x on the floor -))
+    (filter (fn [x] (is-at? x loc obj-loc)) objs))))
+
+(defn look []
+  (format (concat (describe-location @location @world)
+                  (describe-paths @location @world)
+                  (describe-floor @location @items @item-locations))))
+
+(defn pickup [item]
+  (cond (is-at? item @location @item-locations)
+  (do
+    (def item-locations (atom (assoc @item-locations item 'body)))
+    (format `(you are now carrying the ~item)))
+    :else '(you cannot get that.)))
+
+(defn inventory []
+  (println "*** BLURB")
+  (format (filter (fn [x] (is-at? x 'body @item-locations)) @items)))
+
+(defn have? [item] (some #{item} (inventory)))
+
+(defn go [direction]
+  (let [next (first (filter (fn [x] (= direction (first x))) (rest (@location @world))))]
+    (cond next (do (def location (atom (nth next 2))) (look))
+          :else '(you cannot go that way -))))
+
+(defn go-rest []
+  (let [dir (symbol (get-in *request* [:query-params "direction"]))]
+    (rsp (go dir))))
+
+(defn pickup-rest []
+  (let [item (symbol (get-in *request* [:query-params "item"]))]
+  (rsp (pickup item))))
+
+{
+  "tutorial-8" {
+    "look" {:get [#(rsp (look))]}
+    "go" {:put [#(go-rest)]}
+    "inventory" {:get [#(rsp (inventory))]}
+    "pickup" {:put [#(pickup-rest)]}
+  }
+}
