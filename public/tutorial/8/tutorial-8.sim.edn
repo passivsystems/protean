@@ -54,7 +54,7 @@
   (do
     (def item-locations (atom (assoc @item-locations item 'body)))
     (format `(you are now carrying the ~item)))
-    :else '(you cannot get that.)))
+    :else (format '(you cannot get that.))))
 
 (defn inventory []
   (format (filter (fn [x] (is-at? x 'body @item-locations)) @items)))
