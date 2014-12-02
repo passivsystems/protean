@@ -53,7 +53,7 @@
 (defn pickup [item]
   (cond (is-at? item @location @item-locations)
   (do
-    (def item-locations (atom (assoc @item-locations item 'body)))
+    (e/swap! item-locations assoc item 'body)
     (format `(you are now carrying the ~item)))
     :else (format '(you cannot get that.))))
 
@@ -64,7 +64,7 @@
 
 (defn go [direction]
   (let [next (first (filter (fn [x] (= direction (first x))) (rest (@location @world))))]
-    (cond next (do (def location (atom (nth next 2))) (look))
+    (cond next (do (e/reset! location (nth next 2)) (look))
           :else '(you cannot go that way -))))
 
 (defn go-rest []
