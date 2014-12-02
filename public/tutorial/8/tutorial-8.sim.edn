@@ -30,9 +30,36 @@
 (defn describe-paths [location world]
   (apply concat (map describe-path (rest (get world location)))))
 
+(def items (atom '(photocopier red-stapler)))
+
+(def item-locations (atom
+{
+  'photocopier 'walkway
+  'red-stapler 'miltons-cubicle
+}))
+
+(defn is-at? [obj loc obj-loc] (= (obj obj-loc) loc))
+
+(defn describe-floor [loc objs obj-loc]
+  (apply concat (map (fn [x] `(you see a ~x on the floor -))
+    (filter (fn [x] (is-at? x loc obj-loc)) objs))))
+
 (defn look []
   (format (concat (describe-location @location @world)
-                      (describe-paths @location @world))))
+                  (describe-paths @location @world)
+                  (describe-floor @location @items @item-locations))))
+
+(defn pickup [item]
+  (cond (is-at? item @location @item-locations)
+  (do
+    (def item-locations (atom (assoc @item-locations item 'body)))
+    (format `(you are now carrying the ~item)))
+    :else '(you cannot get that.)))
+
+(defn inventory []
+  (format (filter (fn [x] (is-at? x 'body @item-locations)) @items)))
+
+(defn have? [item] (some #{item} (inventory)))
 
 (defn go [direction]
   (let [next (first (filter (fn [x] (= direction (first x))) (rest (@location @world))))]
@@ -43,9 +70,15 @@
   (let [dir (symbol (get-in *request* [:query-params "direction"]))]
     (rsp (go dir))))
 
+(defn pickup-rest []
+  (let [item (symbol (get-in *request* [:query-params "item"]))]
+  (rsp (pickup item))))
+
 {
-  "tutorial-7" {
+  "tutorial-8" {
     "look" {:get [#(rsp (look))]}
     "go" {:put [#(go-rest)]}
+    "inventory" {:get [#(rsp (inventory))]}
+    "pickup" {:put [#(pickup-rest)]}
   }
 }
