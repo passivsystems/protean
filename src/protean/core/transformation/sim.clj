@@ -181,19 +181,21 @@
   "Returns a randomly selected success response as defined for endpoint"
   []
   (let [successes (d/success-status *tree*)
-        {:keys [svc request-method uri]} *request*]
+        {:keys [svc request-method uri]} *request*
+        success (format-rsp (rand-nth successes))]
     (if (empty? successes)
       (log-warn "warning - no successes found for endpoint" [svc uri request-method])
-      (format-rsp (rand-nth successes)))))
+      (ph/swap success *tree* {}))))
 
 (defn error
   "Returns a randomly selected error response as defined for endpoint"
   []
   (let [errors (d/error-status *tree*)
-        {:keys [svc request-method uri]} *request*]
+        {:keys [svc request-method uri]} *request*
+        error (format-rsp (rand-nth errors))]
     (if (empty? errors)
       (log-warn "warning - no errors found for endpoint" [svc uri request-method])
-      (format-rsp (rand-nth errors)))))
+      (ph/swap error *tree* {}))))
 
 (defn encode
   "Encode d using header content type information in request"
