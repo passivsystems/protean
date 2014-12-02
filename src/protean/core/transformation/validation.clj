@@ -14,7 +14,8 @@
 
 (defn validate-status-> [expected-status payload errors]
   (if (not (= (str (:status payload)) expected-status))
-    (conj errors (str "expected status " expected-status " (was " (:status payload) ")"))))
+    (conj errors (str "expected status " expected-status " (was " (:status payload) ")"))
+    errors))
 
 (defn validate-headers [expected-headers payload errors]
   (if expected-headers

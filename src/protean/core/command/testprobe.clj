@@ -2,7 +2,6 @@
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as s]
             [clojure.java.io :refer [file]]
-            [clojure.data :refer [diff]]
             [io.aviso.ansi :as aa]
             [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as ph]
@@ -113,12 +112,20 @@
       (collect-params (get-in res [:headers]))
       (collect-params (get-in res [:body]))))))
 
+(defn- diff [s1 s2]
+  (cond
+    (and (nil? (first s1)) (nil? (first s2))) []
+    (= (first s1) (first s2)) (diff (rest s1) (rest s2))
+    :else [s1 s2]))
+
+(defn- diff-str [s1 s2]
+  (into [] (map s/join (diff (char-array (str s1)) (char-array (str s2))))))
+
 (defn- read-from [template ph s]
-;  (println "pulling out" ph "from" s "with template" template)
-  (let [diff (diff (char-array template) (char-array s))
-        left (s/join (first diff))
-        right (s/join (second diff))
-        diff-match (re-matches ph/ph left)]
+  ;(println "pulling out" ph "from" s "with template" template)
+  ;(println "result:" (diff-str template s))
+  (let [[left right] (diff-str template s)
+        diff-match (if left (re-matches ph/ph left))]
         ; note currently only works until first mismatch.
         ; Which only works if our placeholder is the only placeholder, and is at the end of the string.
         ; e.g. abc${def} - ok
@@ -132,8 +139,8 @@
       (do ;(println "ph:" ph)
         (when-let [response-value (get-in response [:headers k])]
           (if-let [extract (read-from v ph response-value)]
-            [ph extract]
-            (hlr "could not extract" ph "from" response-value "with template" v)))))))
+            {:ph ph :val extract}
+            {:error (str "could not extract " ph " from " response-value " with template '" v "'")}))))))
 
 (defn- outputs-body [response [k v]]
  (when-let [holder (ph/holder? v)]
@@ -149,15 +156,19 @@
                (let [json (co/clj response-body)]
                  (when-let [response-value (get-in json [k])]
                    (if-let [extract (read-from v ph response-value)]
-                     [ph extract]
-                     (hlr "could not extract" ph "from" response-value "with template" v))))
-                (catch Exception e (hlr (str "Could not parse json:" response-body "\n" (.getMessage e)))))))))))
+                     {:ph ph :val extract}
+                     {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
+                (catch Exception e {:error (str "Could not parse json: " response-body " \n " (.getMessage e))}))))))))
 
 (defn- outputs-values [tree response]
-  (let [res (val (first (d/success-status tree)))]
-    (merge
-      (into {} (mapcat (partial outputs-hdrs response) (get-in res [:headers])))
-      (into {} (mapcat (partial outputs-body response) (get-in res [:body]))))))
+  (let [res (val (first (d/success-status tree)))
+        header-phs (remove nil? (mapcat (partial outputs-hdrs response) (get-in res [:headers])))
+        body-phs (remove nil? (mapcat (partial outputs-hdrs response) (get-in res [:body])))
+        to-entry (fn [e] [(:ph e) (:val e)])
+        bag (into {} (map to-entry (concat header-phs body-phs)))
+        errors (remove nil? (map :error (concat header-phs body-phs)))
+        ]
+    {:bag bag :errors errors}))
 
 (defn- uri [host port {:keys [svc path] :as entry}]
   (p/uri host port svc path))
@@ -169,6 +180,7 @@
         uri (uri h p entry)
         request-template (prepare-request uri entry)
         engage-fn (fn [bag]
+          (println "engage-fn" bag)
           (let [request (ph/swap request-template tree bag)]
             (if-let [phs (ph/holder? request)]
               [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
@@ -233,7 +245,10 @@
   (let [[req resp] ((:engage probe) bag)
         outputs (outputs-values (:tree (:entry probe)) resp)]
     (println (label probe) "\noutputs" outputs "\n")
-    [(merge outputs bag) (conj reses {:entry (:entry probe) :request req :response resp})]))
+    (let [errors (s/join "," (:errors outputs))]
+      (if (empty? errors)
+        [(merge (:bag outputs) bag) (conj reses {:entry (:entry probe) :request req :response resp})]
+        [bag (conj reses {:entry (:entry probe) :request req :response (update-in resp [:failures] conj errors)})]))))
 
 (defn- select-path
   "return a walkable (non-cyclic) path from optional graphs"
@@ -271,7 +286,7 @@
           success-rsp-code (key success-rsp)
           success (val success-rsp)
           expected-ctype (d/rsp-ctype success-rsp-code tree)]
-      {:failures (->> []
+      {:failures (->> (into [] (:failures response))
         (v/validate-status-> (name success-rsp-code) response)
         (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
         (v/validate-body response expected-ctype (d/to-path (:body-schema success) tree) (:body success)))})))
@@ -283,7 +298,7 @@
         status (:status response)
         so (cond
           error (aa/bold-red (str "error - " error))
-          failures (aa/bold-red (str "fail - " (s/join "\n" failures)))
+          (seq failures) (aa/bold-red (str "fail - " (s/join "\n" failures)))
           :else (aa/bold-green "pass"))]
     (println "Test : " name ", status - " status ": " so)))
 

@@ -40,7 +40,7 @@
                  "Response:" (co/pretty-js response))]
     (x/element :testcase {:name name :classname classname :time time}
       (if error (error-to-xml error))
-      (if failures (failure-to-xml failures))
+      (if (seq failures) (failure-to-xml failures))
       (x/element :system-out {} (x/cdata out)) ; TODO should bind *out* and send it to system-out?
       (x/element :system-err {} (x/cdata "")))))
 

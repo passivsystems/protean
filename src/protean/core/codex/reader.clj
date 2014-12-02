@@ -16,6 +16,6 @@
 (defn read-codex
   "will read the codex eden file, merging with any referenced files"
   [file]
-  (let [codex-dir (.getParent (File. file))]
+  (let [codex-dir (.getParent file)]
     ; TODO review this - alternatives are setting a binding, updating system property (env caches values at startup)?
     (merge {:codex-dir codex-dir} (read-codex-part file))))

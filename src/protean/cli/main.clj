@@ -10,7 +10,7 @@
             [protean.core.command.bridge :as b]
             [protean.core.codex.reader :as r])
   (:use protean.cli.simadmin)
-  (:import java.net.URI)
+  (:import java.net.URI java.io.File)
   (:gen-class))
 
 ;; =============================================================================
@@ -94,7 +94,7 @@
   ; TODO fail if b has no commands?
   (let [b (sane-corpus (c/clj body))]
     (println (aa/bold-green "Exploring quadrant..."))
-    (let [codices (r/read-codex file)]
+    (let [codices (r/read-codex (File. file))]
       (b/visit b codices)
       (println (aa/bold-green "...finished exploring quadrant")))))
 
