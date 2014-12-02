@@ -33,7 +33,7 @@
 
 (defn look []
   (format (concat (describe-location @location @world)
-                      (describe-paths @location @world))))
+                  (describe-paths @location @world))))
 
 (defn go [direction]
   (let [loc (first (filter #(= direction (first %)) (rest (@location @world))))]
