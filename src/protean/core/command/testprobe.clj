@@ -204,18 +204,30 @@
           (map #(->[input %]) dependencies))))]
   (mapcat dependency-for (:inputs probe))))
 
-(defn- build-dependency-graph [g corpus probes probe]
-  (let [tree (get-in probe [:entry :tree])
-        dependencies (get-dependencies corpus probes probe)
-        add-node (fn [g probe]
-          (-> g
-            (lg/add-nodes probe)
-            (lat/add-attr probe :label (label probe))))
-        add-dependencies (fn [g [input dependency]]
-          (-> g
-            (lg/add-edges [dependency probe])
-            (lat/add-attr [dependency probe] :label input)))]
-    (reduce add-dependencies (add-node g probe) dependencies)))
+(defn- build-graphs
+  "returns a list of graphs covering all possible ways to walk over endpoints,
+   satisfying input/output constraints."
+  [corpus probes]
+  (let [add-node (fn [g probe]
+                   (-> g
+                     (lg/add-nodes probe)
+                     (lat/add-attr probe :label (label probe))))
+        g-nodes (reduce add-node (lg/digraph) probes)
+        dependencies (fn [probe] (get-dependencies corpus probes probe))
+        input-dependencies (fn [probe] (group-by first (dependencies probe)))
+        add-dependencies (fn [probe gs [input dependencies]]
+                      (if (empty? dependencies)
+                        gs
+                        (for [g gs
+                              [_ dependency] dependencies] ; the different dependencies that provide input
+                          (-> g
+                            (lg/add-edges [dependency probe])
+                            (lat/add-attr [dependency probe] :label input)))))
+        add-all-dependencies (fn [gs probe]
+          (let [dependencies (input-dependencies probe)
+                res (reduce (partial add-dependencies probe) gs dependencies)]
+            (if (empty? dependencies) gs res)))]
+    (reduce add-all-dependencies (list g-nodes) probes)))
 
 (defn- execute [[bag reses] probe]
   (let [[req resp] ((:engage probe) bag)
@@ -223,15 +235,22 @@
     (println (label probe) "\noutputs" outputs "\n")
     [(merge outputs bag) (conj reses {:entry (:entry probe) :request req :response resp})]))
 
+(defn- select-path
+  "return a walkable (non-cyclic) path from optional graphs"
+  [gs]
+  (let [tuples (map vector (map la/topsort gs) gs)
+        walkable (remove #(nil? (first %)) tuples)
+        selected (first walkable)]
+;    (li/view (second selected)) ; uncomment to open image of graph
+    (first selected)))
+
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
-  (let [analyse (fn [g probe] (build-dependency-graph g corpus probes probe))
-        g (reduce analyse (lg/digraph) probes)
+  (let [gs (build-graphs corpus probes)
+        ordered-probes (select-path gs)
         bag (get-in corpus [:seed])
-        ordered-probes (la/topsort g)
         no-route-response {:error "no route found to traverse probes (cyclic dependencies)"}
         print-inputs-outputs (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p)))]
-;      (li/view g) ; uncomment to open image of graph
       (if (empty? ordered-probes)
         (map #(-> {:entry (:entry %) :request nil :response no-route-response}) probes)
         (do
