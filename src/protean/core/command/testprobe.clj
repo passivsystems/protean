@@ -2,6 +2,7 @@
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as s]
             [clojure.java.io :refer [file]]
+            [clojure.set :as st]
             [io.aviso.ansi :as aa]
             [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as ph]
@@ -50,8 +51,8 @@
     (assoc-in payload target-keys kvs)
     payload))
 
-(defn- content-type-> [payload method]
-  (if (and (some #{method} [:post :put])
+(defn- content-type-> [payload]
+  (if (and (:body payload)
            (not (pp/ctype payload)))
     (assoc-in payload [:headers h/ctype] h/jsn-simple)
     payload))
@@ -83,7 +84,7 @@
       (copy-> tree [:req :headers] [:headers])
       (copy-> tree [:req :body] [:body])
       (transform-query-params-> tree)
-      (content-type-> method)
+      (content-type->)
       (content->)))
 
 (defn- collect-params [m]
@@ -122,8 +123,6 @@
   (into [] (map s/join (diff (char-array (str s1)) (char-array (str s2))))))
 
 (defn- read-from [template ph s]
-  ;(println "pulling out" ph "from" s "with template" template)
-  ;(println "result:" (diff-str template s))
   (let [[left right] (diff-str template s)
         diff-match (if left (re-matches ph/ph left))]
         ; note currently only works until first mismatch.
@@ -163,11 +162,10 @@
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))
         header-phs (remove nil? (mapcat (partial outputs-hdrs response) (get-in res [:headers])))
-        body-phs (remove nil? (mapcat (partial outputs-hdrs response) (get-in res [:body])))
+        body-phs (remove nil? (mapcat (partial outputs-body response) (get-in res [:body])))
         to-entry (fn [e] [(:ph e) (:val e)])
         bag (into {} (map to-entry (concat header-phs body-phs)))
-        errors (remove nil? (map :error (concat header-phs body-phs)))
-        ]
+        errors (remove nil? (map :error (concat header-phs body-phs)))]
     {:bag bag :errors errors}))
 
 (defn- uri [host port {:keys [svc path] :as entry}]
@@ -180,7 +178,6 @@
         uri (uri h p entry)
         request-template (prepare-request uri entry)
         engage-fn (fn [bag]
-          (println "engage-fn" bag)
           (let [request (ph/swap request-template tree bag)]
             (if-let [phs (ph/holder? request)]
               [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
@@ -250,11 +247,26 @@
         [(merge (:bag outputs) bag) (conj reses {:entry (:entry probe) :request req :response resp})]
         [bag (conj reses {:entry (:entry probe) :request req :response (update-in resp [:failures] conj errors)})]))))
 
+(defn- id-use-after-delete
+   "if method is delete, then collect all inputs marked as :gen false
+     - path is unusable if those inputs are required further down the line"
+  [sorted-g]
+  (let [f (fn [[deleted-inputs deleted-id-access] probe]
+    (let [method (get-in probe [:entry :method])
+          inputs (set (get-in probe [:inputs]))
+          tree (get-in probe [:entry :tree])
+          next-deleted-id-access (or deleted-id-access (not-empty (st/intersection inputs deleted-inputs)))
+          non-generative-inputs (set (for [input inputs] (if (= false (d/get-in-tree tree [:vars input :gen])) input)))
+          next-deleted-inputs (set (concat deleted-inputs (if (= :delete method) non-generative-inputs)))]
+      [next-deleted-inputs next-deleted-id-access]))]
+    (second (reduce f [#{} false] sorted-g))))
+
 (defn- select-path
   "return a walkable (non-cyclic) path from optional graphs"
   [gs]
   (let [tuples (map vector (map la/topsort gs) gs)
-        walkable (remove #(nil? (first %)) tuples)
+        not-walkable (fn [sorted-g] (or (nil? sorted-g) (id-use-after-delete sorted-g)))
+        walkable (remove #(not-walkable (first %)) tuples)
         selected (first walkable)]
 ;    (li/view (second selected)) ; uncomment to open image of graph
     (first selected)))
