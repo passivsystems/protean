@@ -1,9 +1,10 @@
 (refer 'protean.core.transformation.sim)
-(require '[clojure.string :refer [join]])
+(require '[clojure.string :refer [join]]
+         '[alandipert.enduro :as e])
 
 (defn format [list] (join " " (map #(symbol (name %)) list)))
 
-(def world (atom
+(def world (e/file-atom
 {
   'office-cubicle '((you are in your office cubicle -)
     (west exit walkway))
@@ -18,9 +19,9 @@
     (north exit walkway))
   'miltons-cubicle '((you are in miltons office -)
     (east exit reception))
-}))
+} "tutorial-7-world.sav"))
 
-(def location (atom 'office-cubicle))
+(def location (e/file-atom 'office-cubicle "tutorial-7-location.sav"))
 
 (defn describe-location [location world] (first (location world)))
 
@@ -32,11 +33,11 @@
 
 (defn look []
   (format (concat (describe-location @location @world)
-                      (describe-paths @location @world))))
+                  (describe-paths @location @world))))
 
 (defn go [direction]
-  (let [next (first (filter (fn [x] (= direction (first x))) (rest (@location @world))))]
-    (cond next (do (def location (atom (nth next 2))) (look))
+  (let [loc (first (filter #(= direction (first %)) (rest (@location @world))))]
+    (cond loc (do (e/reset! location (nth loc 2)) (look))
           :else '(you cannot go that way -))))
 
 (defn go-rest []

@@ -1,9 +1,10 @@
 (refer 'protean.core.transformation.sim)
-(require '[clojure.string :refer [join]])
+(require '[clojure.string :refer [join]]
+         '[alandipert.enduro :as e])
 
 (defn format [list] (join " " (map #(symbol (name %)) list)))
 
-(def world (atom
+(def world (e/file-atom
 {
   'office-cubicle '((you are in your office cubicle -)
     (west exit walkway))
@@ -18,9 +19,9 @@
     (north exit walkway))
   'miltons-cubicle '((you are in miltons office -)
     (east exit reception))
-}))
+} "tutorial-8-world.sav"))
 
-(def location (atom 'office-cubicle))
+(def location (e/file-atom 'office-cubicle "tutorial-8-location.sav"))
 
 (defn describe-location [location world] (first (location world)))
 
@@ -32,11 +33,11 @@
 
 (def items (atom '(photocopier red-stapler)))
 
-(def item-locations (atom
+(def item-locations (e/file-atom
 {
   'photocopier 'walkway
   'red-stapler 'miltons-cubicle
-}))
+} "tutorial-8-item-locations.sav"))
 
 (defn is-at? [obj loc obj-loc] (= (obj obj-loc) loc))
 
@@ -52,9 +53,9 @@
 (defn pickup [item]
   (cond (is-at? item @location @item-locations)
   (do
-    (def item-locations (atom (assoc @item-locations item 'body)))
+    (e/swap! item-locations assoc item 'body)
     (format `(you are now carrying the ~item)))
-    :else '(you cannot get that.)))
+    :else (format '(you cannot get that.))))
 
 (defn inventory []
   (format (filter (fn [x] (is-at? x 'body @item-locations)) @items)))
@@ -62,8 +63,8 @@
 (defn have? [item] (some #{item} (inventory)))
 
 (defn go [direction]
-  (let [next (first (filter (fn [x] (= direction (first x))) (rest (@location @world))))]
-    (cond next (do (def location (atom (nth next 2))) (look))
+  (let [loc (first (filter #(= direction (first %)) (rest (@location @world))))]
+    (cond loc (do (e/reset! location (nth loc 2)) (look))
           :else '(you cannot go that way -))))
 
 (defn go-rest []
