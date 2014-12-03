@@ -69,6 +69,22 @@
     (spit (str target-dir (UUID/randomUUID) ".edn")
           (pr-str {:title k :value v}))))
 
+(defn- doc-body-examples [target-dir full paths]
+  "Doc body examples for a given node.
+  target-dir is the directory to write to.
+  paths is a list rsp body example paths."
+  (.mkdirs (File. target-dir))
+  (doseq [p paths]
+    (let [id (UUID/randomUUID)
+          title (subs p (+ (.lastIndexOf p (dsk/fs)) 1) (.lastIndexOf p "."))]
+      (spit (str target-dir id ".edn")
+      (pr-str {
+        :id id
+        :title title
+        :method (get full :method)
+        :path (get full :path)
+        :value (slurp p)})))))
+
 (defn- doc-status-codes [target-dir tree statuses]
   "Doc response headers for a given node.
    Directory is the data directory root.
@@ -116,12 +132,12 @@
                 :doc (d/get-in-tree tree [:doc])
                 :desc (if-let [d (d/get-in-tree tree [:description])] d "")
                 :method (name method)
-                :req-body-example (if-let [d (d/get-in-tree tree [:req :body-example])] (slurp d) "N/A")
                 :req-body-schema (if-let [d (d/get-in-tree tree [:req :body-schema])] (slurp d) "N/A")}]
       (spit-to (str directory "/global/site.edn") (pr-str site))
       (spit-to (str directory "/api/" id ".edn") (pr-str full))
       (doc-params (str directory "/" id "/params/") (input-params tree uri))
       (doc-hdrs (str directory "/" id "/headers/") (d/req-hdrs tree))
+      (doc-body-examples (str directory "/" id "/body-examples/") full (d/get-in-tree tree [:req :body-example]))
       (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
       (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree))))
   })

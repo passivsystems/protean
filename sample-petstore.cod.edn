@@ -70,7 +70,7 @@
           ; :body-schema is an optional addition for payload validation - either .json for json-schema, or .xsd for xml validation.
           :body {"name" "${name}" "status" "${status}"}
           :body-schema "test-data/schemas/pet.schema.json"
-          :body-example "test-data/content/doc/requests/new-pet.json"
+          :body-example ["test-data/content/doc/requests/new-pet.json"]
         }
         :rsp {
           :201 {

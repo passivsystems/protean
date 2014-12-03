@@ -90,7 +90,7 @@ pre {
   white-space: -pre-wrap;      /* Opera 4-6 */
   white-space: -o-pre-wrap;    /* Opera 7 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
-  max-height: 200px;
+  max-height: 400px;
 }
 
 pre.text {
@@ -107,4 +107,8 @@ table.response td {
 
 td.small {
   width: 100px;
+}
+
+div.modal-footer {
+  text-align: center;
 }
