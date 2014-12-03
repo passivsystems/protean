@@ -44,10 +44,12 @@
   successfully be validated. It additionally contains a :message property
   with a human readable error description."
   [schema data]
-  (let [parsed-schema (parse-to-node (slurp schema))
-        schema (-> json-schema-factory (.getJsonSchema parsed-schema))
-        parsed-data (parse-to-node data)
-        report (.validate schema parsed-data)]
-    {:success (.isSuccess report)
-     :message (str report)}))
-
+  ;(println (str "validating '" data "' against " schema))
+  (try
+    (let [parsed-schema (parse-to-node (slurp schema))
+          schema (-> json-schema-factory (.getJsonSchema parsed-schema))
+          parsed-data (parse-to-node data)
+          report (.validate schema parsed-data)]
+      {:success (.isSuccess report)
+       :message (str report)})
+    (catch Exception e {:success false :message (.getMessage e)})))

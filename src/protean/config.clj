@@ -12,7 +12,7 @@
 
 (defn admin-port [] (or (env :admin-port) "3001"))
 
-(defn codex-dir []  (or (env :codex-dir) (d/pwd)))
+(defn codex-dir [] (or (env :codex-dir) (d/pwd)))
 
 (defn asset-dir [] (or (env :asset-dir) "public"))
 

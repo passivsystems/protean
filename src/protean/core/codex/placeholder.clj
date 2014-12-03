@@ -50,6 +50,8 @@
   (cond
     (string? v) (re-seq ph v)
     (map? v)(seq (mapcat holder? (vals v)))
+    (seq? v)(mapcat holder? v)
+    (vector? v)(mapcat holder? v)
     :else nil))
 
 (defn map-holders [s]

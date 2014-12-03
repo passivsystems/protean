@@ -14,7 +14,8 @@
 
 (defn validate-status-> [expected-status payload errors]
   (if (not (= (str (:status payload)) expected-status))
-    (conj errors (str "expected status " expected-status))))
+    (conj errors (str "expected status " expected-status " (was " (:status payload) ")"))
+    errors))
 
 (defn validate-headers [expected-headers payload errors]
   (if expected-headers
@@ -76,27 +77,30 @@
         (conj errors
           (str "Payload did not conform to json schema " schema " : " (:message validation)))))
     (if codex-body
-      (let [body-jsn (jsn/parse-string (:body payload))]
-        (if (map? codex-body)
-          (let [expected-keys (set (keys codex-body))
-                received-keys (set (keys body-jsn))]
-            (if (= received-keys expected-keys)
-              errors
-              (conj errors
-                (str "Json body not valid - expected " expected-keys " but received " received-keys))))
-          (contains? codex-body body-jsn)))
+      (try
+        (let [body-jsn (jsn/parse-string (:body payload))]
+          (if (map? codex-body)
+            (let [expected-keys (set (keys codex-body))
+                  received-keys (set (keys body-jsn))]
+              (if (= received-keys expected-keys)
+                errors
+                (conj errors
+                  (str "Json body not valid - expected " expected-keys " but received " received-keys))))
+            (contains? codex-body body-jsn)))
+        (catch Exception e (conj errors (str "Could not parse json:" (:body payload) "\n" (.getMessage e)))))
       errors)))
 
 (defn validate-body [payload expected-ctype schema codex-body errors]
-  (let [ctype (pp/ctype payload)]
-    (cond
-      (and expected-ctype ctype (not (= expected-ctype ctype)))
-        (conj errors (str "expected content-type " expected-ctype " (was " ctype ")"))
-      (h/xml? ctype)
-        (validate-xml-body payload schema codex-body errors)
-      (h/txt? ctype)
-        errors
-      ; TODO should we validate that the ctype is set as json?
-      :else
-        (validate-jsn-body payload schema codex-body errors))))
-
+  (if payload
+    (let [ctype (pp/ctype payload)]
+      (cond
+        (and expected-ctype ctype (not (= expected-ctype ctype)))
+          (conj errors (str "expected content-type " expected-ctype " (was " ctype ")"))
+        (h/xml? ctype)
+          (validate-xml-body payload schema codex-body errors)
+        (h/txt? ctype)
+          errors
+        ; TODO should we validate that the ctype is set as json?
+        :else
+          (validate-jsn-body payload schema codex-body errors)))
+  (conj errors (str "expected body but was empty"))))

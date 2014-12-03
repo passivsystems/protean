@@ -8,9 +8,9 @@
   (let [the-request (assoc request
                       :url (:uri request)
                       :throw-exceptions false)
-        response (clt/request the-request)]
+        response (try
+          (clt/request the-request)
+          (catch Exception e {:error (.getMessage e)}))]
 ;    (println "test! evaluating:" the-request)
-    ; TODO if ConnectException - shouldn't fall over - just report test failure
 ;    (println "response" response)
     [request response]))
-
