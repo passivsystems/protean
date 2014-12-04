@@ -1,6 +1,7 @@
 (ns protean.core.transformation.request
   "Building Ring requests."
-  (:require [protean.core.codex.document :as d]
+  (:require [clojure.string :as s]
+    [protean.core.codex.document :as d]
     [protean.core.protocol.http :as h]
     [protean.core.protocol.protean :as pp]
     [protean.core.transformation.coerce :as co]
@@ -16,13 +17,16 @@
     (assoc-in payload [:headers] headers)
     payload))
 
-(defn- content-> [payload]
-  (let [ctype (pp/ctype payload)
+(defn- content-> [payload tree]
+  (let [example (d/get-in-tree tree [:req :body-example])
+        body (d/get-in-tree tree [:req :body])
+        ctype (pp/ctype payload)
         f (cond
           (h/txt? ctype) identity
           (h/xml? ctype) co/xml
-          :else co/js)]
-    (update-in payload [:body] f)))
+          :else co/js)
+        body-val (if example (s/trim (slurp (first example))) (f body))]
+    (assoc-in payload [:body] body-val)))
 
 (defn- transform-query-params-> [payload tree]
   (if (d/qp-json? tree)
@@ -40,7 +44,6 @@
     (copy-> tree [:req :query-params :optional] [:query-params])
     (copy-> tree [:req :form-params :required] [:form-params])
     (copy-> tree [:req :form-params :optional] [:form-params])
-    (copy-> tree [:req :body] [:body])
     (headers-> tree)
     (transform-query-params-> tree)
-    (content->)))
+    (content-> tree)))
