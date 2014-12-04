@@ -36,15 +36,7 @@
     (str payload data)))
 
 (defn- curly-body-> [{:keys [body] :as request} payload]
-  (let [content-type-req (p/ctype request)
-        data (cond
-               (= content-type-req h/xml)
-                 (if body (str " --data '" (c/str-xml body) "'") "")
-               (or (not content-type-req) (= content-type-req h/jsn-simple))
-                 (if body (str " -H '" h/ctype ": " h/jsn-simple "' --data '" body "'"))
-               (= content-type-req h/txt)
-                 (if body (str " --data '" (jsn/generate-string (first body)) "'") "")
-               :else "")]  ;unknown content-type
+  (let [data (if body (str " --data '" body "'"))]
     (str payload data)))
 
 (defn- curly-literal-> [s payload] (str payload s))

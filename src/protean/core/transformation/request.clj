@@ -11,11 +11,10 @@
     (assoc-in payload target-keys kvs)
     payload))
 
-  (defn- content-type-> [payload]
-    (if (and (:body payload)
-            (not (pp/ctype payload)))
-      (assoc-in payload [:headers h/ctype] h/jsn-simple)
-      payload))
+(defn- headers-> [payload tree]
+  (if-let [headers (d/req-hdrs tree)]
+    (assoc-in payload [:headers] headers)
+    payload))
 
 (defn- content-> [payload]
   (let [ctype (pp/ctype payload)
@@ -41,8 +40,7 @@
     (copy-> tree [:req :query-params :optional] [:query-params])
     (copy-> tree [:req :form-params :required] [:form-params])
     (copy-> tree [:req :form-params :optional] [:form-params])
-    (copy-> tree [:req :headers] [:headers])
     (copy-> tree [:req :body] [:body])
+    (headers-> tree)
     (transform-query-params-> tree)
-    (content-type->)
     (content->)))
