@@ -1,0 +1,109 @@
+{
+  :includes ["defaults.edn"]
+
+  :title "Tutorial 9"
+  :doc "Multiplayer text adventure"
+
+  "tutorial-9" {
+    "help" {
+      :get {
+        :rsp {
+          :200 {
+            :doc "Get help with how to play the game"
+            :body-example "public/tutorial/9/help.json"
+          }
+        }
+      }
+    }
+
+    "register" {
+      :put {
+        :doc "Register to play"
+        :description
+"Register to play the text adventure.
+
+Accepts a request parameter called name."
+        :vars {"name" {:type :String :doc "Player name"}}
+        :req {:query-params {:required {"name" "${name}"}}}
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "public/tutorial/9/look-ref.json"
+          }
+          :400 {:doc "Bad Request"}
+        }
+      }
+    }
+
+    "look" {
+      :get {
+        :doc "See your current location"
+        :description
+"Look at your current location.
+
+Accepts a request parameter called name."
+        :vars {"name" {:type :String :doc "Player name"}}
+        :req {:query-params {:required {"name" "${name}"}}}
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "public/tutorial/9/look-ref.json"
+          }
+        }
+      }
+    }
+
+    "go" {
+      :types {
+        :Direction "(north|south|west|east)"
+      }
+      :put {
+        :doc "Go somewhere in the game world"
+        :description
+"Will move you to a new location.
+
+Accepts a request parameter called direction."
+        :vars {"direction" {:type :Direction :doc "Direction to move in"}}
+        :req {:query-params {:required {"direction" "${direction}"}}}
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "public/tutorial/9/look-ref.json"
+          }
+          :404 {:doc "Not Found"}
+        }
+      }
+    }
+
+    "inventory" {
+      :get {
+        :doc "See your inventory"
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "public/tutorial/9/inventory-ref.json"
+          }
+        }
+      }
+    }
+
+    "pickup" {
+      :put {
+        :doc "Pickup an item"
+        :description
+"Will pickup an item in the game world.
+
+Accepts a request parameter called item."
+        :vars {"item" {:type :String :doc "Item to pick up"}}
+        :req {:query-params {:required {"item" "${item}"}}}
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "public/tutorial/9/look-ref.json"
+          }
+          :404 {:doc "Not Found"}
+        }
+      }
+    }
+  }
+}
