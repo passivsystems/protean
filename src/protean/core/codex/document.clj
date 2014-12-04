@@ -67,11 +67,14 @@
   (let [hdrs (codex-req-hdrs tree)
         ctype (get-in hdrs h/ctype)
         body-schema (get-in-tree tree [:req :body-schema])
-        body-example (get-in-tree tree [:req :body-example])]
+        body-example (get-in-tree tree [:req :body-example])
+        body (get-in-tree tree [:req :body])
+        default-ctype (get-in-tree tree [:default-content-type])]
     (cond
       ctype ctype
       body-schema (h/mime-schema body-schema)
-      body-example (h/mime body-example))))
+      body-example (h/mime body-example)
+      body default-ctype)))
 
 (defn req-hdrs [tree]
   (let [ctype (req-ctype tree)
