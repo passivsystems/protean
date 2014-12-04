@@ -8,7 +8,9 @@
             [protean.core.codex.placeholder :as ph]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
-            [protean.core.protocol.http :as h]))
+            [protean.core.protocol.http :as h]
+            [protean.core.protocol.protean :as p]
+            [protean.core.transformation.request :as r]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -20,72 +22,60 @@
     ; also may not be url friendly (though we will encode them)
     (ph/swap phs tree {})))
 
-(defn- curly-method-> [method payload]
+(defn- curly-method-> [{:keys [method] :as request} payload]
   (if (= method :get)
     payload
     (str payload " -X " (s/upper-case (name method)))))
 
-(defn- curly-headers-> [tree payload]
-  (let [phs (d/get-in-tree tree [:req :headers])
-        hstr (if-let [rp (translate phs tree)]
-         (apply str (map #(str " -H '" (key %) ": " (val %) "'") rp)))]
+(defn- curly-headers-> [{:keys [headers] :as request} payload]
+  (let [hstr (if headers (apply str (map #(str " -H '" (key %) ": " (val %) "'") headers)))]
     (str payload hstr)))
 
-(defn- curly-form-> [tree payload]
-  (let [phs (d/get-in-tree tree [:req :form-params :required])
-        data (if-let [rp (translate phs tree)]
-               (str " --data '" (s/join "&" (map #(str (key %) "=" (val %)) rp)) "'"))]
+(defn- curly-form-> [{:keys [form-params] :as request} payload]
+  (let [data (if form-params (str " --data '" (s/join "&" (map #(str (key %) "=" (val %)) form-params)) "'"))]
     (str payload data)))
 
-(defn- curly-body-> [tree payload]
-  (let [content-type-req (d/get-in-tree tree [:req :headers "Content-Type"])
-        phs (d/get-in-tree tree [:req :body])
-        b (translate phs tree)
+(defn- curly-body-> [{:keys [body] :as request} payload]
+  (let [content-type-req (p/ctype request)
         data (cond
                (= content-type-req h/xml)
-                 (if b (str " --data '" (c/str-xml b) "'") "")
+                 (if body (str " --data '" (c/str-xml body) "'") "")
                (or (not content-type-req) (= content-type-req h/jsn-simple))
-                 (if b
-                   (if (map? b)
-                     (str " -H '" h/ctype ": " h/jsn-simple "' --data '" (jsn/generate-string b) "'")
-                     (str " -H '" h/ctype ": " h/jsn-simple "' --data '" (jsn/generate-string (first b)) "'")))
+                 (if body (str " -H '" h/ctype ": " h/jsn-simple "' --data '" body "'"))
                (= content-type-req h/txt)
-                 (if b (str " --data '" (jsn/generate-string (first b)) "'") "")
+                 (if body (str " --data '" (jsn/generate-string (first body)) "'") "")
                :else "")]  ;unknown content-type
     (str payload data)))
 
 (defn- curly-literal-> [s payload] (str payload s))
 
-(defn- curly-uri-> [uri tree payload]
-  (str payload (translate uri tree)))
+(defn- curly-uri-> [{:keys [uri] :as request} payload]
+  (str payload uri))
 
-(defn- curly-query-params-> [tree payload]
-  (let [phs (d/get-in-tree tree [:req :query-params :required])
-        query (if-let [rp (translate phs tree)]
-                (if (not (empty? rp))
-                  (if (d/qp-json? tree)
-                    (str "?q=" (rp "q"))
-                    (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode  (val %))) rp))))))]
-      (str payload query)))
+(defn- curly-query-params-> [{:keys [query-params] :as request} payload]
+  (let [query (if (and query-params (not (empty? query-params)))
+                  (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode  (val %))) query-params))))]
+    (str payload query)))
 
-(defn- curly-replace-> [s1 s2 payload]
-  (s/replace payload s1 s2))
-
-(defn curly-> [{:keys [tree method uri]}]
+(defn curly-request-> [request]
   (->> "curl -v"
-       (curly-method-> method)
-       (curly-headers-> tree)
-       (curly-form-> tree)
-       (curly-body-> tree)
+       (curly-method-> request)
+       (curly-headers-> request)
+       (curly-form-> request)
+       (curly-body-> request)
        (curly-literal-> " '")
-       (curly-uri-> uri tree)
-       (curly-query-params-> tree)
+       (curly-uri-> request)
+       (curly-query-params-> request)
        (curly-literal-> "'")))
 
+(defn curly-entry-> [{:keys [tree method uri]}]
+  (let [request-template (r/prepare-request method uri tree)
+        request (ph/swap request-template tree{})]
+    (curly-request-> request)))
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
 (defn curly-analysis-> [analysed]
-  (map #(curly-> %) analysed))
+  (map #(curly-entry-> %) analysed))
