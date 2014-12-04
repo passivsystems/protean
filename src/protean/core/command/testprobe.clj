@@ -12,6 +12,7 @@
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
             [protean.core.transformation.validation :as v]
+            [protean.core.transformation.request :as r]
             [protean.core.command.test :as t]
             [protean.core.command.probe :as pb]
             [protean.core.command.junit :as j]
@@ -45,47 +46,6 @@
 ;; =============================================================================
 ;; Probe construction
 ;; =============================================================================
-
-(defn- copy-> [payload tree source-keys target-keys]
-  (if-let [kvs (d/get-in-tree tree source-keys)]
-    (assoc-in payload target-keys kvs)
-    payload))
-
-(defn- content-type-> [payload]
-  (if (and (:body payload)
-           (not (pp/ctype payload)))
-    (assoc-in payload [:headers h/ctype] h/jsn-simple)
-    payload))
-
-(defn- content-> [payload]
-  (let [ctype (pp/ctype payload)
-        f (cond
-            (h/txt? ctype) identity
-            (h/xml? ctype) co/xml
-            :else co/js)]
-    (update-in payload [:body] f)))
-
-(defn- transform-query-params-> [payload tree]
-  (if (d/qp-json? tree)
-    (let [to-json (fn [[k v]] [k (co/js v)])
-          qp-to-json (fn [m] (into {} (map to-json m)))]
-      (update-in payload [:query-params] qp-to-json))
-    payload))
-
-(defn- prepare-request
-  "Prepare payload - may still contain placeholders."
-  [uri {:keys [method tree] :as entry}]
-  (-> {:method method :uri uri}
-      ; TODO only include when (corpus) test level is 2?
-      (copy-> tree [:req :query-params :required] [:query-params])
-      (copy-> tree [:req :query-params :optional] [:query-params])
-      (copy-> tree [:req :form-params :required] [:form-params])
-      (copy-> tree [:req :form-params :optional] [:form-params])
-      (copy-> tree [:req :headers] [:headers])
-      (copy-> tree [:req :body] [:body])
-      (transform-query-params-> tree)
-      (content-type->)
-      (content->)))
 
 (defn- collect-params [m]
   (let [tolist (fn [m] (cond
@@ -171,12 +131,12 @@
 (defn- uri [host port {:keys [svc path] :as entry}]
   (p/uri host port svc path))
 
-(defmethod pb/build :test [_ {:keys [locs host port] :as corpus} {:keys [tree] :as entry}]
-  (println "building a test probe to visit " (:method entry) ":" locs)
+(defmethod pb/build :test [_ {:keys [locs host port] :as corpus} {:keys [method tree] :as entry}]
+  (println "building a test probe to visit " method ":" locs)
   (let [h (or host "localhost")
         p (or port 3000)
         uri (uri h p entry)
-        request-template (prepare-request uri entry)
+        request-template (r/prepare-request method uri tree)
         engage-fn (fn [bag]
           (let [request (ph/swap request-template tree bag)]
             (if-let [phs (ph/holder? request)]
@@ -247,29 +207,48 @@
         [(merge (:bag outputs) bag) (conj reses {:entry (:entry probe) :request req :response resp})]
         [bag (conj reses {:entry (:entry probe) :request req :response (update-in resp [:failures] conj errors)})]))))
 
+(def counter (atom (int 0)))
 (defn- id-use-after-delete
    "if method is delete, then collect all inputs marked as :gen false
      - path is unusable if those inputs are required further down the line"
   [sorted-g]
   (let [f (fn [[deleted-inputs deleted-id-access] probe]
-    (let [method (get-in probe [:entry :method])
-          inputs (set (get-in probe [:inputs]))
-          tree (get-in probe [:entry :tree])
-          next-deleted-id-access (or deleted-id-access (not-empty (st/intersection inputs deleted-inputs)))
-          non-generative-inputs (set (for [input inputs] (if (= false (d/get-in-tree tree [:vars input :gen])) input)))
-          next-deleted-inputs (set (concat deleted-inputs (if (= :delete method) non-generative-inputs)))]
-      [next-deleted-inputs next-deleted-id-access]))]
-    (second (reduce f [#{} false] sorted-g))))
+            (let [method (get-in probe [:entry :method])
+                  inputs (set (get-in probe [:inputs]))
+                  tree (get-in probe [:entry :tree])
+                  next-deleted-id-access (or deleted-id-access (not-empty (st/intersection inputs deleted-inputs)))
+                  non-generative-inputs (set (for [input inputs] (if (= false (d/get-in-tree tree [:vars input :gen])) input)))
+                  next-deleted-inputs (set (concat deleted-inputs (if (= :delete method) non-generative-inputs)))]
+;             (println "id-use-after-delete:\nmethod:" method "inputs:" inputs
+;             "\n  deleted-inputs:" deleted-inputs "deleted-id-access:" deleted-id-access
+;             "\n  next-deleted-inputs:" next-deleted-inputs "next-deleted-id-access:" next-deleted-id-access)
+;             (println method "  " inputs)
+;             (if (and (not deleted-id-access) next-deleted-id-access) (println "  already deleted: " deleted-inputs))
+;             (println "  next-deleted-id-access" next-deleted-id-access)
+          [next-deleted-inputs next-deleted-id-access]))
+        res (second (reduce f [#{} nil] sorted-g))]
+;    (println "result:" res)
+    res))
+
+(defn- sort-stream [g]
+  ; TODO the sorted graph seems to be memoized, we only get the same graph
+  ; and if it is not acceptable, we cannot walk the graph
+  ; may need to look at a breadth-first search rather than topsort
+  (cons (la/topsort g) (lazy-seq (sort-stream g))))
 
 (defn- select-path
   "return a walkable (non-cyclic) path from optional graphs"
   [gs]
-  (let [tuples (map vector (map la/topsort gs) gs)
-        not-walkable (fn [sorted-g] (or (nil? sorted-g) (id-use-after-delete sorted-g)))
-        walkable (remove #(not-walkable (first %)) tuples)
-        selected (first walkable)]
-;    (li/view (second selected)) ; uncomment to open image of graph
-    (first selected)))
+  (let [walkable (remove #(nil? (la/topsort %)) gs)
+        selected (first walkable)
+        ;acceptable (if-let [sorted (la/topsort selected)] (if (not (id-use-after-delete sorted)) sorted))
+        ; topsort returns a random sorted graph - repeat until we have one which does not use an id after it has been deleted
+        max-num 10
+        acceptable (first (drop-while id-use-after-delete (take max-num (sort-stream selected))))]
+;    (println "looking for path out of " (count gs) "walkable:" (count walkable)) ; note: printing this will evaluate all graphs
+    ;(if selected (li/view selected)) ; uncomment to open image of graph
+    (if (and selected (not acceptable)) (println "Can sort graph, but unable to find an acceptable one."))
+    acceptable))
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")

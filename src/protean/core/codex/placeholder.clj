@@ -83,8 +83,9 @@
     (first x)))
 
 (defn- holder-swap-gen [tree v]
-  (if-let [x (d/get-in-tree tree [:vars v :type])]
-    (g-val x tree)))
+  (if (not (= false (d/get-in-tree tree [:vars v :gen])))
+    (if-let [x (d/get-in-tree tree [:vars v :type])]
+      (g-val x tree))))
 
 (defn- holder-swap-bag [bag v]
   (if-let [x (get-in bag [v])]
