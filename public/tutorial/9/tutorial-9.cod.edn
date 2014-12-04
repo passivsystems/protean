@@ -5,6 +5,8 @@
   :doc "Multiplayer text adventure"
 
   "tutorial-9" {
+    :vars {"name" {:type :String :doc "Player name"}}
+
     "help" {
       :get {
         :rsp {
@@ -23,7 +25,6 @@
 "Register to play the text adventure.
 
 Accepts a request parameter called name."
-        :vars {"name" {:type :String :doc "Player name"}}
         :req {:query-params {:required {"name" "${name}"}}}
         :rsp {
           :200 {
@@ -39,10 +40,7 @@ Accepts a request parameter called name."
       :get {
         :doc "See your current location"
         :description
-"Look at your current location.
-
-Accepts a request parameter called name."
-        :vars {"name" {:type :String :doc "Player name"}}
+"Look at your current location."
         :req {:query-params {:required {"name" "${name}"}}}
         :rsp {
           :200 {
@@ -60,11 +58,13 @@ Accepts a request parameter called name."
       :put {
         :doc "Go somewhere in the game world"
         :description
-"Will move you to a new location.
-
-Accepts a request parameter called direction."
+"Will move you to a new location."
         :vars {"direction" {:type :Direction :doc "Direction to move in"}}
-        :req {:query-params {:required {"direction" "${direction}"}}}
+        :req {
+          :query-params {
+            :required {"name" "${name}" "direction" "${direction}"}
+          }
+        }
         :rsp {
           :200 {
             :doc "OK"
@@ -78,6 +78,7 @@ Accepts a request parameter called direction."
     "inventory" {
       :get {
         :doc "See your inventory"
+        :req {:query-params {:required {"name" "${name}"}}}
         :rsp {
           :200 {
             :doc "OK"
@@ -95,7 +96,7 @@ Accepts a request parameter called direction."
 
 Accepts a request parameter called item."
         :vars {"item" {:type :String :doc "Item to pick up"}}
-        :req {:query-params {:required {"item" "${item}"}}}
+        :req {:query-params {:required {"name" "${name}" "item" "${item}"}}}
         :rsp {
           :200 {
             :doc "OK"
