@@ -67,7 +67,7 @@
   (let [hdrs (codex-req-hdrs tree)
         ctype (get-in hdrs h/ctype)
         body-schema (get-in-tree tree [:req :body-schema])
-        body-example (get-in-tree tree [:req :body-example])]
+        body-example (get-in-tree tree [0 :req :body-example])]
     (cond
       ctype ctype
       body-schema (h/mime-schema body-schema)
@@ -77,11 +77,6 @@
   (let [ctype (req-ctype tree)
         ctype-hdr (if ctype {h/ctype ctype} {})]
     (merge ctype-hdr (codex-req-hdrs tree))))
-
-; (defn req-body-examples [tree]
-;   (if-let [d (get-in-tree tree [:req :body-example])]
-;     (map #(% (slurp %)) d)
-;     {"N/A" "N/A"}))
 
 (defn body-req [t] (get-in-tree t [:req :body]))
 
