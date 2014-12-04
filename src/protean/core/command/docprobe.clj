@@ -41,6 +41,9 @@
   (.mkdirs (file (.getParent (.getAbsoluteFile (File. target)))))
   (spit target content))
 
+(defn fname [p]
+  (subs p (+ (.lastIndexOf p (dsk/fs)) 1) (.lastIndexOf p ".")))
+
 ;; =============================================================================
 ;; Probe config
 ;; =============================================================================
@@ -75,12 +78,11 @@
   paths is a list rsp body example paths."
   (.mkdirs (File. target-dir))
   (doseq [p paths]
-    (let [id (UUID/randomUUID)
-          title (subs p (+ (.lastIndexOf p (dsk/fs)) 1) (.lastIndexOf p "."))]
+    (let [id (UUID/randomUUID)]
       (spit (str target-dir id ".edn")
       (pr-str {
         :id id
-        :title title
+        :title (fname p)
         :method (get full :method)
         :path (get full :path)
         :value (slurp p)})))))
@@ -124,6 +126,7 @@
           uri-path (-> (URI. (safe-uri uri)) (.getPath))
           id (str (name method) (stg/replace uri-path #"/" "-"))
           main (filter #(get-in % [:title]) tree)
+          schema (d/get-in-tree tree [:req :body-schema])
           site {:site-name (d/get-in-tree main [:title])
                 :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
           full {:id id
@@ -132,7 +135,9 @@
                 :doc (d/get-in-tree tree [:doc])
                 :desc (if-let [d (d/get-in-tree tree [:description])] d "")
                 :method (name method)
-                :req-body-schema (if-let [d (d/get-in-tree tree [:req :body-schema])] (slurp d) "N/A")}]
+                :req-body-schema-id (str "schema-" id)
+                :req-body-schema-title (if schema (fname schema) "N/A")
+                :req-body-schema (if schema (slurp schema) "N/A")}]
       (spit-to (str directory "/global/site.edn") (pr-str site))
       (spit-to (str directory "/api/" id ".edn") (pr-str full))
       (doc-params (str directory "/" id "/params/") (input-params tree uri))
