@@ -146,6 +146,10 @@
   [delay-ms then]
   `(after-delayed ~delay-ms (delay ~then)))
 
+(defmacro in
+  [delay-ms then]
+  `(after-delayed ~delay-ms (delay ~then)))
+
 
 ;; =============================================================================
 ;; Requests
