@@ -2,7 +2,7 @@
 (require '[clojure.string :refer [join]]
          '[alandipert.enduro :as e])
 
-(defn format [list] (join " " (map #(symbol (name %)) list)))
+(defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
 (def world (e/file-atom
 {
@@ -32,8 +32,8 @@
   (apply concat (map describe-path (rest (get world location)))))
 
 (defn look []
-  (format (concat (describe-location @location @world)
-                  (describe-paths @location @world))))
+  (fmt (concat (describe-location @location @world)
+               (describe-paths @location @world))))
 
 (defn go [direction]
   (let [loc (first (filter #(= direction (first %)) (rest (@location @world))))]

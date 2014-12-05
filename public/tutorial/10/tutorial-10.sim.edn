@@ -2,7 +2,7 @@
 (require '[clojure.string :refer [join]]
          '[alandipert.enduro :as e])
 
-(defn format [list] (join " " (map #(symbol (name %)) list)))
+(defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
 (def world (e/file-atom
 {
@@ -66,20 +66,20 @@
 
 (defn look [name]
   (let [loc (name @location)]
-    (format (concat (describe-location loc @world)
-                    (describe-paths loc @world)
-                    (describe-entities name loc @location)
-                    (describe-floor loc @items @item-locations)))))
+    (fmt (concat (describe-location loc @world)
+                 (describe-paths loc @world)
+                 (describe-entities name loc @location)
+                 (describe-floor loc @items @item-locations)))))
 
 (defn pickup [name item]
   (cond (is-at? item (name @location) @item-locations)
   (do
     (e/swap! item-locations assoc item (symbol name))
-    (format `(you are now carrying the ~item)))
-    :else (format '(you cannot get that.))))
+    (fmt `(you are now carrying the ~item)))
+    :else (fmt '(you cannot get that.))))
 
 (defn inventory [name]
-  (format (filter (fn [x] (is-at? x (symbol name) @item-locations)) @items)))
+  (fmt (filter (fn [x] (is-at? x (symbol name) @item-locations)) @items)))
 
 (defn have? [item] (some #{item} (inventory)))
 
@@ -90,10 +90,10 @@
 
 (defn slap [name object]
   (cond (= (name @location) (object @location))
-    (cond (= object 'Lumbergh) (format '(Lumbergh says yahhh, mmmm we are gonna need to go ahead and talk about that -))
-          (= object 'Milton) (format '(Milton mumbles about burning the building down -))
-          :else (format '(oooh, that was some good slapping -)))
-    :else (format '(you cannot slap like that -))))
+    (cond (= object 'Lumbergh) (fmt '(Lumbergh says yahhh, mmmm we are gonna need to go ahead and talk about that -))
+          (= object 'Milton) (fmt '(Milton mumbles about burning the building down -))
+          :else (fmt '(oooh, that was some good slapping -)))
+    :else (fmt '(you cannot slap like that -))))
 
 (defn register-rest []
   (let [nm (symbol (get-in *request* [:query-params "name"]))]
