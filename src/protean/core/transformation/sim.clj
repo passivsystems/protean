@@ -189,7 +189,7 @@
         success (format-rsp (rand-nth successes))]
     (if (empty? successes)
       (log-warn "warning - no successes found for endpoint" [svc uri request-method])
-      (ph/swap success *tree* {}))))
+      (ph/swap success *tree* {} :gen-all true))))
 
 (defn error
   "Returns a randomly selected error response as defined for endpoint"
@@ -199,7 +199,7 @@
         error (format-rsp (rand-nth errors))]
     (if (empty? errors)
       (log-warn "warning - no errors found for endpoint" [svc uri request-method])
-      (ph/swap error *tree* {}))))
+      (ph/swap error *tree* {} :gen-all true))))
 
 (defn encode
   "Encode d using header content type information in request"

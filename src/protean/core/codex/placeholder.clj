@@ -82,8 +82,8 @@
   (if-let [x (d/get-in-tree tree [:vars v :examples])]
     (first x)))
 
-(defn- holder-swap-gen [tree v]
-  (if (not (= false (d/get-in-tree tree [:vars v :gen])))
+(defn- holder-swap-gen [gen-all tree v]
+  (if (or gen-all (not (= false (d/get-in-tree tree [:vars v :gen]))))
     (if-let [x (d/get-in-tree tree [:vars v :type])]
       (g-val x tree))))
 
@@ -102,8 +102,12 @@
     (vector? m)(map #(holder-swap % swap-fn tree) m)
     :else m))
 
-(defn swap [ph tree bag]
+(defn swap
+  "swaps all occurances of placeholders in ph with values in bag
+   or generated/examples from tree.
+   Note vars marked as :gen false in tree will not be generated (unless optional parameter :gen-all is true)"
+  [ph tree bag & {:keys [gen-all]}]
   (-> ph
      (holder-swap holder-swap-bag bag)
-     (holder-swap holder-swap-gen tree)
+     (holder-swap (partial holder-swap-gen gen-all) tree)
      (holder-swap holder-swap-exp tree)))

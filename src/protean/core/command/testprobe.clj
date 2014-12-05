@@ -17,8 +17,8 @@
             [protean.core.command.probe :as pb]
             [protean.core.command.junit :as j]
             [loom.graph :as lg]
+            [loom.label :as ll]
             [loom.alg :as la]
-            [loom.attr :as lat]
             [loom.io :as li]))
 
 ;; =============================================================================
@@ -160,7 +160,7 @@
 (defn- get-dependencies [corpus probes probe]
   "Returns seq of vectors [input dependency]."
   "All inputs that cannot be generated (or have been seeded)"
-  "form a dependency on endpoint that produces them as outpus"
+  "form a dependency on endpoint that produces them as outputs"
   (let [dependency-for (fn [input]
     (let [tree (get-in probe [:entry :tree])
           seed (get-in corpus [:seed input])
@@ -173,87 +173,73 @@
           (map #(->[input %]) dependencies))))]
   (mapcat dependency-for (:inputs probe))))
 
+
+(defn- all-input-possibilities
+  "Generates graphs for all ways the inputs may be satisfied
+   we may later pick one that can be walked (i.e. no cycles)"
+  [gs dependencies probe input]
+  (for [g gs
+    [_ dependency] dependencies] ; the different dependencies that provide input
+    (ll/add-labeled-edges g [dependency probe] input)))
+
+(defn- delete-after-other-input-consumers
+  "add dependency for delete endpoint on all other endpoints that use same input
+   this ensures delete is called last (since will probably consume the input)"
+  [gs probe input probes]
+  (if (= :delete (get-in probe [:entry :method]))
+    (let [add-delete-dependency (fn [g provider-probe]
+            (if (some #{input} (:inputs provider-probe))
+              (ll/add-labeled-edges g [provider-probe probe] (str "delete (" input ")"))
+              g))
+          add-delete-dependencies (fn [g probes]
+            (reduce add-delete-dependency g (remove #{probe} probes)))]
+      (for [g gs] (add-delete-dependencies g probes)))
+  gs))
+
 (defn- build-graphs
   "returns a list of graphs covering all possible ways to walk over endpoints,
    satisfying input/output constraints."
   [corpus probes]
-  (let [add-node (fn [g probe]
-                   (-> g
-                     (lg/add-nodes probe)
-                     (lat/add-attr probe :label (label probe))))
+  (let [add-node (fn [g probe] (ll/add-labeled-nodes g probe (label probe)))
         g-nodes (reduce add-node (lg/digraph) probes)
         dependencies (fn [probe] (get-dependencies corpus probes probe))
-        input-dependencies (fn [probe] (group-by first (dependencies probe)))
         add-dependencies (fn [probe gs [input dependencies]]
                       (if (empty? dependencies)
                         gs
-                        (for [g gs
-                              [_ dependency] dependencies] ; the different dependencies that provide input
-                          (-> g
-                            (lg/add-edges [dependency probe])
-                            (lat/add-attr [dependency probe] :label input)))))
+                        (-> gs
+                          (all-input-possibilities dependencies probe input)
+                          (delete-after-other-input-consumers probe input probes))))
         add-all-dependencies (fn [gs probe]
-          (let [dependencies (input-dependencies probe)
+          (let [dependencies (group-by first (dependencies probe))
                 res (reduce (partial add-dependencies probe) gs dependencies)]
             (if (empty? dependencies) gs res)))]
     (reduce add-all-dependencies (list g-nodes) probes)))
 
 (defn- execute [[bag reses] probe]
   (let [[req resp] ((:engage probe) bag)
-        outputs (outputs-values (:tree (:entry probe)) resp)]
+        tree (get-in probe [:entry :tree])
+        outputs (outputs-values tree resp)]
     (println (label probe) "\noutputs" outputs "\n")
     (let [errors (s/join "," (:errors outputs))]
       (if (empty? errors)
         [(merge (:bag outputs) bag) (conj reses {:entry (:entry probe) :request req :response resp})]
         [bag (conj reses {:entry (:entry probe) :request req :response (update-in resp [:failures] conj errors)})]))))
 
-(def counter (atom (int 0)))
-(defn- id-use-after-delete
-   "if method is delete, then collect all inputs marked as :gen false
-     - path is unusable if those inputs are required further down the line"
-  [sorted-g]
-  (let [f (fn [[deleted-inputs deleted-id-access] probe]
-            (let [method (get-in probe [:entry :method])
-                  inputs (set (get-in probe [:inputs]))
-                  tree (get-in probe [:entry :tree])
-                  next-deleted-id-access (or deleted-id-access (not-empty (st/intersection inputs deleted-inputs)))
-                  non-generative-inputs (set (for [input inputs] (if (= false (d/get-in-tree tree [:vars input :gen])) input)))
-                  next-deleted-inputs (set (concat deleted-inputs (if (= :delete method) non-generative-inputs)))]
-;             (println "id-use-after-delete:\nmethod:" method "inputs:" inputs
-;             "\n  deleted-inputs:" deleted-inputs "deleted-id-access:" deleted-id-access
-;             "\n  next-deleted-inputs:" next-deleted-inputs "next-deleted-id-access:" next-deleted-id-access)
-;             (println method "  " inputs)
-;             (if (and (not deleted-id-access) next-deleted-id-access) (println "  already deleted: " deleted-inputs))
-;             (println "  next-deleted-id-access" next-deleted-id-access)
-          [next-deleted-inputs next-deleted-id-access]))
-        res (second (reduce f [#{} nil] sorted-g))]
-;    (println "result:" res)
-    res))
-
-(defn- sort-stream [g]
-  ; TODO the sorted graph seems to be memoized, we only get the same graph
-  ; and if it is not acceptable, we cannot walk the graph
-  ; may need to look at a breadth-first search rather than topsort
-  (cons (la/topsort g) (lazy-seq (sort-stream g))))
-
 (defn- select-path
   "return a walkable (non-cyclic) path from optional graphs"
-  [gs]
-  (let [walkable (remove #(nil? (la/topsort %)) gs)
-        selected (first walkable)
-        ;acceptable (if-let [sorted (la/topsort selected)] (if (not (id-use-after-delete sorted)) sorted))
-        ; topsort returns a random sorted graph - repeat until we have one which does not use an id after it has been deleted
-        max-num 10
-        acceptable (first (drop-while id-use-after-delete (take max-num (sort-stream selected))))]
-;    (println "looking for path out of " (count gs) "walkable:" (count walkable)) ; note: printing this will evaluate all graphs
-    ;(if selected (li/view selected)) ; uncomment to open image of graph
-    (if (and selected (not acceptable)) (println "Can sort graph, but unable to find an acceptable one."))
-    acceptable))
+  [gs graph-name]
+  (let [tuples (map vector (map la/topsort gs) gs)
+        walkable (remove #(nil? (first %)) tuples)
+        selected (first walkable)]
+    (if selected
+      (with-open [w (clojure.java.io/output-stream (str "target/" graph-name ".png"))]
+        (.write w ^bytes (li/render-to-bytes (second selected)))))
+    (first selected)))
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
   (let [gs (build-graphs corpus probes)
-        ordered-probes (select-path gs)
+        ordered-probes (select-path gs (get-in (first probes) [:entry :svc]))
         bag (get-in corpus [:seed])
         no-route-response {:error "no route found to traverse probes (cyclic dependencies)"}
         print-inputs-outputs (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p)))]
