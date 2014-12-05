@@ -135,4 +135,5 @@
       (= cmd i/add-sims) (add-sims options)
       (= cmd i/del-sim) (delete-sim options)
       (= cmd i/visit) (visit options)
-      :else (exit 1 (usage-exit summary)))))
+      :else (exit 1 (usage-exit summary)))
+    (shutdown-agents))) ; write graph image file seems to create threads which are not shutdown
