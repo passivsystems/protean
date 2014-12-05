@@ -44,7 +44,9 @@
 (defn- build-sims
   "Load sims from disk."
   [c-dir]
-  (let [sim-fs (files c-dir "sim.edn")]
+  (let [fs (files c-dir "sim.edn")
+        f (first (filter #(= (.getName %) "protean-utils.sim.edn") fs))
+        sim-fs (conj (remove #(= % f) fs) f)]
     (doseq [f sim-fs]
       (pipe/load-sim f)))
   (d/custom-keys @pipe/sims))
