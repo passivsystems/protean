@@ -192,14 +192,16 @@
       (ph/swap success *tree* {} :gen-all true))))
 
 (defn error
-  "Returns a randomly selected error response as defined for endpoint"
-  []
-  (let [errors (d/error-status *tree*)
-        {:keys [svc request-method uri]} *request*
-        error (format-rsp (rand-nth errors))]
-    (if (empty? errors)
-      (log-warn "warning - no errors found for endpoint" [svc uri request-method])
-      (ph/swap error *tree* {} :gen-all true))))
+  "Returns a specific or randomly selected error response for an endpoint"
+  ([x]
+    (let [errors (d/error-status *tree*)
+          {:keys [svc request-method uri]} *request*
+          error (format-rsp
+                  (first (filter #(= (first %) (keyword (str x))) errors)))]
+      (if (empty? errors)
+        (log-warn "warning - no errors found for endpoint" [svc uri request-method])
+        (ph/swap error *tree* {} :gen-all true))))
+  ([] (error (Long. (name (first (rand-nth (d/error-status *tree*))))))))
 
 (defn encode
   "Encode d using header content type information in request"
