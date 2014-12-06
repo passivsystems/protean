@@ -62,6 +62,8 @@
         "                           e.g. To run tests against a server"
         "                             visit -f sample-petstore.cod.edn -b '{\"host\": \"localhost\", \"port\": 3000, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
         ""
+        "  doc                    -f codex (A shortcut to the doc visit command - makes some assumptions about defaults)"
+        ""
         "Interact with running Protean server:"
         "  services               (List services)"
         "  service                -n myservice (List service)"
@@ -98,6 +100,15 @@
       (b/visit b codices)
       (println (aa/bold-green "...finished exploring quadrant")))))
 
+(defn- doc
+  "If no corpus is passed in to a visit doc command - guess sensible defaults"
+  [{:keys [file]}]
+  (let [codices (r/read-codex (File. file))
+        svc (ffirst (filter #(= (type (key %)) String) codices))
+        b (c/js {:locs [svc] :commands [:doc] :directory i/silk-dir})
+        options {:host nil :port nil :file file :body b}]
+    (visit options)))
+
 
 ;; =============================================================================
 ;; Application entry point
@@ -118,7 +129,8 @@
       (and (= cmd i/del-svc) (not name)) (bomb summary)
       (and (= cmd i/add-sims) (not file)) (bomb summary)
       (and (= cmd i/del-sim) (not name)) (bomb summary)
-      (and (= cmd i/visit (i/visit? options))) (bomb summary))))
+      (and (= cmd i/visit (i/visit? options))) (bomb summary)
+      (and (= cmd i/doc (i/doc? options))) (bomb summary))))
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
@@ -135,5 +147,6 @@
       (= cmd i/add-sims) (add-sims options)
       (= cmd i/del-sim) (delete-sim options)
       (= cmd i/visit) (visit options)
+      (= cmd i/doc) (doc options)
       :else (exit 1 (usage-exit summary)))
     (shutdown-agents))) ; write graph image file seems to create threads which are not shutdown

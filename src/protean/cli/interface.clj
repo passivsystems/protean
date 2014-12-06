@@ -17,12 +17,12 @@
 (def del-sim "del-sim")
 (def doc "doc")
 (def visit "visit")
+(def silk-dir "silk_templates/data/protean-api")
 
 ;; =============================================================================
 ;; Interface args verification functions
 ;; =============================================================================
 
-(defn doc? [{:keys [name file directory]}]
-  (or (not name) (not file) (not directory)))
+(defn doc? [{:keys [file]}] (not file))
 
 (defn visit? [{:keys [file body]}] (or (not file) (not body)))
