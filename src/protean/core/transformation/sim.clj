@@ -155,6 +155,8 @@
 ;; Requests
 ;; =============================================================================
 
+(defn qparam [p] (get-in *request* [:query-params p]))
+
 (defn path-param
   "Simplisticly grabs the last part of a uri"
   [route-params]

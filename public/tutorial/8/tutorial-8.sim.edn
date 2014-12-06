@@ -67,13 +67,9 @@
     (cond loc (do (e/reset! location (nth loc 2)) (look))
           :else '(you cannot go that way -))))
 
-(defn go-rest []
-  (let [dir (symbol (get-in *request* [:query-params "direction"]))]
-    (rsp (go dir))))
+(defn go-rest [] (let [dir (symbol (qparam "direction"))] (rsp (go dir))))
 
-(defn pickup-rest []
-  (let [item (symbol (get-in *request* [:query-params "item"]))]
-  (rsp (pickup item))))
+(defn pickup-rest [] (let [item (symbol (qparam "item"))] (rsp (pickup item))))
 
 {
   "tutorial-8" {

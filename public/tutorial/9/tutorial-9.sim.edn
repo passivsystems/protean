@@ -89,22 +89,14 @@
           :else '(you cannot go that way -))))
 
 (defn register-rest []
-  (let [nm (symbol (get-in *request* [:query-params "name"]))]
-    (if (register nm) {:status 204} {:status 409})))
+  (let [nm (symbol (qparam "name"))] (if (register nm) {:status 204} {:status 409})))
 
 (defn look-rest []
-  (let [nm (symbol (get-in *request* [:query-params "name"]))]
-    (if (contains? @entities nm) (rsp (look nm)) {:status 404})))
+  (let [nm (symbol (qparam "name"))] (if (contains? @entities nm) (rsp (look nm)) {:status 404})))
 
-(defn go-rest []
-  (let [nm (symbol (get-in *request* [:query-params "name"]))
-        dir (symbol (get-in *request* [:query-params "direction"]))]
-    (rsp (go nm dir))))
+(defn go-rest [] (rsp (go (symbol (qparam "name")) (symbol (qparam "direction")))))
 
-(defn pickup-rest []
-  (let [nm (symbol (get-in *request* [:query-params "name"]))
-        item (symbol (get-in *request* [:query-params "item"]))]
-  (rsp (pickup nm item))))
+(defn pickup-rest [] (rsp (pickup (symbol (qparam "name")) (symbol (qparam "item")))))
 
 (defn inventory-rest []
   (let [nm (symbol (get-in *request* [:query-params "name"]))]
