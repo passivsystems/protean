@@ -1,8 +1,8 @@
 ![Protean - evolving api's](/public/resource/img/logo.png?raw=true "Protean - evolving api's")
 
-# Protean
+# About
 
-Take control of your RESTful API's. Test them, simulate them, document how to use them and figure out how failure affects your architecture. No invasive changes to your code base. Swap API behaviour out real time over the network.
+Evolve RESTful API's. Encode them, simulate them, document how to use them, test them and figure out how failure affects your architecture. No invasive changes to your code base.
 
 * Simulate API's with a portable concise JSON like language
 * Hotswap API behaviour on the fly over the network
