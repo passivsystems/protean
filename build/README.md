@@ -7,6 +7,14 @@ All builds assume that lein uberjar has been run and the uberjar exists in the t
 Linux
 =====
 
+TGZ
+---
+
+(assuming you are in the build directory)
+(substitute your version for the example below)
+./build-tgz.sh 0.5.0
+
+
 RPM
 ---
 
