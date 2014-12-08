@@ -96,20 +96,20 @@
     :else (fmt '(you cannot slap like that -))))
 
 (defn register-rest []
-  (let [nm (symbol (qparam "name"))] (if (register nm) {:status 204} {:status 409})))
+  (let [nm (symbol (query-param "name"))] (if (register nm) {:status 204} {:status 409})))
 
 (defn look-rest []
-  (let [nm (symbol (qparam "name"))] (if (contains? @entities nm) (rsp (look nm)) {:status 404})))
+  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (rsp (look nm)) {:status 404})))
 
-(defn go-rest [] (rsp (go (symbol (qparam "name")) (symbol (qparam "direction")))))
+(defn go-rest [] (rsp (go (symbol (query-param "name")) (symbol (query-param "direction")))))
 
-(defn pickup-rest [] (rsp (pickup (symbol (qparam "name")) (symbol (qparam "item")))))
+(defn pickup-rest [] (rsp (pickup (symbol (query-param "name")) (symbol (query-param "item")))))
 
 (defn inventory-rest []
-  (let [nm (symbol (qparam "name"))] (if (contains? @entities nm) (rsp (inventory nm)) {:status 404})))
+  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (rsp (inventory nm)) {:status 404})))
 
 (defn slap-rest []
-  (let [nm (symbol (qparam "name")) target (symbol (qparam "target"))]
+  (let [nm (symbol (query-param "name")) target (symbol (query-param "target"))]
   (if (and (contains? @entities nm) (contains? @entities target))
     (rsp (slap nm target))
     {:status 404})))

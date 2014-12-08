@@ -40,7 +40,7 @@
     (cond loc (do (e/reset! location (nth loc 2)) (look))
           :else '(you cannot go that way -))))
 
-(defn go-rest [] (let [dir (symbol (qparam "direction"))] (rsp (go dir))))
+(defn go-rest [] (let [dir (symbol (query-param "direction"))] (rsp (go dir))))
 
 {
   "tutorial-7" {
