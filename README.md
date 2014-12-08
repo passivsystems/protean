@@ -82,8 +82,6 @@ Please explore the CLI or documentation to learn more.
 Create a file with a .cod.edn extension. See *sample-petstore.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
 * uploading with the basic Protean CLI
     - protean add-services -f /path/to/service.cod.edn
-* uploading with curl
-    - curl -v -X PUT --data-binary "@/path/to/service.cod.edn" http://localhost:3001/services
 * drop the .cod.edn file in the root of your Protean directory and restart it
 
 
