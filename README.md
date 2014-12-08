@@ -29,76 +29,35 @@ Protean is still new and will be subject to some change until it hits the 1.0.0 
 
 ## Usage
 
-### Server
+### Overview
 
-    lein deps
-    lein run -m protean.server.main
+Protean helps you to evolve RESTful API's.  We define our API's in a codex which is an edn file with a .cod.edn extension.
+There is a home for codex files which varies depending on how you installed the app.  Debian flavours of Linux use /usr/lib/protean,
+while OSX uses ~/bin.
 
-by default the admin area runs on 3001 and the main app area on 3000.
-
-You can override the port by:
-
-    creating environment variables ADMIN_PORT and SIM_PORT
-
-Build a distributable with lein uberjar, then run with:
-
-    java -jar protean.jar -Dadmin.port=4001 -Dsim.port=4000
-
-
-Or just download a release and unpack it into a location of your choice, then run with:
-
-    java -jar protean.jar
-
-The following environment variables (can be -D params instead) are also available:
-
-    CODEX_DIR (configures where codex files are looked up)
-    ASSET_DIR (configures where html and css assets for admin website are looked up)
-
-### Command line interface
-
-## Without building
-
-    lein deps
-
-    lein run
-
-will show usage instructions.
-
-    lein run services
-
-will list configured services.
-
-## Building
-
-    lein uberjar
-
-will produce a jar file in target 'xyz-standalone.jar'
-
-rename this, move it to where you want and then use
-
-    java -jar protean.jar
-
-or
-
-    protean
-
-will show usage instructions.
-
-    protean services
-
-or
-
-    java -jar protean.jar services
-
-will list configured services.
-
-We recommend 'drip' (github.com/flatland/drip) to speed things up with the command line.
+Protean ships with a sample petstore service codex, you can test the API docs creation and simulation capabilities with this.
 
 
 ## Documentation
 
 Documentation is available on http://www.proteanic.org.  Below is a quickstart guide to help you with
 setting up services and getting information on how to curl them.
+
+### Creating API Documentation for a service
+
+Create API documentation for the sample petstore service codex with
+
+    protean doc -f /usr/lib/protean/sample-petstore.cod.edn
+
+view your API docs with
+
+    firefox /usr/lib/protean/silk_templates/site/index.html
+
+### Starting the simulation server
+
+Start the simulation server with
+
+    protean-server
 
 ### Setting up your services
 
