@@ -5,17 +5,6 @@
   :doc "Walk, look and play in a game world"
 
   "tutorial-8" {
-    "help" {
-      :get {
-        :rsp {
-          :200 {
-            :doc "Get help with how to play the game"
-            :body-example "public/tutorial/8/help.json"
-          }
-        }
-      }
-    }
-
     "look" {
       :get {
         :doc "See your current location"

@@ -7,17 +7,6 @@
   "tutorial-9" {
     :vars {"name" {:type :String :doc "Player name"}}
 
-    "help" {
-      :get {
-        :rsp {
-          :200 {
-            :doc "Get help with how to play the game"
-            :body-example "public/tutorial/9/help.json"
-          }
-        }
-      }
-    }
-
     "register" {
       :put {
         :doc "Register to play"
