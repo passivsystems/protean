@@ -61,6 +61,22 @@ Start the simulation server with
 
     protean-server
 
+### How to query the petstore service
+
+Lists all services:
+
+    protean services
+
+Shows the service configuration for the petstore service.
+
+    protean service -n petstore
+
+Shows the curl commands that can be used for the petstore service.
+
+    protean service-usage -n petstore
+
+Please explore the CLI or documentation to learn more.
+
 ### Setting up your services
 
 Create a file with a .cod.edn extension. See *sample-petstore.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
@@ -69,23 +85,6 @@ Create a file with a .cod.edn extension. See *sample-petstore.cod.edn* at the ro
 * uploading with curl
     - curl -v -X PUT --data-binary "@/path/to/service.cod.edn" http://localhost:3001/services
 * drop the .cod.edn file in the root of your Protean directory and restart it
-
-
-### How to query your service
-
-Lists all services:
-
-    protean services
-
-Shows the service configuration for myservice.
-
-    protean service -n myservice
-
-Shows the curl commands that can be used for myservice.
-
-    protean service-usage -n myservice
-
-Please explore the CLI or documentation to learn more.
 
 
 ## Contributing
