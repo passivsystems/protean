@@ -4,13 +4,14 @@
 
 Evolve RESTful API's. Encode them, simulate them, document how to use them, test them and figure out how failure affects your architecture. No invasive changes to your code base.
 
+* Automatic documentation generated for all configured projects - map your services
+* Customise API doc look and feel completely
 * Simulate API's with a portable concise JSON like language
 * Hotswap API behaviour on the fly over the network
 * Simulate error response status codes per project or per resource path
 * Configure probability of error per service or per resource path
 * Verify request structure; headers, query string params, body payload json keys, url encoded forms
 * Auto generate curl commands to test your API's
-* Automatic documentation generated for all configured projects - map your services
 
 This is a Clojure project which uses edn to simulate and document RESTful API's. Protean is used commerically to help speed development and test complex distributed systems.
 
