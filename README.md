@@ -17,9 +17,9 @@ This is a Clojure project which uses edn to simulate and document RESTful API's.
 
 ## Release information
 
-* Latest stable release is 0.8.0
-    * [Code](https://github.com/passivsystems/protean/tree/0.8.0)
-    * [Download](https://github.com/passivsystems/protean/releases/download/0.8.0/protean-0.8.0.tgz)
+* Latest development release is 0.9.0-alpha.1
+    * [Code](https://github.com/passivsystems/protean/tree/0.9.0-alpha.1)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.9.0-alpha.1/protean-0.9.0-alpha.1.tgz)
 
 
 ## API stability
