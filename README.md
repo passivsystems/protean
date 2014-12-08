@@ -45,6 +45,8 @@ setting up services and getting information on how to curl them.
 
 ### Creating API Documentation for a service
 
+The following assumes a Debian Linux flavour install.
+
 Create API documentation for the sample petstore service codex with
 
     protean doc -f /usr/lib/protean/sample-petstore.cod.edn
