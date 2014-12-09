@@ -1,0 +1,14 @@
+(refer 'protean.core.transformation.sim)
+
+{
+  "protean-utils" {
+    "echo" {
+      :put [
+        #(success)
+
+        ;; echo a request payload
+        (fn [] (println ">>>> echo req body : " (:body *request*)))
+      ]
+    }
+  }
+}

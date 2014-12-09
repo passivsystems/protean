@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Protean</title>
+    <link rel="stylesheet" href="/resource/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/resource/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" media="screen" href="/resource/css/main.css">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Protean</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Home</a></li>
+            <li><a href="/documentation/api">API</a></li>
+            <li><a href="/documentation">Documentation</a></li>
+            <li><a href="/roadmap">Roadmap</a></li>
+            <li><a href="/documentation/services">Services</a></li>
+            <li><a href="/community">Community</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">v<span id="project-version">0.5.0</span></a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div id="documentation" class="container">
+      <div class="page-header">
+        <h1>Protean</h1>
+      </div>
+      <p class="lead"></p>
+
+       <section id="overview">
+        <div class="page-header">
+          <h2>Overview</h2>
+        </div>
+
+        <p>
+          Take control of your RESTful API's. Test them, simulate them, document how to use them and figure out how failure affects your architecture. No invasive changes to your code base. Swap API behaviour out real time over the network.
+        </p>
+      </section>
+
+      <section id="features">
+        <div class="page-header">
+          <h2>Features</h2>
+        </div>
+
+        <ul>
+          <li>Simulate API's with a portable concise JSON like language</li>
+          <li>Hotswap API behaviour on the fly over the network</li>
+          <li>Simulate error response status codes per project or per resource path</li>
+          <li>Simulate timeouts</li>
+          <li>Configure probability of error per project or per resource path</li>
+          <li>Verify request structure; headers, query string params, body payload json keys, url encoded forms</li>
+          <li>Auto generate curl commands to test your API's</li>
+          <li>Automatically integration test your API simulation</li>
+          <li>Automatically integration test your real API's passing in a small initial seed of data</li>
+          <li>Automatic documentation generated for all configured projects</li>
+        </ul>
+      </section>
+
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "type": "http://proteanic.org/api/problems/examples/lazy-server-gremlins",
+  "title": "The service is unavailable - lazy server gremlins.",
+  "detail": "You have asked for something, but the service is unavailable, the server gremlins cannot be bothered to do any work right now.",
+  "instance": "http://host.port/tutorial-3/play"
+}

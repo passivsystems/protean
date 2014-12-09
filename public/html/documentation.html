@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Protean</title>
+    <link rel="stylesheet" href="/resource/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/resource/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" media="screen" href="/resource/css/main.css">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Protean</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="/">Home</a></li>
+            <li><a href="/documentation/api">API</a></li>
+            <li class="active"><a href="/documentation">Documentation</a></li>
+            <li><a href="/roadmap">Roadmap</a></li>
+            <li><a href="/documentation/services">Services</a></li>
+            <li><a href="/community">Community</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">v<span id="project-version">0.5.0</span></a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div id="documentation" class="container">
+      <div class="page-header">
+        <h1>Documentation</h1>
+      </div>
+
+      <section id="getting-started">
+        <div class="page-header">
+          <h2>Getting Started</h2>
+        </div>
+
+        <h3>Configuring the Protean port</h3>
+
+        <p>
+          Protean uses two ports - an <strong>admin</strong> port and an <strong>API</strong> port. The API port is used for simulating your RESTful services.
+          The admin port is used to manage your service definitions.  You can override the default API and admin ports with
+          <code><kbd>java -jar protean.jar -Dadmin.port=4001 -Dsim.port=4000</kbd></code> or use environment variables ADMIN_PORT and SIM_PORT.
+          This will launch the app with the admin port set to 4001 and the API port set to 4000.
+        </p>
+
+        <h3>Setting up your services</h3>
+
+        <p>
+          Protean works with the concepts of <strong>services</strong> and <strong>resources</strong>.  Services are your RESTful API's, comprised of one or more
+          RESTful resources.  We configure one or more services in a Protean <strong>codex</strong>.  A codex is written in a JSON like format called <strong>EDN</strong>
+          (Extensible Data Notation) which uses a <strong>.edn</strong> extension.
+        </p>
+
+        <p>
+          Protean has a defaut <strong>sample</strong> service codex out of the box.  Any codices in the same directory as the runnable jar will be loaded on app startup.
+          Alternatively you can add new services to Protean with
+        </p>
+
+        <pre>
+          <kbd>curl -v -X PUT http://locahost:3001/services --data-binary "@/path/to/service.edn"</kbd>
+          or
+          <kbd>protean-cli add-services -f /path/to/service.edn</kbd>
+        </pre>
+
+        <h3>Querying your services</h3>
+
+        <p>List all services:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/services</kbd>
+          or
+          <kbd>protean-cli services</kbd>
+        </pre>
+        <br />
+
+        <p>Show a service configuration:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/services/sample</kbd>
+          or
+          <kbd>protean-cli service -n sample</kbd>
+        </pre>
+        <br />
+
+        <p>List curl commands for service resources:</p>
+        <pre>
+          <kbd>curl -v http://localhost:3001/services/sample/usage</kbd>
+          or
+          <kbd>protean-cli service-usage</kbd>
+        </pre>
+        <br />
+
+        <p>
+        See the <a href="documentation/api">API documentation</a>, or explore the CLI or documentation for other commands.
+        </p>
+
+
+        <!--
+          -----------------
+          API Documentation
+          -----------------
+        -->
+
+        <h3>Generating API documentation for your services</h3>
+
+        <p>Protean can generate shiny API documentation for your services.  To do this it uses <a href="http://www.silkyweb.org" target="_blank">Silk</a>.</p>
+
+        <p>Below is the command for generating documentation for the out of the box <strong>service/codex</strong>:</p>
+
+        <code>
+          <kbd>protean visit -f sample-codex.edn -b '{"locs":["sample"], "commands":["doc"],"directory":"/path/to/site/protean-sample-docs/data/api"}'</kbd>
+        </code>
+
+        <p>Here we do several things:</p>
+
+        <ul>
+          <li>specify the <code>sample</code> service (all endpoints) in the locs (locations) directive</li>
+          <li>specify the <code>doc</code> command</li>
+          <li>specify where to put the documentation data so a silk site can use it (here we place doucmentation data in <code>data/api</code>)</li>
+        </ul>
+
+        <p>
+          <code><kbd>silk spin</kbd></code> can now be run in the root of your silk site to construct the apidocs site.
+        </p>
+
+
+        <!--
+          -------------------
+          Integration testing
+          -------------------
+        -->
+
+        <h3>Integration testing your services</h3>
+
+        <p>
+          Protean can automatically generate integration tests for simulations or real API's.  It is possible to specify the surface are of the API to range
+          over for testing and the rigour to apply in the test process.  The order in which to test the endpoints is figured out.
+        </p>
+
+        <h4>Integration testing all resources in the sample <strong>simulation</strong>:</h4>
+        <code><kbd>protean visit -f ~/sample-codex.edn -b '{"locs":["sample"], "commands":["test"], "config":{"test-level":1}}'</kbd></code>
+        <ul>
+          <li>specifies <code>sample</code> in the locs directive</li>
+          <li>specifies the <code>test</code> command</li>
+          <li>specifies <code>test-level</code> 1 which is the least rigorous</li>
+        </ul>
+
+        <h4>Integration testing all resources in a <strong>real</strong> API (provide a host and port pointing to your API)</h4>
+        <code><kbd>protean visit -f ~/sample-codex.edn -b '{"host": "some-host", "port": 11080, "locs":["sample"], "commands":["test"], "config":{"test-level":1}}'</kbd></code>
+        <br /><br />
+
+        <h4>Integration testing a range of resources for a given service</h4>
+        <p>
+        See <a href="#test-codex">test codex</a> for a sample of a codex which could enable this kind of auto integration test generation.
+        </p>
+        <code>
+          <kbd>
+          protean visit -f ~/sample-codex.edn -b '{"host": "some-host", "port": 11080, "locs":["sample header xml"], "commands":["test"], "config":{"test-level":1}}'
+          </kbd>
+        </code>
+        <br /><br />
+
+        <h4>Finally testing all of multiple services.</h4>
+        <code>
+          <kbd>
+            protean visit -f ~/some-service.edn -b '{"host": "some-host", "port": 11080, "locs":["svc1", "svc2"], "commands":["test"], "config":{"test-level":1}}'
+          </kbd>
+        </code>
+      </section>
+
+      <section id="codices">
+        <div class="page-header">
+          <h2>Sample codices (service definitions)</h2>
+        </div>
+
+        <p>
+          The simplest possible example of a codex is listed below:
+        </p>
+
+        <h3>Simple service codex</h3>
+
+        <pre id="simple-codex">
+{:simple {:paths {"path/data" {:get {}}}}}
+        </pre>
+
+        <p>
+          This creates a single resource which can be accessed with <code><kbd>curl -v http://localhost:3000/simple/path/data</kbd></code>.  This will return a 200 response
+          with no body.  Protean makes use where appropriate of sensible defaults for HTTP/REST.  Here as we do not specify a request method a <strong>GET</strong> is inferred, and as we do not specify a response status code we assume the default for a GET - 200.
+        </p>
+
+        <h3>Sample featureful simulation service codex</h3>
+
+        <p>
+        It is possible to define more complex simulated API's.  Below is the out of the box <a href="/#sample=project-api" target="_blank">sample</a> service API.  This
+        demonstrates a range of simulation features such as error codes, probability of error and slow response times.
+        </p>
+
+        <pre id="simulation-codex">
+{
+  :sample {
+    :paths {
+      "simple" {
+        :get { :doc "A get on sample/simple - doc is optional" }
+      }
+
+      "multimethod" {
+        :get { :doc "A get on sample/multimethod" }
+        :put { :doc "A put on sample/multimethod" }
+      }
+
+      "test/*" {
+        :get {
+          :doc "Get with path parameter wildcard and configurable
+                error and probability"
+          :rsp {
+            :body {"t1key" "t1val"}
+            :errors {:status [504] :probability 50}
+          }
+        }
+      }
+
+      "xml" {
+        :get {
+          :doc "Get with XML content type/response"
+          :rsp {
+            :headers {"Content-Type" "text/xml"}
+            :body [:parent [:child {:type "xml"}]]
+          }
+        }
+      }
+
+      "test" {
+        :get {
+          :doc "Get with mandatory request headers/query str params"
+          :req {
+            :headers {"X-Auth" "XYZ"}
+            :query-params {:required {"blurb" "flibble"}}
+          }
+          :rsp {:body {"t2key" "t2val"}}
+        }
+
+        :post {
+          :doc "Post with mandatory request url encoded form"
+          :req {:form-params {"k1" "v1"}}
+          :rsp {:headers {"Location" "7"}}
+        }
+
+        :put {
+          :doc "Put with mandatory body payload - defaults to JSON,
+                demonstrates overriding response status code"
+          :req {:body {"k1" "v1" "k2" "v2"}}
+          :rsp {:status 200}
+        }
+
+        :delete {:doc "Delete sample"}
+      }
+
+      "slow" {
+        :get {
+          :doc "Get with slow response (secs) - useful for testing timeouts"
+          :rsp {:time 2}
+        }
+      }
+    }
+    :errors {:status [500 503] :probability 25}
+  }
+}
+        </pre>
+
+        <h3>Sample test enabled simulation codex</h3>
+
+        <p>
+          With a little more metadata added it is possible for Protean to automatically generate integration tests for either a
+          simluation, or the real API behind it.
+
+          We may need to know how to dig a specific item out of a composite datastructure in the result.
+          For this we use the <strong>:body-res</strong> directive.
+
+          Below is a sample of a codex from the <a href="https://github.com/rossputin/protean-beers" target="_blank">Protean Beers sample API project</a>.
+        </p>
+
+        <pre id="test-codex">
+{
+  :beers {
+    :paths {
+      "token" {
+        :get {
+          :doc "Get an auth token"
+          :rsp {
+            :body-res "access_token"
+            :body {"access_token" "mytoken" "token_type" "bearer"}
+          }
+        }
+      }
+
+      ...
+
+      "starches/pick" {
+        :get {
+          :doc "Get a starch source suitable for a specific drink type"
+          :req {
+            :headers {"Authorization" "psv+Bearer token"}
+            :query-params {:required {"drink" "psv+drink"}}
+          }
+          :rsp {
+            :headers {"Content-Type" "text/plain"}
+            :body "/starches/malted-grain"
+          }
+        }
+      }
+
+      ...
+
+      "flavourings/pick" {
+        :get {
+          :doc "Get a flavouring suitable for a specific drink type"
+          :req {
+            :headers {"Authorization" "psv+Bearer token"}
+            :query-params {:required {"drink" "psv+drink"}}
+          }
+          :rsp {
+            :headers {"Content-Type" "text/plain"}
+            :body "/flavourings/golding-hops"
+          }
+        }
+      }
+
+      "brew" {
+        :post {
+          :doc "Brew a drink given a bag of ingredients"
+          :req {
+            :headers {"Authorization" "psv+Bearer token" "Content-Type" "application/json"}
+            :body {
+              "starch"     "/starches/psv+"
+              "yeast"      "/yeasts/psv+"
+              "flavouring" "/flavourings/psv+"
+            }
+          }
+          :rsp {:body "/drinks/ale"}
+        }
+      }
+    }
+  }
+}
+        </pre>
+
+      </section>
+
+    </div>
+  </body>
+</html>

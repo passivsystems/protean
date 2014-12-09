@@ -1,0 +1,47 @@
+{
+  "codex" {
+    "examples" {
+      :post {
+        :req {:doc "Demonstrates encoding a simple post example"}
+
+        ;; example with all bespoke method level settings
+        :rsp {
+          ;; not specifying a success code here will assume 201 no body
+          ;; a body cannot be guessed
+          :202 {
+            ;; no need for a header, it is computed form the body file
+            :body "test-data/content/doc/responses/simple/202-ref.json"
+          }
+
+          ;; HTTP API problems based response
+          :400 {
+            ;; override the content type calculated from the file extension
+            :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
+            :body "test-data/content/problems/bad-custom-domain-field.json"
+          }
+
+          ;; HTTP API problems based response
+          :412 {
+            :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
+            :body "test-data/content/problems/asynchronous-custom-computation-failure.json"
+          }
+
+          ;; standard 503 implicit
+          :503 {}
+        }
+      }
+
+      :get {
+        :req {:doc "Demonstrates a simple get over a collection"}
+
+        :rsp {
+          :200 {
+            :body "test-data/content/doc/responses/simple/200-ref.json"
+          }
+
+          :503 {}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+Package: protean
+Priority: optional
+Section: devel
+Installed-Size: 100
+Maintainer: Ross McDonald <ross@bheap.co.uk>
+Architecture: all
+Version: 0:%VERSION%
+Depends:
+Description: Protean API simulation, documentation, testing and negotiation
+ Map/encode, simulate, test and negotiate RESTful API's at run time.

@@ -1,0 +1,10 @@
+/rpmbuild
+/target
+/classes
+/checkouts
+/server-data
+pom.xml
+pom.xml.asc
+/.lein-*
+/.nrepl-port
+*.log
