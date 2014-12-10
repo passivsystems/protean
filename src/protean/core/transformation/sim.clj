@@ -251,9 +251,10 @@
   [s k] (first (filter #(= (:id %) k) s)))
 
 (defmacro prob
-  "Will evaluate the provided function with specified probability"
-  [n then]
-  `(if (< (rand) ~n) ~then))
+  "First arity evaluates the provided fn with specified probability.
+   Second arity evaulates first fn with provided prob else second fn."
+  ([n then] `(if (< (rand) ~n) ~then))
+  ([n then else] `(if (< (rand) ~n) ~then ~else)))
 
 (defn log [what where]
   (let [to-log [(str (java.util.Date.)) what]]
@@ -289,3 +290,21 @@
   "Accesses environment variables"
   [name]
   (ec/env name))
+
+
+;; =============================================================================
+;; Scenario Modelling
+;; =============================================================================
+
+(defn zm [r fn-seq]
+  (let [fns (if (= (count fn-seq) 1) (repeat (first fn-seq)) fn-seq)]
+    (zipmap (range (first r) (last r)) fns)))
+
+(defn range-scenario [r fn-seq]
+  (let [m (zm r fn-seq)] (into {} (for [[k v] m] [(str k) v]))))
+
+(defn scenario [scenarios k]
+  ((or (get-in scenarios [:protean-sim/exact (str k)])
+       (get-in scenarios [:protean-sim/good (str k)])
+       (get-in scenarios [:protean-sim/bad (str k)])
+       (:protean-sim/default scenarios))))
