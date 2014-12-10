@@ -5,6 +5,8 @@
  * sections of docs content.
  */
 
+.navbar-brand {padding: 5px;}
+
 /* By default it's not affixed in mobile views, so undo that */
 .bs-sidebar.affix {
   position: static;
