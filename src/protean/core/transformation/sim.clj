@@ -92,7 +92,7 @@
   (let [expected-ctype (d/req-ctype tree)
         schema (d/get-in-tree tree [:req :body-schema])
         codex-body (d/body-req tree)]
-    (v/validate-body request expected-ctype schema codex-body [])))
+    (v/validate-body request expected-ctype schema codex-body errors)))
 
 (defn valid-inputs? []
  (let [errors
