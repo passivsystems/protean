@@ -225,13 +225,16 @@
 
 (defn respond
   "Creates a response with given status-code.
-   If body-url is provided, will include the content and inferred content-type."
-  [status-code & {:keys [body-url]}]
-  (if body-url
-    {:status status-code
+   1st arity assign a status.
+   2nd arity include body from url and inferr content-type.
+   3rd arity manually assign content type and body string."
+  ([status] {:status status})
+  ([status {:keys [body-url]}]
+     {:status status
       :body (slurp body-url)
-      :headers {h/ctype (h/mime body-url)}}
-    {:status status-code}))
+      :headers {h/ctype (h/mime body-url)}})
+  ([status ctype body]
+     {:status status :headers {"Content-Type" (name ctype)} :body body}))
 
 ;; TODO: polymorphic slurp of body based on understanding if it is path or data
 ;; TODO: construct rsp (ctype etc) headers based on request accept header etc
