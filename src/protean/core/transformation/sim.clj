@@ -157,10 +157,14 @@
 
 (defn query-param [p] (get-in *request* [:query-params p]))
 
-(defn path-param
+(defn param [p] (get-in *request* [:params p]))
+
+(defn route-param
   "Simplisticly grabs the last part of a uri"
   [route-params]
   (last (s/split (:* route-params) #"/")))
+
+(defn form-param [p] (get-in *request* [:form-params p]))
 
 (defn body-param [p] ((c/clj (:body *request*)) p))
 
