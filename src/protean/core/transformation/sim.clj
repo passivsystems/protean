@@ -164,6 +164,8 @@
 
 (defn body-param [p] ((c/clj (:body *request*)) p))
 
+(defn header [h] (get-in *request* [:headers h]))
+
 
 ;; =============================================================================
 ;; Responses
