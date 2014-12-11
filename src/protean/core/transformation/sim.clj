@@ -286,6 +286,8 @@
 
 (defn put [url body] (make-request :put url *request* body))
 
+(defn patch [url body] (make-request :patch url *request* body))
+
 (defn env
   "Accesses environment variables"
   [name]
