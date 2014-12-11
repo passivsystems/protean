@@ -291,6 +291,8 @@
   [name]
   (ec/env name))
 
+(defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
+
 
 ;; =============================================================================
 ;; Scenario Modelling
