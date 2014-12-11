@@ -48,6 +48,10 @@
           <span data-sw-text="title">Tutorial</span>
         </a>
       </li><li>
+        <a href="documentation.html" data-sw-href="path">
+          <span data-sw-text="title">Documentation</span>
+        </a>
+      </li><li>
         <a href="community.html" data-sw-href="path">
           <span data-sw-text="title">Community</span>
         </a>
@@ -529,7 +533,7 @@ is in a cave.&quot;
 (refer 'protean.core.transformation.sim)
 
 (defn param2rsp [{:keys [route-params]} data-path]
-  (if-let [rsp (rsp-body data-path (path-param route-params) &quot;.json&quot;)]
+  (if-let [rsp (rsp-body data-path (route-param route-params) &quot;.json&quot;)]
     (slurp rsp)
     {:status 404}))
 
