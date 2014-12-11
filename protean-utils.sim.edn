@@ -5,7 +5,16 @@
     "echo" {
       :put [
         #(success)
-
+        ;; echo a request payload
+        (fn [] (println ">>>> echo req body : " (:body *request*)))
+      ]
+      :post [
+        #(success)
+        ;; echo a request payload
+        (fn [] (println ">>>> echo req body : " (:body *request*)))
+      ]
+      :patch [
+        #(success)
         ;; echo a request payload
         (fn [] (println ">>>> echo req body : " (:body *request*)))
       ]
