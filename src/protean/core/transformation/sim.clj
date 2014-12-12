@@ -92,7 +92,7 @@
   (let [expected-ctype (d/req-ctype tree)
         schema (d/get-in-tree tree [:req :body-schema])
         codex-body (d/body-req tree)]
-    (v/validate-body request expected-ctype schema codex-body [])))
+    (v/validate-body request expected-ctype schema codex-body errors)))
 
 (defn valid-inputs? []
  (let [errors
@@ -157,12 +157,18 @@
 
 (defn query-param [p] (get-in *request* [:query-params p]))
 
-(defn path-param
+(defn param [p] (get-in *request* [:params p]))
+
+(defn route-param
   "Simplisticly grabs the last part of a uri"
   [route-params]
   (last (s/split (:* route-params) #"/")))
 
+(defn form-param [p] (get-in *request* [:form-params p]))
+
 (defn body-param [p] ((c/clj (:body *request*)) p))
+
+(defn header [h] (get-in *request* [:headers h]))
 
 
 ;; =============================================================================
@@ -217,16 +223,6 @@
     (= accept h/txt) (str d)
     :else (c/js d))))
 
-(defn respond
-  "Creates a response with given status-code.
-   If body-url is provided, will include the content and inferred content-type."
-  [status-code & {:keys [body-url]}]
-  (if body-url
-    {:status status-code
-      :body (slurp body-url)
-      :headers {h/ctype (h/mime body-url)}}
-    {:status status-code}))
-
 ;; TODO: polymorphic slurp of body based on understanding if it is path or data
 ;; TODO: construct rsp (ctype etc) headers based on request accept header etc
 (defn rsp
@@ -251,9 +247,10 @@
   [s k] (first (filter #(= (:id %) k) s)))
 
 (defmacro prob
-  "Will evaluate the provided function with specified probability"
-  [n then]
-  `(if (< (rand) ~n) ~then))
+  "First arity evaluates the provided fn with specified probability.
+   Second arity evaulates first fn with provided prob else second fn."
+  ([n then] `(if (< (rand) ~n) ~then))
+  ([n then else] `(if (< (rand) ~n) ~then ~else)))
 
 (defn log [what where]
   (let [to-log [(str (java.util.Date.)) what]]
@@ -281,11 +278,27 @@
           res (clt/request the-request)]
       (log-debug "res" res))))
 
-(defn post [url body] (make-request :post url *request* body))
-
-(defn put [url body] (make-request :put url *request* body))
-
 (defn env
   "Accesses environment variables"
   [name]
   (ec/env name))
+
+(defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
+
+
+;; =============================================================================
+;; Scenario Modelling
+;; =============================================================================
+
+(defn zm [r fn-seq]
+  (let [fns (if (= (count fn-seq) 1) (repeat (first fn-seq)) fn-seq)]
+    (zipmap (range (first r) (last r)) fns)))
+
+(defn range-scenario [r fn-seq]
+  (let [m (zm r fn-seq)] (into {} (for [[k v] m] [(str k) v]))))
+
+(defn scenario [scenarios k]
+  ((or (get-in scenarios [:protean-sim/exact (str k)])
+       (get-in scenarios [:protean-sim/good (str k)])
+       (get-in scenarios [:protean-sim/bad (str k)])
+       (:protean-sim/default scenarios))))

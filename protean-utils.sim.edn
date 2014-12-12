@@ -1,11 +1,55 @@
+;; OUT OF THE BOX EXAMPLE SIM LIBRARY
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (refer 'protean.core.transformation.sim)
+(require '[protean.core.protocol.http :as h]
+         '[protean.core.transformation.coerce :refer [clj]])
+
+;; =============================================================================
+;; Sim Library Response Functions
+;; =============================================================================
+
+(defn respond
+  ([status] {:status status})
+  ([status & {:keys [body-url]}]
+    {:status status
+     :body (slurp body-url)
+     :headers {h/ctype (h/mime body-url)}}))
+
+(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body (clj body)})
+
+(defn txt [status body] {:status status :headers {h/ctype h/txt} :body body})
+
+
+;; =============================================================================
+;; Sim Library Payload Transport Functions
+;; =============================================================================
+
+(defn post [url body] (make-request :post url *request* body))
+
+(defn put [url body] (make-request :put url *request* body))
+
+(defn patch [url body] (make-request :patch url *request* body))
+
+
+;; =============================================================================
+;; Sim Library Scenario Modelling Endpoints
+;; =============================================================================
 
 {
   "protean-utils" {
     "echo" {
       :put [
         #(success)
-
+        ;; echo a request payload
+        (fn [] (println ">>>> echo req body : " (:body *request*)))
+      ]
+      :post [
+        #(success)
+        ;; echo a request payload
+        (fn [] (println ">>>> echo req body : " (:body *request*)))
+      ]
+      :patch [
+        #(success)
         ;; echo a request payload
         (fn [] (println ">>>> echo req body : " (:body *request*)))
       ]
