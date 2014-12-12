@@ -103,6 +103,18 @@
         <a data-sw-href="#path" href="#sim-response">
           <span data-sw-text="title">Simulation Response API</span>
         </a>
+      </li><li>
+        <a data-sw-href="#path" href="#sim-payload-transport">
+          <span data-sw-text="title">Simulation Payload Transport API</span>
+        </a>
+      </li><li>
+        <a data-sw-href="#path" href="#library-response">
+          <span data-sw-text="title">Response Library</span>
+        </a>
+      </li><li>
+        <a data-sw-href="#path" href="#sim-payload-transport">
+          <span data-sw-text="title">Payload Transport Library</span>
+        </a>
       </li>
     </ul>
   </div>
@@ -115,9 +127,14 @@
         <h1>Documentation</h1>
       </div>
 
+      <h2>Simulation API</h2>
+      <p class="lead">
+        The simulation API is a stable protected set of functionality and comprises low level composable units of functionality.
+      </p>
+
       <section data-sw-nav="Simulation Request API" id="sim-request" data-sw-content="">
         <div class="page-header">
-          <h2>Simulation Request Functions</h2>
+          <h3>Request API</h3>
         </div>
         <p class="lead">Extracting information out of simulation requests</p>
         <ul class="list-unstyled">
@@ -270,9 +287,35 @@
 
       <section data-sw-nav="Simulation Response API" id="sim-response" data-sw-content="">
         <div class="page-header">
-          <h2>Simulation Response Functions</h2>
+          <h3>Response API</h3>
         </div>
         <p class="lead">Forming synchronous simulation responses</p>
+
+        <p>
+          The most flexible (and low level) way to create responses in a sim extension is to create Ring responses.
+          An example is listed below.
+        </p>
+
+        <pre class="prettyprint">
+{
+  :status 200
+  :headers {&quot;Content-Type&quot; &quot;application/json&quot;}
+  :body &quot;json string&quot;
+}
+        </pre>
+
+        <p>
+          Or an example of reading a file to specify the body content:
+        </p>
+
+        <pre class="prettyprint">
+{
+  :status 200
+  :headers {&quot;Content-Type&quot; &quot;application/json&quot;}
+  :body (slurp &quot;path/file.json&quot;)
+}
+        </pre>
+
         <ul class="list-unstyled doc-list">
           <li>
             <div class="panel panel-info">
@@ -314,6 +357,72 @@
               </table>
             </div>
           </li>
+        </ul>
+      </section>
+
+      <section data-sw-nav="Simulation Payload Transport API" id="sim-payload-transport" data-sw-content="">
+        <div class="page-header">
+          <h3>Payload Transport API</h3>
+        </div>
+        <p class="lead">Sending synchronous and asynchronous payloads over different protocols.</p>
+
+        <p>
+          We often need to send route data to different destinations synchronously and asynhronously
+          as a result of receiving a request.  We provide one low level API mechanism for doing this
+          and several abstractions over this in the sim library.
+        </p>
+
+        <ul class="list-unstyled doc-list">
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(make-request :put &quot;http://host:port/path&quot; {:content-type &quot;application/json&quot;  :body &quot;something&quot;})</span>
+              </div>
+              <div class="panel-body">Sends a specified payload with a specified method to a given url</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">method</td>
+                    <td width="50%">HTTP method</td>
+                    <td width="30%">keyword</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <h2>Simulation Utility Library</h2>
+      <p class="lead">
+        The simulation utility library is a set of utility functions built on top of the API.  This functionality is intended
+        as an example for you to build your own functionality.  Library utilities provided out of the box are in <code>protean-utils.sim.edn</code>
+        in the code/sim extension directory.
+      </p>
+
+      <section data-sw-nav="Response Library" id="library-response" data-sw-content="">
+        <div class="page-header">
+          <h3>Response Example Library</h3>
+        </div>
+        <p class="lead">Forming synchronous simulation responses</p>
+        <ul class="list-unstyled doc-list">
           <li>
             <div class="panel panel-info">
               <div class="panel-heading">
@@ -370,9 +479,9 @@
           <li>
             <div class="panel panel-info">
               <div class="panel-heading">
-                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(respond 200 :text/plain &quot;my response string&quot;)</span>
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(jsn 200 &quot;my response string&quot;)</span>
               </div>
-              <div class="panel-body">Create a response with a specific status header, content type and body</div>
+              <div class="panel-body">Create a response with a specific status header, &quot;application/json&quot; content type and body</div>
               <table class="table">
                 <thead>
                   <tr>
@@ -388,14 +497,155 @@
                     <td width="30%">Int</td>
                   </tr>
                   <tr>
-                    <td width="20%">ctype</td>
-                    <td width="50%">specific content type</td>
-                    <td width="30%">keyword</td>
+                    <td width="20%">body</td>
+                    <td width="50%">body content</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(txt 200 &quot;my response string&quot;)</span>
+              </div>
+              <div class="panel-body">Create a response with a specific status header, &quot;text/plain&quot; content type and body</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific status code</td>
+                    <td width="30%">Int</td>
                   </tr>
                   <tr>
                     <td width="20%">body</td>
                     <td width="50%">body content</td>
                     <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section data-sw-nav="Payload Transport Library" id="sim-payload-transport" data-sw-content="">
+        <div class="page-header">
+          <h3>Payload Transport Example Library</h3>
+        </div>
+
+        <ul class="list-unstyled doc-list">
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(post &quot;http://host:port/path&quot; &quot;something&quot;)</span>
+              </div>
+              <div class="panel-body">
+                <p>
+                  Posts a specified payload to a given uri
+                </p>
+                <p>
+                  Assumes content type is the same as requests content type.
+                </p>
+              </div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(put &quot;http://host:port/path&quot; &quot;something&quot;)</span>
+              </div>
+              <div class="panel-body">
+                <p>
+                  Puts a specified payload to a given uri
+                </p>
+                <p>
+                  Assumes content type is the same as requests content type.
+                </p>
+              </div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(patch &quot;http://host:port/path&quot; &quot;something&quot;)</span>
+              </div>
+              <div class="panel-body">
+                <p>
+                  Patches a specified payload to a given uri
+                </p>
+                <p>
+                  Assumes content type is the same as requests content type.
+                </p>
+              </div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
                   </tr>
                 </tbody>
               </table>
