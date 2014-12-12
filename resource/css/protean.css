@@ -5,6 +5,10 @@
  * sections of docs content.
  */
 
+.doc-list > li {margin-bottom: 30px;}
+
+.function-hdr {margin-left: 10px;}
+
 .navbar-brand {padding: 5px;}
 
 /* By default it's not affixed in mobile views, so undo that */
