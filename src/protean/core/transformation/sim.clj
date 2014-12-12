@@ -223,19 +223,6 @@
     (= accept h/txt) (str d)
     :else (c/js d))))
 
-(defn respond
-  "Creates a response with given status-code.
-   1st arity assign a status.
-   2nd arity include body from url and inferr content-type.
-   3rd arity manually assign content type and body string."
-  ([status] {:status status})
-  ([status {:keys [body-url]}]
-     {:status status
-      :body (slurp body-url)
-      :headers {h/ctype (h/mime body-url)}})
-  ([status ctype body]
-     {:status status :headers {"Content-Type" (name ctype)} :body body}))
-
 ;; TODO: polymorphic slurp of body based on understanding if it is path or data
 ;; TODO: construct rsp (ctype etc) headers based on request accept header etc
 (defn rsp
@@ -290,12 +277,6 @@
              :throw-exceptions false}
           res (clt/request the-request)]
       (log-debug "res" res))))
-
-(defn post [url body] (make-request :post url *request* body))
-
-(defn put [url body] (make-request :put url *request* body))
-
-(defn patch [url body] (make-request :patch url *request* body))
 
 (defn env
   "Accesses environment variables"
