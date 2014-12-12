@@ -10,7 +10,7 @@
 (let [analysed '(
   {
    :method :get
-   :uri "http://laton.lan:3000/sample/simple"
+   :uri "http://localhost:3000/sample/simple"
    :tree [nil
           {:get nil}
           {"simple" {:get nil}} {:rsp {:200 {:doc "OK"}}}
@@ -25,7 +25,7 @@
 (let [analysed '(
   {
   :method :get
-  :uri "http://10.10.10.143:3000/curly/query-params"
+  :uri "http://localhost:3000/curly/query-params"
   :tree [
     {
       :rsp {
