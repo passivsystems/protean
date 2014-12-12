@@ -17,7 +17,8 @@
 (def del-sim "del-sim")
 (def doc "doc")
 (def visit "visit")
-(def silk-dir "silk_templates/data/protean-api")
+(def silk-data-dir "silk_templates/data/protean-api")
+(def docs-home-page "silk_templates/site/index.html")
 
 ;; =============================================================================
 ;; Interface args verification functions

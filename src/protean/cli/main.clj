@@ -6,6 +6,7 @@
             [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
             [protean.cli.interface :as i]
+            [protean.config :as conf]
             [protean.core.transformation.coerce :as c]
             [protean.core.command.bridge :as b]
             [protean.core.codex.reader :as r])
@@ -105,9 +106,11 @@
   [{:keys [file]}]
   (let [codices (r/read-codex (File. file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js {:locs [svc] :commands [:doc] :directory i/silk-dir})
+        b (c/js {:locs [svc] :commands [:doc] :directory i/silk-data-dir})
         options {:host nil :port nil :file file :body b}]
-    (visit options)))
+    (visit options)
+    (println "Please see your docs, as demonstrated below.")
+    (println "firefox" (str (conf/codex-dir) "/" i/docs-home-page))))
 
 
 ;; =============================================================================
