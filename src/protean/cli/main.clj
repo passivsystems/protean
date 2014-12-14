@@ -107,10 +107,11 @@
   (let [codices (r/read-codex (File. file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
         b (c/js {:locs [svc] :commands [:doc] :directory i/silk-data-dir})
-        options {:host nil :port nil :file file :body b}]
+        options {:host nil :port nil :file file :body b}
+        cm (if (.contains (conf/os) "Mac") "open" "firefox")]
     (visit options)
     (println "Please see your docs, as demonstrated below.")
-    (println "firefox" (str (conf/codex-dir) "/" i/docs-home-page))))
+    (println cm (str (conf/codex-dir) "/" i/docs-home-page))))
 
 
 ;; =============================================================================

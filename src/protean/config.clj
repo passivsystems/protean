@@ -6,6 +6,8 @@
 ;; Configuration
 ;; =============================================================================
 
+(defn os [] (System/getProperty "os.name"))
+
 (defonce host (or (env :hostname) (.getCanonicalHostName (java.net.InetAddress/getLocalHost))))
 
 (defn sim-port [] (or (env :sim-port) "3000"))
