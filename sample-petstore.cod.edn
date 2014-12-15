@@ -1,7 +1,7 @@
 ;; Sample API codex
 ;;
 ;; We call Protean Project/Service configurations codices
-;; The sample codex illustrates most if not all of what is possible
+;; The sample codex illustrates much if not all of what is possible
 ;; with Protean
 ;;
 
@@ -11,9 +11,7 @@
   :title "Pet Store API Docs"
   :doc "A sample pet store is often created in RESTful toolkits to demonstrate capability."
 
-  :rsp {
-    :headers {"Access-Control-Allow-Origin" "*"}
-  }
+  :rsp {:headers {"Access-Control-Allow-Origin" "*"}}
 
   "petstore" {
 
@@ -45,15 +43,8 @@
             ;; no need for a header, it is derived from the body file
             :body-example "test-data/content/doc/responses/simple/200-ref.json"
           }
-
-          :400 {
-            :doc "Pet not found"
-          }
-
-          :404 {
-            :doc "Invalid ID supplied"
-          }
-
+          :400 {:doc "Pet not found"}
+          :404 {:doc "Invalid ID supplied"}
           :405 {
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
@@ -77,10 +68,7 @@
             :doc "Created"
             :headers {"Location" "/pet/${petId}"}
           }
-
-          :405 {
-            :doc "Validation exception"
-          }
+          :405 {:doc "Validation exception"}
         }
       }
 
@@ -94,10 +82,8 @@
           :form-params {:required {"name" "${name}" "status" "${status}"}}
         }
         :rsp {
-          :200 { :doc "Updated" }
-          :405 {
-            :doc "Validation exception"
-          }
+          :200 {:doc "Updated"}
+          :405 {:doc "Validation exception"}
         }
       }
 
@@ -110,11 +96,7 @@
             :body-schema  "test-data/schemas/pet.schema.json"
             :body-example "test-data/content/doc/responses/simple/pet.json"
           }
-
-          :404 {
-            :doc "Invalid ID supplied"
-          }
-
+          :404 {:doc "Invalid ID supplied"}
           :405 {
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
@@ -126,21 +108,12 @@
 
       :delete {
         :doc "Deletes a pet"
-
-        :rsp {
-          :404 {
-            :doc "Invalid ID supplied"
-          }
-        }
+        :rsp {:404 {:doc "Invalid ID supplied"}}
       }
 
       :patch {
         :doc "Partial updates to a pet"
-        :rsp {
-          :404 {
-            :doc "Invalid ID supplied"
-          }
-        }
+        :rsp {:404 {:doc "Invalid ID supplied"}}
       }
 
     }
