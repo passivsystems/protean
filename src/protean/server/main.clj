@@ -27,7 +27,7 @@
 
 (timbre/set-config! [:appenders :spit :enabled?] true)
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
-(timbre/set-level! :info)
+(timbre/set-level! (c/log-level))
 
 (defn- files [c-dir ext]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
