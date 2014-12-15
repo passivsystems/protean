@@ -47,6 +47,9 @@
 (defn solve [scenarios]
   (seq (remove nil? (map #(if ((first %)) (last %) nil) scenarios))))
 
+(defn route-rsp [routes]
+  (if-let [errs (solve routes)] ((rand-nth errs)) (success)))
+
 
 ;; =============================================================================
 ;; Sim Library Scenario Modelling Endpoints
