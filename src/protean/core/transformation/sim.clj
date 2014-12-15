@@ -264,10 +264,9 @@
 
 
 ;; =============================================================================
-;; Validation
+;; Validation of Request by Codex Specification
 ;; =============================================================================
 
-;;
 (defn- validate-body [request tree errors]
   (let [expected-ctype (d/req-ctype tree)
         schema (d/get-in-tree tree [:req :body-schema])
@@ -288,21 +287,3 @@
       (log-info (s/join "," errors)))))
 
 (defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
-
-
-;; =============================================================================
-;; Scenario Modelling
-;; =============================================================================
-
-(defn zm [r fn-seq]
-  (let [fns (if (= (count fn-seq) 1) (repeat (first fn-seq)) fn-seq)]
-    (zipmap (range (first r) (last r)) fns)))
-
-(defn range-scenario [r fn-seq]
-  (let [m (zm r fn-seq)] (into {} (for [[k v] m] [(str k) v]))))
-
-(defn scenario [scenarios k]
-  ((or (get-in scenarios [:protean-sim/exact (str k)])
-       (get-in scenarios [:protean-sim/good (str k)])
-       (get-in scenarios [:protean-sim/bad (str k)])
-       (:protean-sim/default scenarios))))
