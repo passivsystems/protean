@@ -72,7 +72,7 @@
         "  add-services           -f service-config-file.cod.edn (Add services in a codex)"
         "  del-service            -n myservice (Delete a service)"
         "  sims                   (List sims)"
-        "  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
+        ;"  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
         "  del-sim                -n myservice (Delete a sim)"
         ""
         "Please refer to the manual page for more information."]
