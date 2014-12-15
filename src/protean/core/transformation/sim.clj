@@ -192,6 +192,13 @@
         (ph/swap error *tree* {} :gen-all true))))
   ([] (error (Long. (name (first (rand-nth (d/error-status *tree*))))))))
 
+(defn respond
+  ([status] {:status status})
+  ([status & {:keys [body-url]}]
+    {:status status
+     :body (slurp body-url)
+     :headers {h/ctype (h/mime body-url)}}))
+
 (defn encode
   "Encode d using header content type information in request"
   [d]

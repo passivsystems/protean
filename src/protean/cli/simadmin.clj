@@ -30,6 +30,7 @@
 	(let [rsp (clt/get (str "http://" host ":" port "/sims"))]
     (c/pretty-clj (:body rsp))))
 
+; TODO: not working with Ring, port to Compojure
 (defn add-sims [{:keys [file host port]}]
   (let [rsp (clt/put (str "http://" host ":" port "/sims")
               {:multipart [{:name "file"
@@ -40,4 +41,3 @@
   (let [rsp (clt/delete (str "http://" host ":" port "/sims/" name)
                         {:throw-exceptions false})]
    (sims options)))
-
