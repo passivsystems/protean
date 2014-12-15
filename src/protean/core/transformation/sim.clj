@@ -85,27 +85,6 @@
 
 
 ;; =============================================================================
-;; DSL for sims
-;; =============================================================================
-
-(defn- validate-body [request tree errors]
-  (let [expected-ctype (d/req-ctype tree)
-        schema (d/get-in-tree tree [:req :body-schema])
-        codex-body (d/body-req tree)]
-    (v/validate-body request expected-ctype schema codex-body errors)))
-
-(defn valid-inputs? []
- (let [errors
-   (->> []
-     (v/validate-headers (d/req-hdrs *tree*) *request*)
-     (v/validate-query-params *request* *tree*)
-     (v/validate-form-params *request* *tree*)
-     (validate-body *request* *tree*))]
-   (if (empty? errors)
-     true
-     (log-info (s/join "," errors)))))
-
-;; =============================================================================
 ;; Scheduling
 ;; =============================================================================
 
@@ -282,6 +261,31 @@
   "Accesses environment variables"
   [name]
   (ec/env name))
+
+
+;; =============================================================================
+;; Validation
+;; =============================================================================
+
+;;
+(defn- validate-body [request tree errors]
+  (let [expected-ctype (d/req-ctype tree)
+        schema (d/get-in-tree tree [:req :body-schema])
+        codex-body (d/body-req tree)]
+    (v/validate-body request expected-ctype schema codex-body errors)))
+
+(defn valid-inputs?
+  "Validate request against codex specification"
+  []
+  (let [errors
+    (->> []
+      (v/validate-headers (d/req-hdrs *tree*) *request*)
+      (v/validate-query-params *request* *tree*)
+      (v/validate-form-params *request* *tree*)
+      (validate-body *request* *tree*))]
+      (if (empty? errors)
+      true
+      (log-info (s/join "," errors)))))
 
 (defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
 
