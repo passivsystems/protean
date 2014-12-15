@@ -5,6 +5,15 @@
          '[protean.core.transformation.coerce :refer [clj]])
 
 ;; =============================================================================
+;; Sim Library Request Functions
+;; =============================================================================
+
+(defn qp [p] (query-param p))
+
+(defn qp= [x p] (= (qp p) x))
+
+
+;; =============================================================================
 ;; Sim Library Response Functions
 ;; =============================================================================
 
@@ -29,6 +38,17 @@
 (defn put [url body] (make-request :put url *request* body))
 
 (defn patch [url body] (make-request :patch url *request* body))
+
+
+;; =============================================================================
+;; Sim Library Scenario Modelling and Route Solution
+;; =============================================================================
+
+(defn solve [scenarios]
+  (seq (remove nil? (map #(if ((first %)) (last %) nil) scenarios))))
+
+(defn route-rsp [routes]
+  (if-let [errs (solve routes)] ((rand-nth errs)) (success)))
 
 
 ;; =============================================================================
