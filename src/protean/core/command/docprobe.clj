@@ -96,7 +96,7 @@
   (doseq [[rsp-code v] statuses]
     (spit (str target-dir (name rsp-code) ".edn")
       (pr-str { :code (name rsp-code)
-                :doc (:doc v)
+                :doc (if-let [d (:doc v)] d "N/A")
                 :sample-response (if-let [s (:body-example v)] (slurp s) "N/A")
                 :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")}))))
 
