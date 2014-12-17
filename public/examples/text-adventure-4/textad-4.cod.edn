@@ -110,5 +110,22 @@ Accepts a request parameter called name."
         }
       }
     }
+
+    "mug" {
+      :put {
+        :doc "Mug an entity"
+        :description
+"Will mug an entity."
+        :vars {"target" {:type :String :doc "Entity to mug"}}
+        :req {:query-params {:required {"name" "${name}" "target" "${target}"}}}
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "public/examples/text-adventure-4/look-ref.json"
+          }
+          :404 {:doc "Not Found"}
+        }
+      }
+    }
   }
 }
