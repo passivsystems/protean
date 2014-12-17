@@ -2,6 +2,8 @@
 (refer 'protean.config)
 
 ;; Demonstrates validating requests against the codex specification
+;; This is basically what you get for free without creating a sim extension
+;;    but adds validation
 
 {
   "petstore" {
