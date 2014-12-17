@@ -64,6 +64,8 @@
         ;"                             visit -f sample-petstore.cod.edn -b '{\"host\": \"localhost\", \"port\": 3000, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
         ;""
         "  doc                    -f codex (A shortcut to the doc visit command - makes some assumptions about defaults)"
+        "                            e.g. To generate documentation"
+        "                              doc -f sample-petstore.cod.edn"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"
