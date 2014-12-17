@@ -2,6 +2,7 @@
   "Outputs to junit format."
   (:require [clojure.data.xml :as x]
             [clojure.string :as s]
+            [clojure.java.io :refer [file]]
             [clojure.pprint :as pp]
             [protean.core.transformation.coerce :as co]
             [protean.config :as c])
@@ -45,6 +46,7 @@
       (x/element :system-err {} (x/cdata "")))))
 
 (defn- write [[svc results]]
+  (.mkdirs (file "target"))
   (let [file (str "target/TEST-" svc ".xml")
         tags (x/element :testsuite {:name svc
                                     :hostname c/host
