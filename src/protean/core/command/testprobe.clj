@@ -231,9 +231,9 @@
   (let [tuples (map vector (map la/topsort gs) gs)
         walkable (remove #(nil? (first %)) tuples)
         selected (first walkable)]
-    (if selected
-      (with-open [w (clojure.java.io/output-stream (str "target/" graph-name ".png"))]
-        (.write w ^bytes (li/render-to-bytes (second selected)))))
+    ;; (if selected
+    ;;   (with-open [w (clojure.java.io/output-stream (str "target/" graph-name ".png"))]
+    ;;     (.write w ^bytes (li/render-to-bytes (second selected)))))
     (first selected)))
 
 (defmethod pb/dispatch :test [_ corpus probes]

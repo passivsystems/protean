@@ -192,6 +192,13 @@
         (ph/swap error *tree* {} :gen-all true))))
   ([] (error (Long. (name (first (rand-nth (d/error-status *tree*))))))))
 
+(defn respond
+  ([status] {:status status})
+  ([status & {:keys [body-url]}]
+    {:status status
+     :body (slurp body-url)
+     :headers {h/ctype (h/mime body-url)}}))
+
 (defn encode
   "Encode d using header content type information in request"
   [d]
@@ -237,25 +244,22 @@
 
 (defn make-request
   "Makes an API request"
-  ([method url content]
-    (let [the-request (assoc content
-          :url url
-          :method method
-          :throw-exceptions false)
-          res (clt/request the-request)]
-      (log-debug "res" res)
-      (if-let [log-file (:log content)]
-        (log [(str "Response from " (:url content)) res] log-file))))
+  [method url content]
+  (let [the-request (assoc content
+                      :url url
+                      :method method
+                      :throw-exceptions false)
+        res (clt/request the-request)]
+    (log-debug "res" res)
+    (if-let [log-file (:log content)]
+      (log [(str "Response from " (:url content)) res] log-file))))
 
-  ([method url request body]
-    (let [the-request
-            {:url url
-             :method method
-             :body body
-             :content-type (get-in request [:headers "content-type"])
-             :throw-exceptions false}
-          res (clt/request the-request)]
-      (log-debug "res" res))))
+(defn simple-request
+  [method url body]
+  (make-request method url
+                {:content-type (header "content-type")
+                 :headers (dissoc (:headers *request*) "content-length")
+                 :body body}))
 
 (defn env
   "Accesses environment variables"

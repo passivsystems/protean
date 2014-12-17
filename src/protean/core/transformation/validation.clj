@@ -19,8 +19,8 @@
 
 (defn validate-headers [expected-headers payload errors]
   (if expected-headers
-    (let [expected (set (keys expected-headers))
-          received (set (keys (:headers payload)))]
+    (let [expected (set (map #(s/lower-case %) (keys expected-headers)))
+          received (set (map #(s/lower-case %) (keys (:headers payload))))]
       (if (subset? expected received)
         errors
         (conj errors

@@ -57,13 +57,19 @@
         ""
         "Actions:"
         "Codex actions:"
-        "  visit                  -f codex -b body (Visit node(s) with probe(s) to doc etc)"
-        "                           e.g. To generate documentation"
-        "                             visit -f sample-petstore.cod.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"silk_templates/data/protean-api\"}'"
-        "                           e.g. To run tests against a server"
-        "                             visit -f sample-petstore.cod.edn -b '{\"host\": \"localhost\", \"port\": 3000, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
-        ""
+        ;"  visit                  -f codex -b body (Visit node(s) with probe(s) to doc etc)"
+        ;"                           e.g. To generate documentation"
+        ;"                             visit -f sample-petstore.cod.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"silk_templates/data/protean-api\"}'"
+        ;"                           e.g. To run tests against a server"
+        ;"                             visit -f sample-petstore.cod.edn -b '{\"host\": \"localhost\", \"port\": 3000, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
+        ;""
         "  doc                    -f codex (A shortcut to the doc visit command - makes some assumptions about defaults)"
+        "                            e.g. To generate documentation"
+        "                              doc -f sample-petstore.cod.edn"
+        ""
+        "  test                   -f codex (A shortcut to the test visit command - makes assumptions about defaults)"
+        "                            e.g. To integration test the sample-petstore service"
+        "                              test -f sample-petstore.cod.edn"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"
@@ -72,7 +78,7 @@
         "  add-services           -f service-config-file.cod.edn (Add services in a codex)"
         "  del-service            -n myservice (Delete a service)"
         "  sims                   (List sims)"
-        "  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
+        ;"  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
         "  del-sim                -n myservice (Delete a sim)"
         ""
         "Please refer to the manual page for more information."]
@@ -113,6 +119,15 @@
     (println "Please see your docs, as demonstrated below.")
     (println cm (str (conf/codex-dir) "/" i/docs-home-page))))
 
+(defn- integration-test
+  "If no corpus is passed in to a visit test command - guess sensible defaults"
+  [{:keys [host port file]}]
+  (let [codices (r/read-codex (File. file))
+        svc (ffirst (filter #(= (type (key %)) String) codices))
+        b (c/js {:locs [svc] :commands [:test] :config {:test-level 1}})
+        options {:host host :port port :file file :body b}]
+    (visit options)))
+
 
 ;; =============================================================================
 ;; Application entry point
@@ -134,7 +149,8 @@
       (and (= cmd i/add-sims) (not file)) (bomb summary)
       (and (= cmd i/del-sim) (not name)) (bomb summary)
       (and (= cmd i/visit (i/visit? options))) (bomb summary)
-      (and (= cmd i/doc (i/doc? options))) (bomb summary))))
+      (and (= cmd i/doc (i/doc? options))) (bomb summary)
+      (and (= cmd i/int-test (i/int-test? options))) (bomb summary))))
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
@@ -152,5 +168,6 @@
       (= cmd i/del-sim) (delete-sim options)
       (= cmd i/visit) (visit options)
       (= cmd i/doc) (doc options)
+      (= cmd i/int-test) (integration-test options)
       :else (exit 1 (usage-exit summary)))
     (shutdown-agents))) ; write graph image file seems to create threads which are not shutdown

@@ -1,19 +1,17 @@
-;; Sample API codex
+;; Petstore Demo API codex
 ;;
-;; We call Protean Project/Service configurations codices
-;; The sample codex illustrates much if not all of what is possible
-;; with Protean
+;; A more fully featured alternative to the 'sample-petstore'
 ;;
 
 {
   :includes [ "defaults.edn" ]
 
-  :title "Pet Store API Docs"
+  :title "Pet Store Demo API Docs"
   :doc "A sample pet store is often created in RESTful toolkits to demonstrate capability."
 
   :rsp {:headers {"Access-Control-Allow-Origin" "*"}}
 
-  "petstore" {
+  "petstore-demo" {
 
     :types {
       :Status "(available|pending|sold)"
@@ -123,7 +121,7 @@
         :doc "uploads an image"
         :req {
           :query-params {:required {"additionalMetadata" "${additionalMetadata}"}}
-;           {"file" {:type :File}} ; Binary?; Multipart?
+          ;           {"file" {:type :File}} ; Binary?; Multipart?
         }
         :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
       }

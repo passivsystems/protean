@@ -66,7 +66,7 @@
 (defn- doc-hdrs [target-dir hdrs]
   "Doc headers for a given node.
    target-dir is the directory to write to.
-   hdrs is the codex rsp headers."
+   hdrs is the codex req/rsp headers."
   (.mkdirs (File. target-dir))
   (doseq [[k v] hdrs]
     (spit (str target-dir (UUID/randomUUID) ".edn")
@@ -96,7 +96,7 @@
   (doseq [[rsp-code v] statuses]
     (spit (str target-dir (name rsp-code) ".edn")
       (pr-str { :code (name rsp-code)
-                :doc (:doc v)
+                :doc (if-let [d (:doc v)] d "N/A")
                 :sample-response (if-let [s (:body-example v)] (slurp s) "N/A")
                 :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")}))))
 

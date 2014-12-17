@@ -19,9 +19,9 @@
     (north exit walkway))
   'miltons-cubicle '((you are in miltons office -)
     (east exit reception))
-} "tutorial-7-world.sav"))
+} "textad-1-world.sav"))
 
-(def location (e/file-atom 'office-cubicle "tutorial-7-location.sav"))
+(def location (e/file-atom 'office-cubicle "textad-1-location.sav"))
 
 (defn describe-location [location world] (first (location world)))
 
@@ -43,7 +43,7 @@
 (defn go-rest [] (let [dir (symbol (query-param "direction"))] (rsp (go dir))))
 
 {
-  "tutorial-7" {
+  "textad-1" {
     "look" {:get [#(rsp (look))]}
     "go" {:put [#(go-rest)]}
   }
