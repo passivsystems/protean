@@ -61,7 +61,8 @@
 (defn fp [t] (get-in-tree t [:req :form-params]))
 
 (defn- codex-req-hdrs [tree]
-  (get-in-tree tree [:req :headers]))
+  ; we don't use get-in-tree since we want to merge definitions in all scopes here
+  (into {} (merge (remove nil? (map #(get-in % [:req :headers]) tree)))))
 
 (defn req-ctype [tree]
   (let [hdrs (codex-req-hdrs tree)

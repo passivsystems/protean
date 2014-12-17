@@ -66,7 +66,7 @@
 (defn- doc-hdrs [target-dir hdrs]
   "Doc headers for a given node.
    target-dir is the directory to write to.
-   hdrs is the codex rsp headers."
+   hdrs is the codex req/rsp headers."
   (.mkdirs (File. target-dir))
   (doseq [[k v] hdrs]
     (spit (str target-dir (UUID/randomUUID) ".edn")
