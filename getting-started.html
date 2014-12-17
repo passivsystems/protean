@@ -144,6 +144,17 @@
           In a terminal run <code><kbd>protean-server</kbd></code>.  This will start the sim server.
           You will see some output when you run this startup command, including information on where service definitions live.
         </p>
+
+        <p>
+          There are several configuration possibilities via environment variable:
+        </p>
+
+        <ul>
+          <li>PROTEAN_SIM_PORT - the port for hitting sim endpoints (default 3000)</li>
+          <li>PROTEAN_ADMIN_PORT - the port for managing sims (default 3001)</li>
+          <li>PROTEAN_CODEX_DIR - the location for codex specifications (listed when you start the sim server)</li>
+          <li>PROTEAN_LOG_LEVEL - (default info)</li>
+        </ul>
       </section>
 
       <section data-sw-nav="Simulation" id="simulation" data-sw-content="">
