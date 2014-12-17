@@ -7,6 +7,13 @@ They are mostly self documented.
 To run any example in the sim server just copy the .cod.edn and if present .sim.edn file into your codex directory.
 
 
+## Petstore Demo
+
+A more fully featured alternative to the 'sample-petstore' in the root directory.
+
+Demonstrates random error responses, and forwarding payloads to endpoints synchronously and asynchronously.
+
+
 ## Text Adventure Part 1
 
 A simple single player text adventure game with a REST API interface.
