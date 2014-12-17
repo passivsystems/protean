@@ -104,8 +104,16 @@
           <span data-sw-text="title">Starting</span>
         </a>
       </li><li>
+        <a data-sw-href="#path" href="#apidocs">
+          <span data-sw-text="title">API Documentation</span>
+        </a>
+      </li><li>
         <a data-sw-href="#path" href="#simulation">
           <span data-sw-text="title">Simulation</span>
+        </a>
+      </li><li>
+        <a data-sw-href="#path" href="#integration-testing">
+          <span data-sw-text="title">Integration Testing</span>
         </a>
       </li>
     </ul>
@@ -157,6 +165,30 @@
         </ul>
       </section>
 
+      <section data-sw-nav="API Documentation" id="apidocs" data-sw-content="">
+        <div class="page-header">
+          <h2>API Documentation Generation</h2>
+        </div>
+
+        <p>
+          It is simple to generate API docs from your codex.
+        </p>
+
+        <p>
+          In a terminal run <code><kbd>protean doc -f myservice.cod.edn</kbd></code>.
+        </p>
+
+        <p>
+          The output in the terminal will tell you how to open your docs.
+        </p>
+
+        <p>
+          You will notice in the produced docs that values have been generated where you have specified
+          types for parameters.  This is true in the curl output also.  See the sample petstore codex
+          for examples of types.
+        </p>
+      </section>
+
       <section data-sw-nav="Simulation" id="simulation" data-sw-content="">
         <div class="page-header">
           <h2>Simulation</h2>
@@ -184,6 +216,28 @@
           </li>
         </ul>
 
+      </section>
+
+      <section data-sw-nav="Integration Testing" id="integration-testing" data-sw-content="">
+        <div class="page-header">
+          <h2>Integration Testing</h2>
+        </div>
+
+        <p>
+          It is possible to integration test your simulations in a fairly simplistic manner.  You do not need to write any code to do this.
+        </p>
+
+        <p>
+          In a terminal run <code><kbd>protean test -f myservice.cod.edn</kbd></code>.
+        </p>
+
+        <p>
+          The output in the terminal will indicate success or failure as the endpoints you have specified in your codex are traversed.
+        </p>
+
+        <p>
+          We are currently working on integration testing your actual services, not the simulations.  We will update these docs when we have more news on that.
+        </p>
       </section>
     </div>
   </div>
