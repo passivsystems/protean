@@ -1,57 +1,23 @@
 (refer 'protean.core.transformation.sim)
 (refer 'protean.config)
-
-(def counter (atom 0))
-
 {
   "petstore" {
 
     "api/pet" {
-      :put [
-        #(-> {:status 200 :headers {"Content-Type" "application/json"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
-      ]
-      :post [
-        #(validate {:status 201 :headers {"Location" "/pet/yyyy"}})
-      ]
+      :get    [#(validate (success))]
+      :put    [#(validate (success))]
+      :post   [#(validate (success))]
     }
 
     "api/pet/${petId}" {
-      :get [
-        #(do (log *request* (str (env :user-home) "/tmp/protean-requests.txt"))
-             (Thread/sleep 2000)
-             (success))
-      ]
-
-      :delete [#(error)]
-
-      :patch [#(or (prob 0.5 (error)) (success))]
-
-      :post [
-        ;; synchronous response
-        #(validate (respond 200 :body-url "test-data/content/doc/responses/simple/200-ref.json"))
-
-        ;; synchronously forward request to another API, and log response
-        #(when (valid-inputs?)
-          (make-request :put (str "http://localhost:" (sim-port) "/protean-utils/echo") {
-            :content-type (get-in *request* [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
-            :form-params (into {} (for [[k v] (:form-params *request*)] [(keyword k) v]))
-            :log (str (env :user-home) "/tmp/protean-responses.txt")}))
-
-        ;; asynchronously forward request to another API, and log response
-        ;; after delay (in ms)
-        #(in 3000
-          (make-request :put (str "http://localhost:" (sim-port) "/protean-utils/echo") {
-            :content-type (get-in *request* [:headers "content-type"]) ; Note, headers in request are in lower-case (ring)
-            :form-params (into {} (for [[k v] (:form-params *request*)] [(keyword k) v]))
-            :log (str (env :user-home) "/tmp/protean-responses.txt")}))
-      ]
+      :post   [#(validate (success))]
+      :get    [#(validate (success))]
+      :delete [#(validate (success))]
+      :patch  [#(validate (success))]
     }
 
     "api/uploadImage" {
-      :post [
-        ; altenative to error with probability - every nth access gives error - requires server state
-        #(if (= 0 (mod (swap! counter inc) 3)) (error))
-      ]
+      :post   [#(validate (success))]
     }
   }
 }
