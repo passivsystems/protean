@@ -16,6 +16,7 @@
 (def add-sims "add-sims")
 (def del-sim "del-sim")
 (def doc "doc")
+(def int-test "test")
 (def visit "visit")
 (def silk-data-dir "silk_templates/data/protean-api")
 (def docs-home-page "silk_templates/site/index.html")
@@ -25,5 +26,7 @@
 ;; =============================================================================
 
 (defn doc? [{:keys [file]}] (not file))
+
+(defn int-test? [{:keys [file]}] (not file))
 
 (defn visit? [{:keys [file body]}] (or (not file) (not body)))
