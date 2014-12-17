@@ -1,5 +1,8 @@
 (refer 'protean.core.transformation.sim)
 (refer 'protean.config)
+
+;; Demonstrates validating requests against the codex specification
+
 {
   "petstore" {
 
