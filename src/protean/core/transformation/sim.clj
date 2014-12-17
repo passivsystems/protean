@@ -244,25 +244,19 @@
 
 (defn make-request
   "Makes an API request"
-  ([method url content]
-    (let [the-request (assoc content
-          :url url
-          :method method
-          :throw-exceptions false)
-          res (clt/request the-request)]
-      (log-debug "res" res)
-      (if-let [log-file (:log content)]
-        (log [(str "Response from " (:url content)) res] log-file))))
+  [method url content]
+  (let [the-request (assoc content
+                      :url url
+                      :method method
+                      :throw-exceptions false)
+        res (clt/request the-request)]
+    (log-debug "res" res)
+    (if-let [log-file (:log content)]
+      (log [(str "Response from " (:url content)) res] log-file))))
 
-  ([method url request body]
-    (let [the-request
-            {:url url
-             :method method
-             :body body
-             :content-type (get-in request [:headers "content-type"])
-             :throw-exceptions false}
-          res (clt/request the-request)]
-      (log-debug "res" res))))
+(defn simple-request
+  [method url body]
+  (make-request method url {:content-type (header "content-type") :body body}))
 
 (defn env
   "Accesses environment variables"

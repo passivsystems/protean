@@ -26,11 +26,11 @@
 ;; Sim Library Payload Transport Functions
 ;; =============================================================================
 
-(defn post [url body] (make-request :post url *request* body))
+(defn post [url body] (simple-request :post url body))
 
-(defn put [url body] (make-request :put url *request* body))
+(defn put [url body] (simple-request :put url body))
 
-(defn patch [url body] (make-request :patch url *request* body))
+(defn patch [url body] (simple-request :patch url body))
 
 
 ;; =============================================================================
