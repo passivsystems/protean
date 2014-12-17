@@ -256,7 +256,10 @@
 
 (defn simple-request
   [method url body]
-  (make-request method url {:content-type (header "content-type") :body body}))
+  (make-request method url
+                {:content-type (header "content-type")
+                 :headers (dissoc (:headers *request*) "content-length")
+                 :body body}))
 
 (defn env
   "Accesses environment variables"
