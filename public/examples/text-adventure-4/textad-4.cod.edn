@@ -1,10 +1,10 @@
 {
   :includes ["defaults.edn"]
 
-  :title "Tutorial 9"
-  :doc "Multiplayer text adventure"
+  :title "Text Adventure Part 4"
+  :doc "Game actions"
 
-  "tutorial-9" {
+  "textad-4" {
     :vars {"name" {:type :String :doc "Player name"}}
 
     "register" {
@@ -18,7 +18,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/tutorial/9/look-ref.json"
+            :body-example "public/examples/text-adventure-4/look-ref.json"
           }
           :400 {:doc "Bad Request"}
         }
@@ -34,7 +34,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/tutorial/9/look-ref.json"
+            :body-example "public/examples/text-adventure-4/look-ref.json"
           }
         }
       }
@@ -57,7 +57,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/tutorial/9/look-ref.json"
+            :body-example "public/examples/text-adventure-4/look-ref.json"
           }
           :404 {:doc "Not Found"}
         }
@@ -71,7 +71,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/tutorial/9/inventory-ref.json"
+            :body-example "public/examples/text-adventure-4/inventory-ref.json"
           }
         }
       }
@@ -81,15 +81,30 @@ Accepts a request parameter called name."
       :put {
         :doc "Pickup an item"
         :description
-"Will pickup an item in the game world.
-
-Accepts a request parameter called item."
+"Will pickup an item in the game world."
         :vars {"item" {:type :String :doc "Item to pick up"}}
         :req {:query-params {:required {"name" "${name}" "item" "${item}"}}}
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/tutorial/9/look-ref.json"
+            :body-example "public/examples/text-adventure-4/look-ref.json"
+          }
+          :404 {:doc "Not Found"}
+        }
+      }
+    }
+
+    "slap" {
+      :put {
+        :doc "Slap an entity"
+        :description
+"Will slap an entity."
+        :vars {"target" {:type :String :doc "Entity to slap"}}
+        :req {:query-params {:required {"name" "${name}" "target" "${target}"}}}
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-example "public/examples/text-adventure-4/look-ref.json"
           }
           :404 {:doc "Not Found"}
         }

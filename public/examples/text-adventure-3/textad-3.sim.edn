@@ -19,15 +19,15 @@
     (north exit walkway))
   'miltons-cubicle '((you are in miltons cubicle -)
     (east exit reception))
-} "tutorial-10-world.sav"))
+} "textad-3-world.sav"))
 
-(def entities (e/file-atom #{'Lumbergh 'Milton} "tutorial-10-entities.sav"))
+(def entities (e/file-atom #{'Milton} "textad-3-entities.sav"))
 
 (def location (e/file-atom
 {
   'Milton 'miltons-cubicle
   'Lumbergh 'office-cubicle
-} "tutorial-10-location.sav"))
+} "textad-3-location.sav"))
 
 (defn register [name]
   (let [sn (symbol name)]
@@ -52,7 +52,7 @@
 {
   'photocopier 'walkway
   'red-stapler 'miltons-cubicle
-} "tutorial-9-item-locations.sav"))
+} "textad-3-item-locations.sav"))
 
 (defn is-at? [obj loc obj-loc] (= (obj obj-loc) loc))
 
@@ -88,13 +88,6 @@
     (cond loc (do (e/swap! location assoc name (nth loc 2)) (look name))
           :else '(you cannot go that way -))))
 
-(defn slap [name object]
-  (cond (= (name @location) (object @location))
-    (cond (= object 'Lumbergh) (fmt '(Lumbergh says yahhh, mmmm we are gonna need to go ahead and talk about that -))
-          (= object 'Milton) (fmt '(Milton mumbles about burning the building down -))
-          :else (fmt '(oooh, that was some good slapping -)))
-    :else (fmt '(you cannot slap like that -))))
-
 (defn register-rest []
   (let [nm (symbol (query-param "name"))] (if (register nm) {:status 204} {:status 409})))
 
@@ -106,21 +99,15 @@
 (defn pickup-rest [] (rsp (pickup (symbol (query-param "name")) (symbol (query-param "item")))))
 
 (defn inventory-rest []
-  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (rsp (inventory nm)) {:status 404})))
-
-(defn slap-rest []
-  (let [nm (symbol (query-param "name")) target (symbol (query-param "target"))]
-  (if (and (contains? @entities nm) (contains? @entities target))
-    (rsp (slap nm target))
-    {:status 404})))
+  (let [nm (symbol (get-in *request* [:query-params "name"]))]
+  (if (contains? @entities nm) (rsp (inventory nm)) {:status 404})))
 
 {
-  "tutorial-10" {
+  "textad-3" {
     "register" {:put [#(register-rest)]}
     "look" {:get [#(look-rest)]}
     "go" {:put [#(go-rest)]}
     "inventory" {:get [#(inventory-rest)]}
     "pickup" {:put [#(pickup-rest)]}
-    "slap" {:put [#(slap-rest)]}
   }
 }

@@ -1,17 +1,17 @@
 {
   :includes ["defaults.edn"]
 
-  :title "Tutorial 7"
+  :title "Text Adventure Part 1"
   :doc "Walk and look at a game world"
 
-  "tutorial-7" {
+  "textad-1" {
     "look" {
       :get {
         :doc "See your current location"
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/tutorial/7/200-ref.json"
+            :body-example "public/examples/text-adventure-1/200-ref.json"
           }
         }
       }
@@ -32,7 +32,7 @@ Accepts a request parameter called direction."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/tutorial/7/200-ref.json"
+            :body-example "public/examples/text-adventure-1/200-ref.json"
           }
           :404 {:doc "Not Found"}
         }

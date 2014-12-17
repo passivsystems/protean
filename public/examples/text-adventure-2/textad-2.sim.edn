@@ -19,9 +19,9 @@
     (north exit walkway))
   'miltons-cubicle '((you are in miltons office -)
     (east exit reception))
-} "tutorial-8-world.sav"))
+} "textad-2-world.sav"))
 
-(def location (e/file-atom 'office-cubicle "tutorial-8-location.sav"))
+(def location (e/file-atom 'office-cubicle "textad-2-location.sav"))
 
 (defn describe-location [location world] (first (location world)))
 
@@ -37,7 +37,7 @@
 {
   'photocopier 'walkway
   'red-stapler 'miltons-cubicle
-} "tutorial-8-item-locations.sav"))
+} "textad-2-item-locations.sav"))
 
 (defn is-at? [obj loc obj-loc] (= (obj obj-loc) loc))
 
@@ -72,7 +72,7 @@
 (defn pickup-rest [] (let [item (symbol (query-param "item"))] (rsp (pickup item))))
 
 {
-  "tutorial-8" {
+  "textad-2" {
     "look" {:get [#(rsp (look))]}
     "go" {:put [#(go-rest)]}
     "inventory" {:get [#(rsp (inventory))]}
