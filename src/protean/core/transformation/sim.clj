@@ -35,6 +35,15 @@
 
 (defn- print-error [e] (println (aa/red (str "caught exception: " (.getMessage e)))))
 
+(defn- fnfirst [x] (first (nfirst x)))
+
+(defn- aug-path-params [req-endpoint cod-endpoint request]
+  (let [p-ks (s/split cod-endpoint #"/")
+        p-vs (s/split req-endpoint #"/")
+        raw-params (into {} (filter #(re-seq ph/ph (key %)) (zipmap p-ks p-vs)))
+        params (into {} (for [[k v] raw-params] [(fnfirst (re-seq ph/ph k)) v]))]
+    (assoc request :path-params params)))
+
 (def ^:dynamic *tree*)
 (def ^:dynamic *request*)
 (def ^:dynamic *corpus*)
@@ -65,7 +74,7 @@
           (if (not tree) nil)
           (try
             (binding [*tree* tree
-                      *request* request
+                      *request* (aug-path-params requested-endpoint endpoint request)
                       *corpus* corpus]
                (apply rule nil))
             (catch Exception e (print-error e))))
@@ -135,6 +144,8 @@
 ;; =============================================================================
 
 (defn query-param [p] (get-in *request* [:query-params p]))
+
+(defn path-param [p] (get-in *request* [:path-params p]))
 
 (defn param [p] (get-in *request* [:params p]))
 
