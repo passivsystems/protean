@@ -1,6 +1,6 @@
 (ns protean.config
-  (:require [environ.core :refer [env]])
-  (:require [me.rossputin.diskops :as d]))
+  (:require [environ.core :refer [env]]
+            [me.rossputin.diskops :as d]))
 
 ;; =============================================================================
 ;; Configuration
