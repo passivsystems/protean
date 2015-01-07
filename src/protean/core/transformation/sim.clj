@@ -54,20 +54,18 @@
 ;; =============================================================================
 
 (declare success)
-(defn sim-rsp-> [{:keys [uri] :as req} paths sims]
+(defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
         endpoint (to-endpoint requested-endpoint paths svc)
         method (:request-method req)
         rules (get-in sims [svc endpoint method])
         tree (get-in paths [svc endpoint method])
-          ; (d/to-seq codices svc endpoint method)
         body-in (:body req)
         request (assoc req
-          ; make endpoint available in request
           :endpoint endpoint
           :svc svc
-          ; also convert body from input stream to content, since we may need to access it more than once
+          ; convert body from input stream to content, may need multi access
           :body (if body-in (slurp body-in) ""))
         corpus {}
         execute (fn [rule]

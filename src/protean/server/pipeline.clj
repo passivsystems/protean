@@ -8,7 +8,7 @@
             [protean.config :as c]
             [protean.core.codex.document :as d]
             [protean.core.protocol.http :as h]
-            [protean.core.transformation.sim :as txsim]
+            [protean.core.transformation.sim :as sim]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
             [protean.server.docs :as txdocs]
@@ -58,7 +58,7 @@
 
 (defn api [req]
   (log-request req)
-  (txsim/sim-rsp-> req @paths @sims))
+  (sim/sim-rsp req @paths @sims))
 
 
 ;; =============================================================================
