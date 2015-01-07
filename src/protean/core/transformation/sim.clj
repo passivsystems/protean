@@ -5,6 +5,7 @@
             [clojure.pprint]
             [clojure.main :as m]
             [clojure.java.io :refer [file]]
+            [me.rossputin.diskops :as dk]
             [protean.core.protocol.http :as h]
             [protean.core.protocol.protean :as p]
             [protean.core.codex.document :as d]
@@ -35,6 +36,15 @@
 
 (defn- print-error [e] (println (aa/red (str "caught exception: " (.getMessage e)))))
 
+(defn- fnfirst [x] (first (nfirst x)))
+
+(defn- aug-path-params [req-endpoint cod-endpoint request]
+  (let [p-ks (s/split cod-endpoint #"/")
+        p-vs (s/split req-endpoint #"/")
+        raw-params (into {} (filter #(re-seq ph/ph (key %)) (zipmap p-ks p-vs)))
+        params (into {} (for [[k v] raw-params] [(fnfirst (re-seq ph/ph k)) v]))]
+    (assoc request :path-params params)))
+
 (def ^:dynamic *tree*)
 (def ^:dynamic *request*)
 (def ^:dynamic *corpus*)
@@ -45,34 +55,29 @@
 ;; =============================================================================
 
 (declare success)
-(defn sim-rsp-> [{:keys [uri] :as req} paths sims]
+(defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
         endpoint (to-endpoint requested-endpoint paths svc)
         method (:request-method req)
         rules (get-in sims [svc endpoint method])
         tree (get-in paths [svc endpoint method])
-          ; (d/to-seq codices svc endpoint method)
-        body-in (:body req)
         request (assoc req
-          ; make endpoint available in request
           :endpoint endpoint
           :svc svc
-          ; also convert body from input stream to content, since we may need to access it more than once
-          :body (if body-in (slurp body-in) ""))
+          ; convert body from input stream to content, may need multi access
+          :body (or (dk/slurp-pun (:body req)) ""))
         corpus {}
         execute (fn [rule]
           (if (not tree) nil)
           (try
             (binding [*tree* tree
-                      *request* request
+                      *request* (aug-path-params requested-endpoint endpoint request)
                       *corpus* corpus]
                (apply rule nil))
             (catch Exception e (print-error e))))
-        rules-response (some identity (map execute rules))
         default-success (binding [*tree* tree *request* request *corpus* corpus](success))
-        ; we return the first non-nil response, else a success response.
-        response (if rules-response rules-response default-success)]
+        response (or (some identity (map execute rules)) default-success)]
     (if (not tree)
       (do
         (log-warn "Warning - no endpoint found for" [svc endpoint method])
@@ -135,6 +140,8 @@
 ;; =============================================================================
 
 (defn query-param [p] (get-in *request* [:query-params p]))
+
+(defn path-param [p] (get-in *request* [:path-params p]))
 
 (defn param [p] (get-in *request* [:params p]))
 

@@ -1,4 +1,4 @@
-(defproject protean "0.9.0-beta.1"
+(defproject protean "0.9.0-rc.1"
   :description "Take control of your RESTful API's, simulate, doc, test easily."
   :url "http://github.com/passivsystems/protean"
   :license {:name "Apache License v2.0"
@@ -22,7 +22,7 @@
                  [expectations "2.0.13"]
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
-                 [me.rossputin/diskops "0.2.1"]
+                 [me.rossputin/diskops "0.3.0"]
                  [org.silkyweb/silk "0.7.0-pre.2"]
                  [me.rossputin/pew "0.1.0"]
                  [alandipert/enduro "1.2.0"]
