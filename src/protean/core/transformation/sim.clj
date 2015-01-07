@@ -5,6 +5,7 @@
             [clojure.pprint]
             [clojure.main :as m]
             [clojure.java.io :refer [file]]
+            [me.rossputin.diskops :as dk]
             [protean.core.protocol.http :as h]
             [protean.core.protocol.protean :as p]
             [protean.core.codex.document :as d]
@@ -61,12 +62,11 @@
         method (:request-method req)
         rules (get-in sims [svc endpoint method])
         tree (get-in paths [svc endpoint method])
-        body-in (:body req)
         request (assoc req
           :endpoint endpoint
           :svc svc
           ; convert body from input stream to content, may need multi access
-          :body (if body-in (slurp body-in) ""))
+          :body (or (dk/slurp-pun (:body req)) ""))
         corpus {}
         execute (fn [rule]
           (if (not tree) nil)
@@ -76,10 +76,8 @@
                       *corpus* corpus]
                (apply rule nil))
             (catch Exception e (print-error e))))
-        rules-response (some identity (map execute rules))
         default-success (binding [*tree* tree *request* request *corpus* corpus](success))
-        ; we return the first non-nil response, else a success response.
-        response (if rules-response rules-response default-success)]
+        response (or (some identity (map execute rules)) default-success)]
     (if (not tree)
       (do
         (log-warn "Warning - no endpoint found for" [svc endpoint method])
