@@ -9,7 +9,9 @@
             [protean.config :as conf]
             [protean.core.transformation.coerce :as c]
             [protean.core.command.bridge :as b]
-            [protean.core.codex.reader :as r])
+            [protean.core.codex.reader :as r]
+            [protean.core.codex.document :as d]
+            [me.rossputin.diskops :as dsk])
   (:use protean.cli.simadmin)
   (:import java.net.URI java.io.File)
   (:gen-class))
@@ -112,12 +114,15 @@
   [{:keys [file]}]
   (let [codices (r/read-codex (File. file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js {:locs [svc] :commands [:doc] :directory i/silk-data-dir})
+        b (c/js {:locs [svc] :commands [:doc]})
         options {:host nil :port nil :file file :body b}
-        cm (if (.contains (conf/os) "Mac") "open" "firefox")]
+        cm (if (.contains (conf/os) "Mac") "open" "firefox")
+        site-dir (str (conf/target-dir) "/site/index.html")
+        abs-site-dir (if (d/is-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
     (visit options)
     (println "Please see your docs, as demonstrated below.")
-    (println cm (str (conf/codex-dir) "/" i/docs-home-page))))
+    (println cm abs-site-dir)
+    (println "")))
 
 (defn- integration-test
   "If no corpus is passed in to a visit test command - guess sensible defaults"

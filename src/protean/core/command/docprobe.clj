@@ -6,6 +6,7 @@
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
             [silk.cli.api :as silk]
+            [protean.config :as cfg]
             [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as ph]
             [protean.core.protocol.http :as h]
@@ -27,13 +28,22 @@
   (println (aa/red msg))
     (System/exit 0))
 
-(defn- prep-docs [{:keys [directory]}]
-  (if (not directory)
-    (bomb "please provide \"directory\" config to generate docs")
-    (if (dsk/exists-dir? directory)
-      (do (dsk/delete-directory (file directory))
-          (.mkdirs (file (str directory "/api"))))
-      (.mkdirs (file (str directory "/api"))))))
+(defn staging-directory []
+  (let [target (cfg/target-dir)]
+    (str target "/silk_staging")))
+
+(defn data-directory []
+  (str (staging-directory) "/data/protean-api"))
+
+(defn- prep-docs []
+  (let [target-dir (cfg/target-dir)
+        directory (staging-directory)]
+    (if (not target-dir)
+      (bomb "please provide \"target-dir\" config to generate docs")
+      (if (dsk/exists-dir? directory)
+        (do (dsk/delete-directory (file directory))
+            (.mkdirs (file (str directory "/api"))))
+        (.mkdirs (file (str directory "/api")))))))
 
 (defn spit-to
   "Will make directory if does not exist before spitting to file."
@@ -115,12 +125,13 @@
         to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
   (reduce merge (map to-map ph-names))))
 
-(defmethod pb/build :doc [_ {:keys [locs directory] :as corpus} entry]
+(defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
-  (prep-docs corpus)
+  (prep-docs)
   {:entry entry
    :engage (fn []
-    (let [{:keys [svc method tree path] :as e} entry
+    (let [directory (str (staging-directory) "/data/protean-api")
+          {:keys [svc method tree path] :as e} entry
           uri (p/uri "host" 1234 svc path)
           safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
           uri-path (-> (URI. (safe-uri uri)) (.getPath))
@@ -162,6 +173,12 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
-  (let [path (.getAbsolutePath (file (:directory corpus)))
-        silk-path (subs path 0 (.indexOf path (str (dsk/fs) "data" (dsk/fs))))]
-    (silk/spin-or-reload false silk-path false false)))
+  (let [target-dir (cfg/target-dir)
+        silk-staging (staging-directory)
+        ; TODO should codex-dir be stored in corpus? think it is stored there since corpus not always available?
+        [{:keys [tree] :as entry} _] (first results) ; can use any result since all have :codex-dir
+        silk-template (d/to-path "silk_templates" tree)]
+    (doseq [f (dsk/path-list silk-template)]
+      (dsk/copy-recursive f silk-staging))
+    (silk/spin-or-reload false silk-staging false false)
+    (dsk/copy-recursive (str silk-staging "/site") target-dir)))

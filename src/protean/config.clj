@@ -23,3 +23,5 @@
 (defn res-dir [] (str (asset-dir) "/resource"))
 
 (defn html-dir [] (str (asset-dir) "/html"))
+
+(defn target-dir [] (or (env :protean-target) "target"))

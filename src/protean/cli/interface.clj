@@ -18,8 +18,6 @@
 (def doc "doc")
 (def int-test "test")
 (def visit "visit")
-(def silk-data-dir "silk_templates/data/protean-api")
-(def docs-home-page "silk_templates/site/index.html")
 
 ;; =============================================================================
 ;; Interface args verification functions
