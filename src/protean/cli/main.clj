@@ -72,6 +72,7 @@
         "  test                   -f codex (A shortcut to the test visit command - makes assumptions about defaults)"
         "                            e.g. To integration test the sample-petstore service"
         "                              test -f sample-petstore.cod.edn"
+        "                              test -f sample-petstore.cod.edn -b '{\"seed\": {\"tokenValue\": \"VALID_TOKEN\"}}'"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"
@@ -126,10 +127,12 @@
 
 (defn- integration-test
   "If no corpus is passed in to a visit test command - guess sensible defaults"
-  [{:keys [host port file]}]
+  [{:keys [host port file body]}]
   (let [codices (r/read-codex (File. file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js {:locs [svc] :commands [:test] :config {:test-level 1}})
+        b (c/js (merge
+            {:locs [svc] :commands [:test] :config {:test-level 1}}
+            (c/clj body)))
         options {:host host :port port :file file :body b}]
     (visit options)))
 
