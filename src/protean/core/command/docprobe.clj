@@ -32,19 +32,6 @@
   (let [target (cfg/target-dir)]
     (str target "/silk_staging")))
 
-(defn data-directory []
-  (str (staging-directory) "/data/protean-api"))
-
-(defn- prep-docs []
-  (let [target-dir (cfg/target-dir)
-        directory (staging-directory)]
-    (if (not target-dir)
-      (bomb "please provide \"target-dir\" config to generate docs")
-      (if (dsk/exists-dir? directory)
-        (do (dsk/delete-directory (file directory))
-            (.mkdirs (file (str directory "/api"))))
-        (.mkdirs (file (str directory "/api")))))))
-
 (defn spit-to
   "Will make directory if does not exist before spitting to file."
   [target content]
@@ -127,7 +114,6 @@
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
-  (prep-docs)
   {:entry entry
    :engage (fn []
     (let [directory (str (staging-directory) "/data/protean-api")
