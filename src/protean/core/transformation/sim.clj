@@ -34,7 +34,12 @@
         is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
     (some is-match regexs)))
 
-(defn- print-error [e] (println (aa/red (str "caught exception: " (.getMessage e)))))
+(defn- stacktrace [e]
+  (let [sw (java.io.StringWriter.)]
+    (.printStackTrace e (java.io.PrintWriter. sw))
+    (.toString sw)))
+
+(defn- print-error [e] (println (aa/red (str "caught exception: " (stacktrace e)))))
 
 (defn- fnfirst [x] (first (nfirst x)))
 

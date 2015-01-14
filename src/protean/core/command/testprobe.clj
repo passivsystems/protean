@@ -169,7 +169,8 @@
           can-gen (d/get-in-tree tree [:vars input :gen])]
       (when (and (not seed) (= false can-gen))
         (if (empty? dependencies)
-            (hlr "No endpoint available to provide" input "!")) ; TODO should mark test status as fail..
+            ; TODO should mark test status as fail..
+            (hlr "No endpoint available to provide" input "!"))
           (map #(->[input %]) dependencies))))]
   (mapcat dependency-for (:inputs probe))))
 
@@ -194,7 +195,7 @@
           add-delete-dependencies (fn [g probes]
             (reduce add-delete-dependency g (remove #{probe} probes)))]
       (for [g gs] (add-delete-dependencies g probes)))
-  gs))
+    gs))
 
 (defn- build-graphs
   "returns a list of graphs covering all possible ways to walk over endpoints,
@@ -222,8 +223,11 @@
     (println (label probe) "\noutputs" outputs "\n")
     (let [errors (s/join "," (:errors outputs))]
       (if (empty? errors)
-        [(merge (:bag outputs) bag) (conj reses {:entry (:entry probe) :request req :response resp})]
-        [bag (conj reses {:entry (:entry probe) :request req :response (update-in resp [:failures] conj errors)})]))))
+        [(merge (:bag outputs) bag)
+         (conj reses {:entry (:entry probe) :request req :response resp})]
+        [bag (conj reses {:entry (:entry probe)
+                          :request req
+                          :response (update-in resp [:failures] conj errors)})]))))
 
 (defn- select-path
   "return a walkable (non-cyclic) path from optional graphs"
@@ -242,7 +246,8 @@
         ordered-probes (select-path gs (get-in (first probes) [:entry :svc]))
         bag (get-in corpus [:seed])
         no-route-response {:error "no route found to traverse probes (cyclic dependencies)"}
-        print-inputs-outputs (fn [p] (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p)))]
+        print-inputs-outputs (fn [p]
+          (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p)))]
       (if (empty? ordered-probes)
         (map #(-> {:entry (:entry %) :request nil :response no-route-response}) probes)
         (do
@@ -266,7 +271,9 @@
       {:failures (->> (into [] (:failures response))
         (v/validate-status-> (name success-rsp-code) response)
         (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
-        (v/validate-body response expected-ctype (d/to-path (:body-schema success) tree) (:body success)))})))
+        (v/validate-body response expected-ctype
+          (d/to-path (:body-schema success) tree)
+          (:body success)))})))
 
 (defn- print-result [{:keys [entry request response error failures]}]
   ;      (println "result - request:" request)
