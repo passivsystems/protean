@@ -54,11 +54,12 @@
 (defn- validate-xml-body [payload schema codex-body errors]
   (println "xml schema : " schema)
   (if schema
-    (let [validation (xv/validate schema (:body payload))]
+    (let [body (:body payload)
+          validation (xv/validate schema body)]
       (if (:success validation)
         errors
         (conj errors
-          (str "Payload did not conform to xml schema " schema " : " (:message validation)))))
+          (str "Xml body: " body "\ndid not conform to xml schema " schema " : " (:message validation)))))
     (if codex-body
       (let [tags-in-str (fn [s] (map-vals (zip-str s) :tag))
             expected-tags (tags-in-str (c/pretty-xml codex-body))
@@ -71,11 +72,12 @@
 
 (defn- validate-jsn-body [payload schema codex-body errors]
   (if schema
-    (let [validation (jv/validate schema (:body payload))]
+    (let [body (:body payload)
+          validation (jv/validate schema body)]
       (if (:success validation)
         errors
         (conj errors
-          (str "Payload did not conform to json schema " schema " : " (:message validation)))))
+          (str "Json body: " body "\ndid not conform to json schema " schema " : " (:message validation)))))
     (if codex-body
       (try
         (let [body-jsn (jsn/parse-string (:body payload))]

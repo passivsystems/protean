@@ -175,7 +175,7 @@
           headers_w_ctype (if (and body-url (not (get-in headers [h/ctype])))
                             (assoc headers h/ctype (h/mime body-url))
                             headers)
-          body (if body-url (slurp body-url))
+          body (if body-url (slurp (d/to-path body-url *tree*)))
           response {:status status-code :headers headers_w_ctype :body body}]
       (log-debug "formatting rsp:" rsp)
       (log-debug "returning :" response)
@@ -285,7 +285,7 @@
 
 (defn- validate-body [request tree errors]
   (let [expected-ctype (d/req-ctype tree)
-        schema (d/get-in-tree tree [:req :body-schema])
+        schema (d/to-path (d/get-in-tree tree [:req :body-schema]) tree)
         codex-body (d/body-req tree)]
     (v/validate-body request expected-ctype schema codex-body errors)))
 

@@ -59,7 +59,7 @@
         (dsk/exists? (str codex-dir "/" path)) (str codex-dir "/" path)
         (dsk/exists? (str current-dir "/" path)) (str current-dir "/" path)
         (dsk/exists? (str protean-home "/" path)) (str protean-home "/" path)
-        :else (throw (Exception. "Could not find relative path: " path)))
+        :else (throw (Exception. (str "Could not find relative path: " path))))
       path)))
 
 ;; =============================================================================
