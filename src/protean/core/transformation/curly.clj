@@ -42,11 +42,15 @@
 (defn- curly-literal-> [s payload] (str payload s))
 
 (defn- curly-uri-> [{:keys [uri] :as request} payload]
-  (str payload uri))
+  (str payload (e/url-decode uri)))
 
 (defn- curly-query-params-> [{:keys [query-params] :as request} payload]
   (let [query (if (and query-params (not (empty? query-params)))
-                  (str "?" (s/join "&" (map #(str (key %) "=" (e/form-encode  (val %))) query-params))))]
+                (->> query-params
+                     (map #(str (key %) "=" (e/form-encode  (val %))))
+                     (s/join "&")
+                     (str "?")
+                     e/url-decode))]
     (str payload query)))
 
 (defn curly-request-> [request]

@@ -2,7 +2,6 @@
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as stg]
             [clojure.java.io :refer [file]]
-            [ring.util.codec :as cod]
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
             [silk.cli.api :as silk]
@@ -137,7 +136,7 @@
                   :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
             full {:id id
                   :path (subs uri-path 1)
-                  :curl (cod/url-decode (c/curly-entry-> (assoc-in e [:uri] uri)))
+                  :curl (c/curly-entry-> (assoc-in e [:uri] uri))
                   :doc (d/get-in-tree tree [:doc])
                   :desc (if-let [d (d/get-in-tree tree [:description])] d "")
                   :method (name method)
