@@ -54,7 +54,7 @@
 
     "api/uploadImage" {
       :post [
-        ; altenative to error with probability - every nth access gives error - requires server state
+        ; alternative to error with probability - every nth access gives error - requires server state
         #(if (= 0 (mod (swap! counter inc) 3)) (error))
       ]
     }
