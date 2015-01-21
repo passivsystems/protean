@@ -139,6 +139,10 @@
 ;; Requests
 ;; =============================================================================
 
+(defn body [] (:body *request*))
+
+(defn body-clj [] (c/clj (:body *request*)))
+
 (defn query-param [p] (get-in *request* [:query-params p]))
 
 (defn path-param [p] (get-in *request* [:path-params p]))
@@ -221,10 +225,8 @@
 (defn rsp
   "Creates rsp inferring status and content type from request.
    Defaults to org or personal prefs in includes."
-   [body]
-   (let [status 200
-         headers {h/ctype h/jsn}]
-     {:status status :headers headers :body body}))
+  [body]
+  {:status 200 :headers {h/ctype h/jsn} :body body})
 
 
 ;; TODO: rename, this is not forming a response, merely grabbing a body
@@ -259,7 +261,8 @@
         res (clt/request the-request)]
     (log-debug "res" res)
     (if-let [log-file (:log content)]
-      (log [(str "Response from " (:url content)) res] log-file))))
+      (log [(str "Response from " (:url content)) res] log-file))
+    res))
 
 (defn simple-request
   [method url body]
