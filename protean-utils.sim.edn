@@ -5,6 +5,14 @@
          '[protean.core.transformation.coerce :refer [clj]])
 
 ;; =============================================================================
+;; Generally Useful Functions
+;; =============================================================================
+
+;; TODO: should find a more permanent home for this
+(defn parse-id [s] (Integer. (re-find  #"\d+" s)))
+
+
+;; =============================================================================
 ;; Sim Library Request Functions
 ;; =============================================================================
 
@@ -16,6 +24,10 @@
 ;; =============================================================================
 ;; Sim Library Response Functions
 ;; =============================================================================
+
+(defn >201 [hdr] {:status 201 :headers {h/loc hdr}})
+
+(defn >204 [] {:status 204})
 
 (defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body (clj body)})
 
@@ -37,21 +49,8 @@
 ;; Sim Library Scenario Modelling and Route Solution
 ;; =============================================================================
 
-(defn zm [r fn-seq]
-  (let [fns (if (= (count fn-seq) 1) (repeat (first fn-seq)) fn-seq)]
-    (zipmap (range (first r) (last r)) fns)))
-
-(defn range-scenario [r fn-seq]
-  (let [m (zm r fn-seq)] (into {} (for [[k v] m] [(str k) v]))))
-
-(defn scenario [scenarios k]
-  ((or (get-in scenarios [:protean-sim/exact (str k)])
-       (get-in scenarios [:protean-sim/good (str k)])
-       (get-in scenarios [:protean-sim/bad (str k)])
-     (:protean-sim/default scenarios))))
-
-(defn solve [scenarios]
-  (seq (remove nil? (map #(if ((first %)) (last %) nil) scenarios))))
+(defn solve [routes]
+  (seq (remove nil? (map #(if ((first %)) (last %) nil) routes))))
 
 (defn route-rsp [routes]
   (if-let [errs (solve routes)] ((rand-nth errs)) (success)))
