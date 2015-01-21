@@ -76,7 +76,7 @@
   (GET    "/status" [] (pipe/status)))
 
 (defroutes api-routes
-  (ANY "*" req (pipe/api req)))
+  (mp/wrap-multipart-params (ANY "*" req (pipe/api req))))
 
 
 ;; =============================================================================
