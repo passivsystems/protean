@@ -1,5 +1,5 @@
-(refer 'protean.core.transformation.sim)
-(refer 'protean.config)
+(ns protean.petstore
+  (:require [protean.core.transformation.sim :refer :all]))
 
 ;; Demonstrates validating requests against the codex specification
 ;; This is basically what you get for free without creating a sim extension

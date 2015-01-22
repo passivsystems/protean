@@ -1,80 +1,28 @@
-;; OUT OF THE BOX EXAMPLE SIM LIBRARY
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(refer 'protean.core.transformation.sim)
-(require '[protean.core.protocol.http :as h]
-         '[protean.core.transformation.coerce :refer [clj]])
+;; Protean Sim Utilities
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+(ns protean.sim.utils
+  (:require [protean.core.transformation.sim :refer :all]))
 
 ;; =============================================================================
-;; Generally Useful Functions
+;; Utility Functions
 ;; =============================================================================
 
-;; TODO: should find a more permanent home for this
-(defn parse-id [s] (Integer. (re-find  #"\d+" s)))
-
-
-;; =============================================================================
-;; Sim Library Request Functions
-;; =============================================================================
-
-(defn qp [p] (query-param p))
-
-(defn qp= [x p] (= (qp p) x))
+(defn util-rsp [] (do #(success) #(println ">>>> echo req : " *request*)))
 
 
 ;; =============================================================================
-;; Sim Library Response Functions
-;; =============================================================================
-
-(defn >201 [hdr] {:status 201 :headers {h/loc hdr}})
-
-(defn >204 [] {:status 204})
-
-(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body (clj body)})
-
-(defn txt [status body] {:status status :headers {h/ctype h/txt} :body body})
-
-
-;; =============================================================================
-;; Sim Library Payload Transport Functions
-;; =============================================================================
-
-(defn post [url body] (simple-request :post url body))
-
-(defn put [url body] (simple-request :put url body))
-
-(defn patch [url body] (simple-request :patch url body))
-
-
-;; =============================================================================
-;; Sim Library Scenario Modelling and Route Solution
-;; =============================================================================
-
-(defn solve [routes]
-  (seq (remove nil? (map #(if ((first %)) (last %) nil) routes))))
-
-(defn route-rsp [routes]
-  (if-let [errs (solve routes)] ((rand-nth errs)) (success)))
-
-
-;; =============================================================================
-;; Sim Library Scenario Modelling Endpoints
+;; Utility Endpoints
 ;; =============================================================================
 
 {
   "protean-utils" {
     "echo" {
-      :put [
-        #(success)
-        #(println ">>>> echo req : " *request*)
-      ]
-      :post [
-        #(success)
-        #(println ">>>> echo req : " *request*)
-      ]
-      :patch [
-        #(success)
-        #(println ">>>> echo req : " *request*)
-      ]
+      :put [#(util-rsp)]
+
+      :post [#(util-rsp)]
+
+      :patch [#(util-rsp)]
     }
   }
 }

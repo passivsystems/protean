@@ -9,6 +9,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [environ.core :refer [env]]
+            [cemerick.pomegranate :as pom]
             [me.rossputin.diskops :as do]
             [protean.config :as c]
             [protean.server.pipeline :as pipe]
@@ -28,6 +29,8 @@
 (timbre/set-config! [:appenders :spit :enabled?] true)
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
 (timbre/set-level! (c/log-level))
+
+(pom/add-classpath (c/codex-dir))
 
 (defn- files [c-dir ext]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
