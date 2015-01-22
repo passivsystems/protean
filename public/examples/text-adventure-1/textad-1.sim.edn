@@ -1,6 +1,8 @@
-(refer 'protean.core.transformation.sim)
-(require '[clojure.string :refer [join]]
-         '[alandipert.enduro :as e])
+(ns protean.textad1
+  (:require [protean.core.transformation.sim :refer :all]
+            [clojure.string :refer [join]]
+            [alandipert.enduro :as e]
+            [simlib :as sl]))
 
 (defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
@@ -40,11 +42,11 @@
     (cond loc (do (e/reset! location (nth loc 2)) (look))
           :else '(you cannot go that way -))))
 
-(defn go-rest [] (let [dir (symbol (query-param "direction"))] (rsp (go dir))))
+(defn go-rest [] (let [dir (symbol (query-param "direction"))] (sl/jsn 200 (go dir))))
 
 {
   "textad-1" {
-    "look" {:get [#(rsp (look))]}
+    "look" {:get [#(sl/jsn 200 (look))]}
     "go" {:put [#(go-rest)]}
   }
 }

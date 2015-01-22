@@ -34,7 +34,7 @@
 
 (defn >204 [] {:status 204})
 
-(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body (clj body)})
+(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body body})
 
 (defn txt [status body] {:status status :headers {h/ctype h/txt} :body body})
 

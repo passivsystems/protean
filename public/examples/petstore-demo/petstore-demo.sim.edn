@@ -1,5 +1,6 @@
-(refer 'protean.core.transformation.sim)
-(refer 'protean.config)
+(ns protean.petstore.demo
+  (:require [protean.core.transformation.sim :refer :all]
+            [protean.config :refer :all]))
 
 ;; An alternative to the 'sample-petstore.sim.edn' in the root of the project
 ;; Here we demonstrate much of what is possible with Protean, often resulting in errors !

@@ -220,15 +220,6 @@
     (= accept h/txt) (str d)
     :else (c/js d))))
 
-;; TODO: polymorphic slurp of body based on understanding if it is path or data
-;; TODO: construct rsp (ctype etc) headers based on request accept header etc
-(defn rsp
-  "Creates rsp inferring status and content type from request.
-   Defaults to org or personal prefs in includes."
-  [body]
-  {:status 200 :headers {h/ctype h/jsn} :body body})
-
-
 ;; TODO: rename, this is not forming a response, merely grabbing a body
 (defn rsp-body-file
   "Look in a directory structure 'data-path' for a file 'f-name' with given ext"
