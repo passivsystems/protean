@@ -8,6 +8,7 @@
   :head {:rsp {:200 {:doc "OK"}}}
 
   ;; an example :rsp {:headers {"X-Powered-By" "Protean"}}
+
   :types {
 ;    :String "[ -~]+" ; all ASCII chars between space and tilde are the printable chars. - however can break regular expression replacement etc.
     :String "[a-zA-Z0-9]+"
@@ -20,4 +21,7 @@
 
   ;; default content-type where body is present
   :default-content-type "application/json; charset=utf-8"
+
+  ;; validating status - for flexibility in sim extensions off by default
+  :validating true
 }
