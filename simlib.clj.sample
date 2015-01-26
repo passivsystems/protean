@@ -30,9 +30,9 @@
 ;; Sim Library Response Functions
 ;; =============================================================================
 
-(defn >201 [hdr] {:status 201 :headers {h/loc hdr}})
+(defn h-rsp [s hdr] {:status s :headers {h/loc hdr}})
 
-(defn >204 [] {:status 204})
+(defn rsp [s] {:status s})
 
 (defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body body})
 
