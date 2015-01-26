@@ -8,7 +8,7 @@
 ;; Utility Functions
 ;; =============================================================================
 
-(defn util-rsp [] (do #(success) #(println ">>>> echo req : " *request*)))
+(defn util-rsp [] (do (success) (println ">>>> echo req : " *request*)))
 
 
 ;; =============================================================================
