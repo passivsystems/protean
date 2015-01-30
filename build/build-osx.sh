@@ -14,7 +14,7 @@ cp -r ../silk_templates ../target/osx
 cp -r ../public ../target/osx
 cp -r ../test-data ../target/osx
 cp ../defaults.edn ../target/osx
-cp ../simlib.clj.sample ../target/osx
+cp ../simlib.clj.sample ../target/osx/simlib.clj
 cp ../sample-petstore.cod.edn ../target/osx
 cp ../protean-utils.cod.edn ../target/osx
 cp ../protean-utils.sim.edn ../target/osx
