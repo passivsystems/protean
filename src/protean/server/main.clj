@@ -27,7 +27,8 @@
 ;; =============================================================================
 
 (timbre/set-config! [:appenders :spit :enabled?] true)
-(timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
+(timbre/set-config! [:shared-appender-config :spit-filename]
+  (str (c/log-dir) "/protean.log"))
 (timbre/set-level! (c/log-level))
 
 (pom/add-classpath (c/codex-dir))
