@@ -14,7 +14,6 @@
             [protean.config :as c]
             [protean.server.pipeline :as pipe]
             [protean.core.transformation.coerce :as co]
-            [protean.server.docs :as pdoc]
             [protean.core.codex.reader :as r]
             [protean.core.codex.document :as d]
             [clojure.pprint])
@@ -61,12 +60,6 @@
 (defroutes admin-routes
   (route/files "/resource" {:root (c/res-dir)})
 
-  (GET    "/" [] (pipe/service-index))
-  (GET    "/documentation/api" [] (pipe/service-api))
-  (GET    "/documentation/services" [] (pipe/services-docs))
-  (GET    "/documentation" [] (pipe/service-documentation))
-  (GET    "/roadmap" [] (pipe/service-road))
-  (GET    "/community" [] (pipe/service-community))
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
   (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
@@ -94,10 +87,12 @@
 ;; Application entry point
 ;; =============================================================================
 
+(defmacro version [] (System/getProperty "protean.version"))
+
 (defn -main [& args]
   (let [api-port (c/sim-port)
         c-dir (c/codex-dir)]
-    (info "Starting protean - v" (pdoc/version))
+    (info "Starting protean - v" (version))
     (info "Codex directory : " c-dir)
     (info "Asset directory : " (c/asset-dir))
     (info (str "Services loaded : " (build-services c-dir)))
