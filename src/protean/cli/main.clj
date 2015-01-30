@@ -117,7 +117,7 @@
         cm (if (.contains (conf/os) "Mac") "open" "firefox")]
     (visit options)
     (println "Please see your docs, as demonstrated below.")
-    (println cm (str (conf/codex-dir) "/" i/docs-home-page))))
+    (println (aa/bold-green (str cm " " (conf/codex-dir) "/" i/docs-home-page)))))
 
 (defn- integration-test
   "If no corpus is passed in to a visit test command - guess sensible defaults"

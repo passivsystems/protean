@@ -1,16 +1,15 @@
-(refer 'protean.core.transformation.sim)
+(ns protean.tutorial6
+  (:require [protean.core.transformation.sim :refer :all]))
 
-(defn param2rsp [{:keys [route-params]} data-path]
-  (if-let [rsp (rsp-body-file data-path (route-param route-params) ".json")]
+(defn param2rsp [data-path]
+  (if-let [rsp (rsp-body-file data-path (path-param "stateId") ".json")]
     (slurp rsp)
-    {:status 404}))
+    (respond 404)))
 
 {
   "tutorial-6" {
     "play/${stateId}" {
-      :get [
-        (fn [] (param2rsp *request* "public/tutorial/6"))
-      ]
+      :get [#(param2rsp "public/tutorial/6")]
     }
   }
 }

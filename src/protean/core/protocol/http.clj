@@ -25,6 +25,7 @@
 
 (def ctype "Content-Type")
 (def azn "Authorization")
+(def loc "Location")
 
 
 ;; Content types
