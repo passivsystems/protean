@@ -1,0 +1,15 @@
+;; A sample POST codex
+;;
+;; Represents the simplest possible example of a codex service/path
+
+{
+  :includes [ "defaults.edn" ]
+
+  "sample" {
+    "simple" {
+      :post {
+        :req {:body {"k1" "v1" "k2" "v2"}}
+      }
+    }
+  }
+}

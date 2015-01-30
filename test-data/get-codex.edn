@@ -1,0 +1,8 @@
+;; A sample GET codex
+;;
+;; Represents the simplest possible example of a codex service/path
+
+{
+  :includes ["defaults.edn"]
+  "sample" {"simple" {:get {}}}
+}

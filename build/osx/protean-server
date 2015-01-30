@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export CODEX_DIR=$HOME/bin
+export ASSET_DIR=$HOME/bin/public
+cd $HOME/bin && java -cp protean.jar protean.server.main

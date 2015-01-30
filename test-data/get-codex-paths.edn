@@ -1,0 +1,12 @@
+;; A sample codex with several paths for a service
+;;
+;; Enables testing over the 'service' locs mechanism
+
+{
+  :includes [ "defaults.edn" ]
+
+  "sample" {
+    "simple" {:get {}}
+    "test" {:get {}}
+  }
+}

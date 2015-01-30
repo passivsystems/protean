@@ -1,94 +1,94 @@
-# Protean
+![Protean - evolving api's](/public/resource/img/logo.png?raw=true "Protean - evolving api's")
 
-Mock RESTful API's, for all of your projects, hotswap API behaviour at run time.  Control it all with REST via curl or a command line interface.  Simulate errors.  Automatically generate curl commands to test your services.  All projects added get documentation generated in webapp form, this describes the surface area of your API's - mandatory headers etc.
+# About
 
-This is a Clojure project which uses edn to build simulated RESTful API projects. Protean is used commerically to help speed development and test complex distributed systems.
+Evolve RESTful API's. Encode them, simulate them, document how to use them, test them and figure out how failure affects your architecture. No invasive changes to your code base.
+
+* Automatic documentation generated for all configured projects - map your services
+* Customise API doc look and feel completely
+* Simulate API's with a portable concise JSON like language
+* Hotswap API behaviour on the fly over the network
+* Simulate error response status codes per project or per resource path
+* Configure probability of error per service or per resource path
+* Verify request structure; headers, query string params, body payload json keys, url encoded forms
+* Auto generate curl commands to test your API's
+
+This is a Clojure project which uses edn to simulate and document RESTful API's. Protean is used commerically to help speed development and test complex distributed systems.
+
+
+## Release information
+
+* Latest development release is 0.9.0
+    * [Code](https://github.com/passivsystems/protean/tree/0.9.0)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.9.0/protean-0.9.0.tgz)
+
+
+## API stability
+
+Protean is still new and will be subject to some change until it hits the 1.0.0 release.  All efforts will be made to minimise change to the API (which is represented in the form of the *codex* - service definitions in EDN).  We expect to change the codex schema only to align it more closely to the datastructures used in Clojure Ring to represent requests and responses (so we share a common well understood language).  There are still a few minor discrepancies.
 
 
 ## Usage
 
-    lein deps
-    lein run
+### Overview
 
-by default the admin area runs on 3001 and the main app area on 3000.
+Protean helps you to evolve RESTful API's.  We define our API's in a codex which is an edn file with a .cod.edn extension.
+There is a home for codex files which varies depending on how you installed the app.  Debian flavours of Linux use /usr/lib/protean,
+while OSX uses ~/bin.
 
-You can override the port with:
-
-    lein run 4000 4001
-
-Build a distributable with lein uberjar, then run with:
-
-    java -jar protean.jar 4000 4001
+Protean ships with a sample petstore service codex, you can test the API docs creation and simulation capabilities with this.
 
 
 ## Documentation
 
-Documentation is available on http://localhost:3001 when you run Protean locally. 
+Documentation is available on http://www.proteanic.org.  Below is a quickstart guide to help you with
+setting up services and getting information on how to curl them.
 
-### How to setup your project
+### Creating API Documentation for a service
 
-Create a file with a .edn extension. An example is shown below. Once you are finished your can add your project by;
-* pushing your project with Protean CLI
-    - protean-cli add-projects -f /path/to/project.edn
-* pushing your project with Curl
-    - curl -v -X PUT http://locahost:3001/projects --data-binary "@/path/to/project.end"
-* drop the .edn file in the root of your Protean directory and restart it
+The following assumes a Debian Linux flavour install.
 
-An example RESTful API project configuration is listed below.
+Create API documentation for the sample petstore service codex with
 
-    {:myproject
-      {:paths {"get/test/*" {:rsp {:body {"t1key" "t1val"}
-                                   :errors {:status [504]
-                                            :probability 50}}}        
-               "get/xml" {:rsp {:content-type "text/xml"
-                                :body [:parent
-                                        [:child {:type "xml"}]]}}     
-               "get/slow" {:rsp {:time 10}}                            
-               "post/test" {:req {:method :post                       
-                                  :form {"k1" "v1"}}
-                            :rsp {:headers {"Location" "7"}}}
-               "put/test1" {:req {:body {"k1" "v1" "k2" "v2"}}        
-                            :rsp {:status 200}}
-               "put/test2" {}
-               "random/test2" {:req {:headers {"X-Auth" "XYZ"}        
-                                     :req-params {"blurb" "flibble"}} 
-                               :rsp {:body {"t2key" "t2val"}}}}
-       :errors {:status [500 503] :probability 25}}}                  
+    protean doc -f /usr/lib/protean/sample-petstore.cod.edn
 
+view your API docs with
 
-This demonstrates:
+    firefox /usr/lib/protean/silk_templates/site/index.html
 
-* [get/test] GET with response body, wildcard match and resource path errors and error probability
-* [get/xml] GET with XML response body
-* [get/slow] GET with slow response specified (10 seconds)
-* [post/test] POST with response headers and verification of request method and url encoded form payload
-* [put/test1] PUT with overriden response status and request body json payload verification
-* [put/test2] PUT simplest example of a path, 200 response code
-* [random/test2] verification of request headers and verification of request query string parameters
-* [errors] project level simulated response errors with a configurable probability
+### Starting the simulation server
 
+Start the simulation server with
 
-### How to query your project
+    protean-server
 
-    protean-cli projects 
-    
-Lists all projects.
+### How to query the petstore service
 
-    protean-cli project -n myproject 
+Lists all services:
 
-Shows the project configuration for myproject.
+    protean services
 
-    protean-cli project-usage -n myproject 
-    
-Shows the curl commands that can be used for myproject.
+Shows the service configuration for the petstore service.
 
-Please explore the CLI to find out further commands.
+    protean service -n petstore
+
+Shows the curl commands that can be used for the petstore service.
+
+    protean service-usage -n petstore
+
+Please explore the CLI or documentation to learn more.
+
+### Setting up your services
+
+Create a file with a .cod.edn extension. See *sample-petstore.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
+* uploading with the basic Protean CLI
+    - protean add-services -f /path/to/service.cod.edn
+* drop the .cod.edn file in the root of your Protean directory and restart it
 
 
 ## Contributing
 
-All contributions ideas/pull requests/bug reports are welcome, we hope you find it useful. 
-
+All contributions ideas/pull requests/bug reports are welcome, we hope you find it useful.
 
 
 ## License

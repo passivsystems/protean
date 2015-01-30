@@ -1,0 +1,81 @@
+;; OUT OF THE BOX EXAMPLE SIM LIBRARY
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(refer 'protean.core.transformation.sim)
+(require '[protean.core.protocol.http :as h]
+         '[protean.core.transformation.coerce :refer [clj]])
+
+;; =============================================================================
+;; Sim Library Request Functions
+;; =============================================================================
+
+(defn qp [p] (query-param p))
+
+(defn qp= [x p] (= (qp p) x))
+
+
+;; =============================================================================
+;; Sim Library Response Functions
+;; =============================================================================
+
+(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body (clj body)})
+
+(defn txt [status body] {:status status :headers {h/ctype h/txt} :body body})
+
+
+;; =============================================================================
+;; Sim Library Payload Transport Functions
+;; =============================================================================
+
+(defn post [url body] (simple-request :post url body))
+
+(defn put [url body] (simple-request :put url body))
+
+(defn patch [url body] (simple-request :patch url body))
+
+
+;; =============================================================================
+;; Sim Library Scenario Modelling and Route Solution
+;; =============================================================================
+
+(defn zm [r fn-seq]
+  (let [fns (if (= (count fn-seq) 1) (repeat (first fn-seq)) fn-seq)]
+    (zipmap (range (first r) (last r)) fns)))
+
+(defn range-scenario [r fn-seq]
+  (let [m (zm r fn-seq)] (into {} (for [[k v] m] [(str k) v]))))
+
+(defn scenario [scenarios k]
+  ((or (get-in scenarios [:protean-sim/exact (str k)])
+       (get-in scenarios [:protean-sim/good (str k)])
+       (get-in scenarios [:protean-sim/bad (str k)])
+     (:protean-sim/default scenarios))))
+
+(defn solve [scenarios]
+  (seq (remove nil? (map #(if ((first %)) (last %) nil) scenarios))))
+
+(defn route-rsp [routes]
+  (if-let [errs (solve routes)] ((rand-nth errs)) (success)))
+
+
+;; =============================================================================
+;; Sim Library Scenario Modelling Endpoints
+;; =============================================================================
+
+{
+  "protean-utils" {
+    "echo" {
+      :put [
+        #(success)
+        #(println ">>>> echo req : " *request*)
+      ]
+      :post [
+        #(success)
+        #(println ">>>> echo req : " *request*)
+      ]
+      :patch [
+        #(success)
+        #(println ">>>> echo req : " *request*)
+      ]
+    }
+  }
+}

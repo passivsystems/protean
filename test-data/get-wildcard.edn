@@ -1,0 +1,9 @@
+;; A sample GET with wildcard path codex
+;;
+;; Test more complex path structures
+
+{
+  :includes [ "defaults.edn" ]
+
+  "sample" {"simple/*" {:get {}}}
+}

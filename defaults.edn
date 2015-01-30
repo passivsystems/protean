@@ -1,0 +1,23 @@
+{
+  ; default status code per method
+  :get {:rsp {:200 {:doc "OK"}}}
+  :post {:rsp {:201 {:doc "Created"}}}
+  :put {:rsp {:204 {:doc "No Content"}}}
+  :patch {:rsp {:204 {:doc "No Content"}}}
+  :delete {:rsp {:204 {:doc "No Content"}}}
+  :head {:rsp {:200 {:doc "OK"}}}
+
+  ;; an example :rsp {:headers {"X-Powered-By" "Protean"}}
+  :types {
+;    :String "[ -~]+" ; all ASCII chars between space and tilde are the printable chars. - however can break regular expression replacement etc.
+    :String "[a-zA-Z0-9]+"
+    :Date "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))"
+    :Time "([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+    :DateTime "(19|20)[0-9][0-9]\\-(0[1-9]|1[0-2])\\-(0[1-9]|([12][0-9]|3[01]))T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](Z|\\+[0-1][0-9]:[03]0)"
+    :Ip "((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+    :Token "[0-9a-zA-Z]{15}"
+  }
+
+  ;; default content-type where body is present
+  :default-content-type "application/json; charset=utf-8"
+}

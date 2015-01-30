@@ -1,0 +1,28 @@
+(refer 'protean.core.transformation.sim)
+(refer 'protean.config)
+
+;; Demonstrates validating requests against the codex specification
+;; This is basically what you get for free without creating a sim extension
+;;    but adds validation
+
+{
+  "petstore" {
+
+    "api/pet" {
+      :get    [#(validate (success))]
+      :put    [#(validate (success))]
+      :post   [#(validate (success))]
+    }
+
+    "api/pet/${petId}" {
+      :post   [#(validate (success))]
+      :get    [#(validate (success))]
+      :delete [#(validate (success))]
+      :patch  [#(validate (success))]
+    }
+
+    "api/uploadImage" {
+      :post   [#(validate (success))]
+    }
+  }
+}
