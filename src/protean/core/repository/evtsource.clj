@@ -1,6 +1,8 @@
 (ns protean.core.repository.evtsource
   "A simple event sourcing engine.
 
+   No exploitation of parallelisation etc, dumb out of the box reduce.
+
   (binding [es/*v-fn* #(:result %)
             es/*s-fn* (fn [{:keys [h] :or {h 0}} evt]
                         (if (= :pass (:result evt)) (inc h) h))]
