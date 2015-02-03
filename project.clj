@@ -23,7 +23,7 @@
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
                  [me.rossputin/diskops "0.3.0"]
-                 [org.silkyweb/silk "0.7.0-pre.2"]
+                 [org.silkyweb/silk "0.7.0"]
                  [me.rossputin/pew "0.1.0"]
                  [alandipert/enduro "1.2.0"]
                  [org.databene/databene-benerator "0.9.8"]
