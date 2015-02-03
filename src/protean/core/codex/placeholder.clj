@@ -4,12 +4,10 @@
   (:require [clojure.string :as s]
             [clojure.set :refer [map-invert]]
             [clojure.pprint]
+            [protean.core.generation.generate :as gn]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c])
-  (:import java.lang.Math
-           java.util.Random
-           java.util.UUID
-           org.databene.benerator.primitive.RegexStringGenerator
+  (:import org.databene.benerator.primitive.RegexStringGenerator
            org.databene.benerator.engine.DefaultBeneratorContext))
 
 ;; =============================================================================
@@ -18,8 +16,6 @@
 
 ; place holder has form: ${xxx}
 (def ph #"\$\{([^\}]*)\}")
-
-(def rnd (Random.))
 
 (defn- generate [regex]
   (let [generator (RegexStringGenerator. regex)]
@@ -30,11 +26,11 @@
   (if-let [regex (d/get-in-tree tree [:types v])]
     (generate regex)
     (case v
-      :Int (str (Math/abs (.nextInt rnd)))
-      :Long (str (Math/abs (.nextLong rnd)))
-      :Double (str (.nextDouble rnd))
-      :Boolean (str (.nextBoolean rnd))
-      :Uuid (.toString (UUID/randomUUID))
+      :Int (str (gn/rnd-int))
+      :Long (str (gn/rnd-long))
+      :Double (str (gn/rnd-double))
+      :Boolean (str (gn/rnd-bool))
+      :Uuid (str (gn/rnd-uuid))
     (generate v))))
 
 (defn replace-placeholders [s r]

@@ -1,6 +1,8 @@
-(refer 'protean.core.transformation.sim)
-(require '[clojure.string :refer [join]]
-         '[alandipert.enduro :as e])
+(ns protean.textad4
+  (:require [protean.core.transformation.sim :refer :all]
+            [clojure.string :refer [join]]
+            [alandipert.enduro :as e]
+            [simlib :as sl]))
 
 (defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
@@ -110,25 +112,25 @@
   (let [nm (symbol (query-param "name"))] (if (register nm) {:status 204} {:status 409})))
 
 (defn look-rest []
-  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (rsp (look nm)) {:status 404})))
+  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (sl/jsn 200 (look nm)) {:status 404})))
 
-(defn go-rest [] (rsp (go (symbol (query-param "name")) (symbol (query-param "direction")))))
+(defn go-rest [] (sl/jsn 200 (go (symbol (query-param "name")) (symbol (query-param "direction")))))
 
-(defn pickup-rest [] (rsp (pickup (symbol (query-param "name")) (symbol (query-param "item")))))
+(defn pickup-rest [] (sl/jsn 200 (pickup (symbol (query-param "name")) (symbol (query-param "item")))))
 
 (defn inventory-rest []
-  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (rsp (inventory nm)) {:status 404})))
+  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (sl/jsn 200 (inventory nm)) {:status 404})))
 
 (defn slap-rest []
   (let [nm (symbol (query-param "name")) target (symbol (query-param "target"))]
     (if (and (contains? @entities nm) (contains? @entities target))
-      (rsp (slap nm target))
+      (sl/jsn 200 (slap nm target))
       {:status 404})))
 
 (defn mug-rest []
   (let [nm (symbol (query-param "name")) target (symbol (query-param "target"))]
     (if (and (contains? @entities nm) (contains? @entities target))
-      (rsp (mug nm target))
+      (sl/jsn 200 (mug nm target))
       {:status 404})))
 
 {

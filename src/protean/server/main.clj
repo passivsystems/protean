@@ -9,6 +9,7 @@
             [compojure.handler :as handler]
             [compojure.route :as route]
             [environ.core :refer [env]]
+            [cemerick.pomegranate :as pom]
             [me.rossputin.diskops :as do]
             [protean.config :as c]
             [protean.server.pipeline :as pipe]
@@ -29,6 +30,8 @@
 (timbre/set-config! [:shared-appender-config :spit-filename] "protean.log")
 (timbre/set-level! (c/log-level))
 
+(pom/add-classpath (c/codex-dir))
+
 (defn- files [c-dir ext]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
       (do/filter-exts [ext])))
@@ -44,9 +47,7 @@
 (defn- build-sims
   "Load sims from disk."
   [c-dir]
-  (let [fs (files c-dir "sim.edn")
-        f (first (filter #(= (.getName %) "protean-utils.sim.edn") fs))
-        sim-fs (conj (remove #(= % f) fs) f)]
+  (let [sim-fs (files c-dir "sim.edn")]
     (doseq [f sim-fs]
       (pipe/load-sim f)))
   (d/custom-keys @pipe/sims))
@@ -76,7 +77,7 @@
   (GET    "/status" [] (pipe/status)))
 
 (defroutes api-routes
-  (ANY "*" req (pipe/api req)))
+  (mp/wrap-multipart-params (ANY "*" req (pipe/api req))))
 
 
 ;; =============================================================================

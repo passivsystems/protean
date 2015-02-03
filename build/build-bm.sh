@@ -14,8 +14,8 @@ cp -r ../public ../target/bm
 cp -r ../test-data ../target/bm
 cp -r ../silk_templates ../target/bm
 cp ../defaults.edn ../target/bm
+cp ../simlib.clj.sample ../target/bm
 cp ../sample-petstore.cod.edn ../target/bm
-cp ../sample-petstore.sim.edn ../target/bm
 cp ../protean-utils.cod.edn ../target/bm
 cp ../protean-utils.sim.edn ../target/bm
 cd ../target/bm

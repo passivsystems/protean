@@ -17,8 +17,8 @@ then
 
     cp ../target/*standalone* ../target/deb/usr/lib/protean/protean.jar
     cp ../defaults.edn ../target/deb/usr/lib/protean/defaults.edn
+    cp ../simlib.clj.sample ../target/deb/usr/lib/protean/simlib.clj.sample
     cp ../sample-petstore.cod.edn ../target/deb/usr/lib/protean/sample-petstore.cod.edn
-    cp ../sample-petstore.sim.edn ../target/deb/usr/lib/protean/sample-petstore.sim.edn
     cp ../protean-utils.cod.edn ../target/deb/usr/lib/protean/protean-utils.cod.edn
     cp ../protean-utils.sim.edn ../target/deb/usr/lib/protean/protean-utils.sim.edn
     cp -r ../silk_templates ../target/deb/usr/lib/protean/silk_templates

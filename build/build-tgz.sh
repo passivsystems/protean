@@ -14,8 +14,8 @@ cp -r ../silk_templates ../target/tgz
 cp -r ../public ../target/tgz
 cp -r ../test-data ../target/tgz
 cp ../defaults.edn ../target/tgz
+cp ../simlib.clj.sample ../target/tgz
 cp ../sample-petstore.cod.edn ../target/tgz
-cp ../sample-petstore.sim.edn ../target/tgz
 cp ../protean-utils.cod.edn ../target/tgz
 cp ../protean-utils.sim.edn ../target/tgz
 cp tgz/* ../target/tgz
