@@ -4,7 +4,7 @@
 (ns simlib
   (:require [protean.core.transformation.sim :refer :all]
             [protean.core.protocol.http :as h]
-            [protean.core.transformation.coerce :refer [clj]]))
+            [protean.core.transformation.coerce :refer [clj js]]))
 
 
 ;; =============================================================================
@@ -34,7 +34,7 @@
 
 (defn rsp [s] {:status s})
 
-(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body body})
+(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body (js body)})
 
 (defn txt [status body] {:status status :headers {h/ctype h/txt} :body body})
 
