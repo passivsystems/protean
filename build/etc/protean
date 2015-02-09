@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cd /usr/lib/protean && java -jar protean.jar "$@"
+cd /usr/lib/protean && java -jar protean.jar -Xmx32m "$@"
