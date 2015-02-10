@@ -96,7 +96,9 @@
   (if payload
     (let [ctype (pp/ctype payload)]
       (cond
-        (and expected-ctype ctype (not (= expected-ctype ctype)))
+        (and
+          expected-ctype ctype
+          (not (= (s/lower-case expected-ctype) (s/lower-case ctype))))
           (conj errors (str "expected content-type " expected-ctype " (was " ctype ")"))
         (h/xml? ctype)
           (validate-xml-body payload schema codex-body errors)

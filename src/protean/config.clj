@@ -8,7 +8,7 @@
 
 (defn os [] (System/getProperty "os.name"))
 
-(defonce host (or (env :hostname) (.getCanonicalHostName (java.net.InetAddress/getLocalHost))))
+(defonce host (or (env :hostname) "localhost"))
 
 (defn sim-port [] (or (env :protean-sim-port) "3000"))
 
@@ -17,6 +17,8 @@
 (defn codex-dir [] (or (env :protean-codex-dir) (d/pwd)))
 
 (defn asset-dir [] (or (env :protean-asset-dir) "public"))
+
+(defn log-dir [] (or (env :protean-log-dir) (d/pwd)))
 
 (defn log-level [] (keyword (or (env :protean-log-level) "info")))
 

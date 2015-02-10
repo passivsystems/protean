@@ -11,7 +11,6 @@
             [protean.core.transformation.sim :as sim]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
-            [protean.server.docs :as txdocs]
             [protean.core.codex.reader :as r]
             [protean.core.transformation.paths :as p]
             [clojure.pprint])
@@ -124,38 +123,6 @@
   (let [file ((:params req) "file")]
     (load-sim (:tempfile file)))
   (sims-names))
-
-
-;; services documentation
-;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defn services-docs []
-  (txdocs/services-template (sort (keys @paths))))
-
-(defn- html [f] (str (c/html-dir) f))
-
-(l/defdocument service-index
-  (file (html "/index.html")) []
-  (l/id="project-version") (<- (txdocs/version)))
-
-(l/defdocument service-api
-  (file (html "/api.html")) []
-  (l/id="project-version") (<- (txdocs/version))
-  (l/id="hostname") (<- c/host)
-  (l/id="admin-port") (<- (c/admin-port)))
-
-(l/defdocument service-documentation
-  (file (html "/documentation.html")) []
-  (l/id="project-version") (<- (txdocs/version)))
-
-(l/defdocument service-road
-  (file (html "/roadmap.html")) []
-  (l/id="project-version") (<- (txdocs/version)))
-
-(l/defdocument service-community
-  (file (html "/community.html")) []
-  (l/id="project-version") (<- (txdocs/version)))
 
 
 ;; service status

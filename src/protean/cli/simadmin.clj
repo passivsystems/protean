@@ -13,7 +13,7 @@
 
 (defn service-usage [{:keys [host port name]}]
   (let [rsp (clt/get (str "http://" host ":" port "/services/" name "/usage"))]
-    (doseq [j (c/clj (:body rsp))] (println j))))
+    (doseq [j (c/clj (:body rsp))] (println j "\n"))))
 
 (defn add-services [{:keys [file host port]}]
   (let [rsp (clt/put (str "http://" host ":" port "/services")
