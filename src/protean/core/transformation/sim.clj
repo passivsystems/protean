@@ -56,45 +56,6 @@
 
 
 ;; =============================================================================
-;; Entry
-;; =============================================================================
-
-(declare success)
-(defn sim-rsp [{:keys [uri] :as req} paths sims]
-  (let [svc (second (s/split uri #"/"))
-        requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
-        endpoint (to-endpoint requested-endpoint paths svc)
-        method (:request-method req)
-        rules (get-in sims [svc endpoint method])
-        tree (get-in paths [svc endpoint method])
-        request (assoc req
-          :endpoint endpoint
-          :svc svc
-          ; convert body from input stream to content, may need multi access
-          :body (or (dk/slurp-pun (:body req)) ""))
-        corpus {}
-        execute (fn [rule]
-          (if (not tree) nil)
-          (try
-            (binding [*tree* tree
-                      *request* (aug-path-params requested-endpoint endpoint request)
-                      *corpus* corpus]
-               (apply rule nil))
-            (catch Exception e (print-error e))))
-        default-success (binding [*tree* tree *request* request *corpus* corpus](success))
-        response (or (some identity (map execute rules)) default-success)]
-    (if (not tree)
-      (do
-        (log-warn "Warning - no endpoint found for" [svc endpoint method])
-        (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
-          {:status 405 :headers {"Allow" (s/join ", " (map #(.toUpperCase (name %)) supported-methods))}}))
-      (do
-        (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
-        (log-debug "responding with" response)
-        response))))
-
-
-;; =============================================================================
 ;; Scheduling
 ;; =============================================================================
 
@@ -143,6 +104,10 @@
 ;; =============================================================================
 ;; Requests
 ;; =============================================================================
+
+(defn body [] (:body *request*))
+
+(defn body-clj [] (c/clj (:body *request*)))
 
 (defn query-param [p] (get-in *request* [:query-params p]))
 
@@ -221,17 +186,6 @@
     (= accept h/txt) (str d)
     :else (c/js d))))
 
-;; TODO: polymorphic slurp of body based on understanding if it is path or data
-;; TODO: construct rsp (ctype etc) headers based on request accept header etc
-(defn rsp
-  "Creates rsp inferring status and content type from request.
-   Defaults to org or personal prefs in includes."
-   [body]
-   (let [status 200
-         headers {h/ctype h/jsn}]
-     {:status status :headers headers :body body}))
-
-
 ;; TODO: rename, this is not forming a response, merely grabbing a body
 (defn rsp-body-file
   "Look in a directory structure 'data-path' for a file 'f-name' with given ext"
@@ -264,7 +218,8 @@
         res (clt/request the-request)]
     (log-debug "res" res)
     (if-let [log-file (:log content)]
-      (log [(str "Response from " (:url content)) res] log-file))))
+      (log [(str "Response from " (:url content)) res] log-file))
+    res))
 
 (defn simple-request
   [method url body]
@@ -303,3 +258,58 @@
       (log-info (s/join "," errors)))))
 
 (defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
+
+
+;; =============================================================================
+;; Sim Execution
+;; =============================================================================
+
+(defn- sim-req
+  "Prepare request for sim binding - augment with necessary information.
+   Handles converting body from input stream to content for multi access."
+  [req ep svc]
+  (assoc req :endpoint ep :svc svc :body (or (dk/slurp-pun (:body req)) "")))
+
+(defn- execute-fn
+  "Prepare bindings for use through out sim execution context.
+   Handle rules processing.
+
+   rep is the requested endpoint
+   ep is the endpoint
+   req is the request"
+  [tree corpus rep ep req]
+  (fn [rule]
+    (if (not tree) nil)
+    (try
+      (binding [*tree* tree
+                *request* (aug-path-params rep ep req)
+                *corpus* corpus]
+        (apply rule nil))
+    (catch Exception e (print-error e)))))
+
+(declare success)
+
+(defn sim-rsp [{:keys [uri] :as req} paths sims]
+  (let [svc (second (s/split uri #"/"))
+        requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
+        endpoint (to-endpoint requested-endpoint paths svc)
+        method (:request-method req)
+        rules (get-in sims [svc endpoint method])
+        tree (get-in paths [svc endpoint method])
+        request (sim-req req endpoint svc)
+        corpus {}
+        execute (execute-fn tree corpus requested-endpoint endpoint request)
+        default-success (binding [*tree* tree *request* request *corpus* corpus]
+                          (if (d/get-in-tree tree [:validating])
+                            (validate (success))
+                            (success)))
+        response (or (some identity (map execute rules)) default-success)]
+    (if (not tree)
+      (do
+        (log-warn "Warning - no endpoint found for" [svc endpoint method])
+        (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
+          {:status 405 :headers {"Allow" (s/join ", " (map #(.toUpperCase (name %)) supported-methods))}}))
+      (do
+        (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
+        (log-debug "responding with" response)
+        response))))

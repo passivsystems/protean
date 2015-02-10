@@ -1,5 +1,7 @@
 (ns protean.core.codex.reader
-  (:require [clojure.edn :as edn])
+  (:require [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [protean.config :as conf])
   (:import java.io.File))
 
 (defn- read-codex-part
@@ -10,7 +12,8 @@
       (= :includes k) (reduce merge-with merge (map read-codex-part v))
       (map? v) {k (apply merge-with merge (map merge-includes v))}
       :else {k v}))
-  (let [read (edn/read-string (slurp file))]
+  (let [afile (if (string? file) (io/file (conf/codex-dir) file) file)
+        read (edn/read-string (slurp afile))]
     (apply merge-with merge (map merge-includes read))))
 
 (defn read-codex

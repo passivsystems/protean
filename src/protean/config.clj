@@ -18,6 +18,8 @@
 
 (defn asset-dir [] (or (env :protean-asset-dir) "public"))
 
+(defn log-dir [] (or (env :protean-log-dir) (d/pwd)))
+
 (defn log-level [] (keyword (or (env :protean-log-level) "info")))
 
 (defn res-dir [] (str (asset-dir) "/resource"))

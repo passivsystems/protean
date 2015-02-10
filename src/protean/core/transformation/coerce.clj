@@ -1,16 +1,19 @@
 (ns protean.core.transformation.coerce
   "General purpose coercion."
-  (:refer-clojure :exclude [int])
+  (:refer-clojure :exclude [int long])
   (:require [clojure.set :as st]
             [clojure.data.xml :as xml]
-            [cheshire.core :as jsn])
+            [cheshire.core :as jsn]
+            [yaclot.core :refer [convert to-type]])
   (:use [clojure.pprint]))
 
 ;; =============================================================================
 ;; Transformation functions
 ;; =============================================================================
 
-(defn int [s] (. Integer parseInt s))
+(defn int [s] (convert s (to-type Integer)))
+
+(defn long [s] (convert s (to-type Long)))
 
 (defn js [d] (if d (jsn/generate-string d) d))
 
