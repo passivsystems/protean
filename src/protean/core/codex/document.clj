@@ -1,6 +1,8 @@
 (ns protean.core.codex.document
   "Codex data extraction and truthiness functionality."
-  (:require [protean.core.protocol.http :as h]))
+  (:require [protean.core.protocol.http :as h]
+            [me.rossputin.diskops :as dsk]
+            [environ.core :refer [env]]))
 
 (defn custom-keys
   "returns only keys which are not keywords"
@@ -40,7 +42,8 @@
     (if (empty? v) target (assoc-in target in-ks v))
     target))
 
-(defn- is-relative [path]
+; TODO move to diskops
+(defn is-relative [path]
   (try
     (clojure.java.io/as-relative-path path)
     (catch Exception e false)))
@@ -48,9 +51,16 @@
 (defn to-path
   "Resolves relative paths to absolute"
   [path tree]
-  (let [codex-dir (get-in-tree tree [:codex-dir])]
-    ; TODO if relative to codex-dir is not found, then try relative to current root (codex-dir ""), else protean home.
-    (if (is-relative path) (str codex-dir "/" path) path)))
+  (let [codex-dir (get-in-tree tree [:codex-dir])
+        current-dir (dsk/pwd)
+        protean-home (env :protean-codex-dir)]
+    (if (is-relative path)
+      (cond
+        (dsk/exists? (str codex-dir "/" path)) (str codex-dir "/" path)
+        (dsk/exists? (str current-dir "/" path)) (str current-dir "/" path)
+        (dsk/exists? (str protean-home "/" path)) (str protean-home "/" path)
+        :else (throw (Exception. (str "Could not find relative path: " path))))
+      path)))
 
 ;; =============================================================================
 ;; Codex request

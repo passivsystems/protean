@@ -31,6 +31,7 @@
                  [overtone/at-at "1.2.0"]
                  [com.github.fge/json-schema-validator "2.1.7"]
                  [aysylu/loom "0.5.0"]
+                 [clj-time "0.9.0"]
                  [com.cemerick/pomegranate "0.3.0"]
                  [yaclot "0.1.5"]]
   :plugins [[lein-ring "0.8.10"]

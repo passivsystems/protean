@@ -34,7 +34,12 @@
         is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
     (some is-match regexs)))
 
-(defn- print-error [e] (println (aa/red (str "caught exception: " (.getMessage e)))))
+(defn- stacktrace [e]
+  (let [sw (java.io.StringWriter.)]
+    (.printStackTrace e (java.io.PrintWriter. sw))
+    (.toString sw)))
+
+(defn- print-error [e] (println (aa/red (str "caught exception: " (stacktrace e)))))
 
 (defn- fnfirst [x] (first (nfirst x)))
 
@@ -135,7 +140,7 @@
           headers_w_ctype (if (and body-url (not (get-in headers [h/ctype])))
                             (assoc headers h/ctype (h/mime body-url))
                             headers)
-          body (if body-url (slurp body-url))
+          body (if body-url (slurp (d/to-path body-url *tree*)))
           response {:status status-code :headers headers_w_ctype :body body}]
       (log-debug "formatting rsp:" rsp)
       (log-debug "returning :" response)
@@ -235,7 +240,7 @@
 
 (defn- validate-body [request tree errors]
   (let [expected-ctype (d/req-ctype tree)
-        schema (d/get-in-tree tree [:req :body-schema])
+        schema (d/to-path (d/get-in-tree tree [:req :body-schema]) tree)
         codex-body (d/body-req tree)]
     (v/validate-body request expected-ctype schema codex-body errors)))
 

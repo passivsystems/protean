@@ -25,7 +25,9 @@
           (h/txt? ctype) identity
           (h/xml? ctype) co/xml
           :else co/js)
-        body-val (if example (s/trim (slurp (first example))) (f body))]
+        body-val (if example
+          (-> (first example) (d/to-path tree) slurp s/trim)
+          (f body))]
     (assoc-in payload [:body] body-val)))
 
 (defn- transform-query-params-> [payload tree]

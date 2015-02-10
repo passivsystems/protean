@@ -9,7 +9,9 @@
             [protean.config :as conf]
             [protean.core.transformation.coerce :as c]
             [protean.core.command.bridge :as b]
-            [protean.core.codex.reader :as r])
+            [protean.core.codex.reader :as r]
+            [protean.core.codex.document :as d]
+            [me.rossputin.diskops :as dsk])
   (:use protean.cli.simadmin)
   (:import java.net.URI java.io.File)
   (:gen-class))
@@ -70,6 +72,7 @@
         "  test                   -f codex (A shortcut to the test visit command - makes assumptions about defaults)"
         "                            e.g. To integration test the sample-petstore service"
         "                              test -f sample-petstore.cod.edn"
+        "                              test -f sample-petstore.cod.edn -b '{\"seed\": {\"tokenValue\": \"VALID_TOKEN\"}}'"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"
@@ -112,19 +115,25 @@
   [{:keys [file]}]
   (let [codices (r/read-codex (File. file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js {:locs [svc] :commands [:doc] :directory i/silk-data-dir})
+        b (c/js {:locs [svc] :commands [:doc]})
         options {:host nil :port nil :file file :body b}
-        cm (if (.contains (conf/os) "Mac") "open" "firefox")]
+        cm (if (.contains (conf/os) "Mac") "open" "firefox")
+        site-dir (str (conf/target-dir) "/site/index.html")
+        abs-site-dir (if (d/is-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
     (visit options)
     (println "Please see your docs, as demonstrated below.")
-    (println (aa/bold-green (str cm " " (conf/codex-dir) "/" i/docs-home-page)))))
+    (println cm abs-site-dir)
+    (println "")))
+
 
 (defn- integration-test
   "If no corpus is passed in to a visit test command - guess sensible defaults"
-  [{:keys [host port file]}]
+  [{:keys [host port file body]}]
   (let [codices (r/read-codex (File. file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js {:locs [svc] :commands [:test] :config {:test-level 1}})
+        b (c/js (merge
+            {:locs [svc] :commands [:test] :config {:test-level 1}}
+            (c/clj body)))
         options {:host host :port port :file file :body b}]
     (visit options)))
 
