@@ -8,7 +8,7 @@
 
 (defn os [] (System/getProperty "os.name"))
 
-(defonce host (or (env :hostname) (.getCanonicalHostName (java.net.InetAddress/getLocalHost))))
+(defonce host (or (env :hostname) "localhost"))
 
 (defn sim-port [] (or (env :protean-sim-port) "3000"))
 
