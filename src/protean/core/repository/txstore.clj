@@ -35,9 +35,11 @@
      (DefaultTXLog. (agent (writer (file f) :append true)))))
 
 (defn save-evt [store k evt]
-  (record store (SaveEvt. k (assoc evt :instant (Date.)))))
+  (let [inst-evt (assoc evt :instant (Date.))]
+    (record store (SaveEvt. k inst-evt))
+    inst-evt))
 
 (defn save-evts
   "Save all events of a given category.
    k is a key to help with filtering later on, ie :tests :thingy."
-  [store k evts] (doseq [e evts] (save-evt store k e)))
+  [store k evts] (for [e evts] (save-evt store k e)))
