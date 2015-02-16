@@ -39,7 +39,7 @@
     (.printStackTrace e (java.io.PrintWriter. sw))
     (.toString sw)))
 
-(defn- print-error [e] (println (aa/red (str "caught exception: " (stacktrace e)))))
+(defn- print-error [e] (log-error (aa/red (str "caught exception: " (stacktrace e)))))
 
 (defn- fnfirst [x] (first (nfirst x)))
 
