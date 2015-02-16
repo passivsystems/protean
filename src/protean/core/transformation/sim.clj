@@ -107,7 +107,9 @@
 
 (defn body [] (:body *request*))
 
-(defn body-clj [] (c/clj (:body *request*)))
+(defn body-clj
+  ([] (c/clj (:body *request*)))
+  ([k] (c/clj (:body *request*) (or k false))))
 
 (defn query-param [p] (get-in *request* [:query-params p]))
 

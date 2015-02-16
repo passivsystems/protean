@@ -19,7 +19,9 @@
 
 (defn pretty-js [d] (if d (jsn/generate-string d {:pretty true}) d))
 
-(defn clj [d] (if (map? d) d (jsn/parse-string d)))
+(defn clj
+  ([d] (if (map? d) d (jsn/parse-string d)))
+  ([d k] (if (map? d) d (jsn/parse-string d (or k false)))))
 
 (defn pretty-clj [d] (pprint (clj d)))
 
