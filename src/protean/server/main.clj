@@ -30,7 +30,11 @@
   (str (c/log-dir) "/protean.log"))
 (timbre/set-level! (c/log-level))
 
+;; configure classpath for this instance of protean
+;; we currently support local clj artefacts and remote coords (e.g. clojars)
+;; TODO: support local jar files in a directory
 (pom/add-classpath (c/codex-dir))
+(pom/add-classpath (str (file (c/codex-dir) "clj")))
 
 (defn- files [c-dir ext]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
