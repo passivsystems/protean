@@ -25,6 +25,7 @@
   display: block;
   color: #716b7a;
   padding: 5px 20px;
+  word-wrap: break-word;
 }
 .bs-sidebar .nav > li > a:hover,
 .bs-sidebar .nav > li > a:focus {
