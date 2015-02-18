@@ -222,10 +222,12 @@
     res))
 
 (defn simple-request
-  [method url body]
+  [method url hdrs body]
   (make-request method url
                 {:content-type (header "content-type")
-                 :headers (dissoc (:headers *request*) "content-length")
+                 :headers (merge
+                            (dissoc (:headers *request*) "content-length")
+                            hdrs)
                  :body body}))
 
 (defn env
