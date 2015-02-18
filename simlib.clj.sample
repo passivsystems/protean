@@ -32,11 +32,13 @@
 
 (defn h-rsp [s hdr] {:status s :headers {h/loc hdr}})
 
+(defn b-rsp [s h b] {:status s :headers h :body b})
+
 (defn rsp [s] {:status s})
 
-(defn jsn [status body] {:status status :headers {h/ctype h/jsn} :body (js body)})
+(defn jsn [s b] (b-rsp s {h/ctype h/jsn} (js b))
 
-(defn txt [status body] {:status status :headers {h/ctype h/txt} :body body})
+(defn txt [s b] (b-rsp s {h/ctype h/txt} b))
 
 
 ;; =============================================================================

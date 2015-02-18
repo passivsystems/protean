@@ -39,7 +39,7 @@
     (.printStackTrace e (java.io.PrintWriter. sw))
     (.toString sw)))
 
-(defn- print-error [e] (println (aa/red (str "caught exception: " (stacktrace e)))))
+(defn- print-error [e] (log-error (aa/red (str "caught exception: " (stacktrace e)))))
 
 (defn- fnfirst [x] (first (nfirst x)))
 
@@ -107,7 +107,9 @@
 
 (defn body [] (:body *request*))
 
-(defn body-clj [] (c/clj (:body *request*)))
+(defn body-clj
+  ([] (c/clj (:body *request*)))
+  ([k] (c/clj (:body *request*) (or k false))))
 
 (defn query-param [p] (get-in *request* [:query-params p]))
 
@@ -260,6 +262,17 @@
       (log-info (s/join "," errors)))))
 
 (defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
+
+
+;; =============================================================================
+;; Sim Machinery Access
+;; =============================================================================
+
+(defn qslurp
+  "Quantum slurp, used to look for sim extension referenced resources in
+   multiple places.
+   p is a resource path (probably relative)."
+  [p] (slurp (d/to-path p *tree*)))
 
 
 ;; =============================================================================

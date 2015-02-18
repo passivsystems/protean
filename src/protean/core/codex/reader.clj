@@ -20,5 +20,6 @@
   "will read the codex eden file, merging with any referenced files"
   [file]
   (let [codex-dir (.getParent (.getAbsoluteFile file))]
-    ; TODO review this - alternatives are setting a binding, updating system property (env caches values at startup)?
+    ;; TODO review this - alternatives are setting a binding, updating system
+    ;; property (env caches values at startup)?
     (merge {:codex-dir codex-dir} (read-codex-part file))))
