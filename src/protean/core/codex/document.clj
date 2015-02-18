@@ -15,13 +15,13 @@
   (remove #(keyword? (key %)) c))
 
 (defn to-seq [codices svc path method]
-  "creates a sequence (for now aka 'tree' - needs renaming) that can be traversed to resolve required references in scope"
+  "creates a sequence (for now aka 'tree' - needs renaming) that can be
+   traversed to resolve required references in scope"
   [(get-in codices [svc path method])
    (get-in codices [svc path])
    (get-in codices [svc])
    (get-in codices [method])
-   codices]
-)
+   codices])
 
 (defn get-in-tree
   "returns the first result for given sequence of keys from a tree (scope)"
@@ -71,7 +71,7 @@
 (defn fp [t] (get-in-tree t [:req :form-params]))
 
 (defn- codex-req-hdrs [tree]
-  ; we don't use get-in-tree since we want to merge definitions in all scopes here
+  ; we don't use get-in-tree as we want to merge definitions in all scopes here
   (into {} (merge (remove nil? (map #(get-in % [:req :headers]) tree)))))
 
 (defn req-ctype [tree]
