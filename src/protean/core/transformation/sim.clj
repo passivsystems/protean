@@ -263,6 +263,17 @@
 
 
 ;; =============================================================================
+;; Sim Machinery Access
+;; =============================================================================
+
+(defn qslurp
+  "Quantum slurp, used to look for sim extension referenced resources in
+   multiple places.
+   p is a resource path (probably relative)."
+  [p] (slurp (d/to-path p *tree*)))
+
+
+;; =============================================================================
 ;; Sim Execution
 ;; =============================================================================
 
