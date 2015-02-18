@@ -62,6 +62,7 @@
 (defmethod pb/config :doc [_ corpus]
   (hlg "building probes")
   (clean-dir silk-staging-dir)
+  (clean-dir (str (cfg/target-dir) "/site"))
   (.mkdirs (file data-dir)))
 
 ;; =============================================================================
@@ -184,6 +185,5 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
-  (let [target-dir (cfg/target-dir)]
-    (silk/spin-or-reload false silk-staging-dir false false)
-    (dsk/copy-recursive (str silk-staging-dir "/site") target-dir)))
+  (silk/spin-or-reload false silk-staging-dir false false)
+  (dsk/copy-recursive (str silk-staging-dir "/site") (cfg/target-dir)))
