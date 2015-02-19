@@ -21,6 +21,8 @@ then
     cp ../sample-petstore.cod.edn ../target/deb/usr/lib/protean/sample-petstore.cod.edn
     cp ../protean-utils.cod.edn ../target/deb/usr/lib/protean/protean-utils.cod.edn
     cp ../protean-utils.sim.edn ../target/deb/usr/lib/protean/protean-utils.sim.edn
+    rm -rf ../silk_templates/data/protean-api/*
+    rm -rf ../silk_templates/site/*
     cp -r ../silk_templates ../target/deb/usr/lib/protean/silk_templates
     cp -r ../test-data ../target/deb/usr/lib/protean/test-data
     cp -r ../public ../target/deb/usr/lib/protean

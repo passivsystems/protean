@@ -27,14 +27,21 @@
   (println (aa/red msg))
     (System/exit 0))
 
-(defn- prep-docs [directory]
+(defn- clean-dir [directory]
   (if (dsk/exists-dir? directory)
     (dsk/delete-directory (file directory)))
   (.mkdirs (file directory)))
 
-(defn staging-directory []
+(def silk-staging-dir
   (let [target (cfg/target-dir)]
     (str target "/silk_staging")))
+
+(def data-dir
+  (str silk-staging-dir "/data/protean-api"))
+
+(defn- prep-staging [silk-template]
+  (doseq [f (dsk/path-list silk-template)]
+    (dsk/copy-recursive f silk-staging-dir)))
 
 (defn spit-to
   "Will make directory if does not exist before spitting to file."
@@ -52,7 +59,11 @@
 ;; Probe config
 ;; =============================================================================
 
-(defmethod pb/config :doc [_ corpus] (hlg "building probes"))
+(defmethod pb/config :doc [_ corpus]
+  (hlg "building probes")
+  (clean-dir silk-staging-dir)
+  (clean-dir (str (cfg/target-dir) "/site"))
+  (.mkdirs (file data-dir)))
 
 ;; =============================================================================
 ;; Probe construction
@@ -121,8 +132,15 @@
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
-  (let [directory (str (staging-directory) "/data/protean-api")]
-    (prep-docs directory)
+  (let [silk-template (d/to-path "silk_templates" (:tree entry))]
+    ; TODO review this
+    ;      we should prepare staging in config step, since build is executed
+    ;      multiple times for each entry.
+    ;      However to resolve the silk-template we need tree (for :codex-dir)
+    ;      an alternative is to store :codex-dir in corpus, but this assumes
+    ;      probes never run against entries from multiple codices
+    ;      (which certainly is the assumption for docprobe, which generates a single output doc)
+    (prep-staging silk-template)
     {:entry entry
      :engage (fn []
       (let [{:keys [svc method tree path] :as e} entry
@@ -143,13 +161,13 @@
                   :req-body-schema-id (str "schema-" id)
                   :req-body-schema-title (if schema (fname schema) "N/A")
                   :req-body-schema (if schema (slurp-file schema tree) "N/A")}]
-        (spit-to (str directory "/global/site.edn") (pr-str site))
-        (spit-to (str directory "/api/" id ".edn") (pr-str full))
-        (doc-params (str directory "/" id "/params/") (input-params tree uri))
-        (doc-hdrs (str directory "/" id "/headers/") (d/req-hdrs tree))
-        (doc-body-examples (str directory "/" id "/body-examples/") full tree (d/get-in-tree tree [:req :body-example]))
-        (doc-status-codes (str directory "/" id "/status-codes-success/") tree (d/success-status tree))
-        (doc-status-codes (str directory "/" id "/status-codes-error/") tree (d/error-status tree))))
+        (spit-to (str data-dir "/global/site.edn") (pr-str site))
+        (spit-to (str data-dir "/api/" id ".edn") (pr-str full))
+        (doc-params (str data-dir "/" id "/params/") (input-params tree uri))
+        (doc-hdrs (str data-dir "/" id "/headers/") (d/req-hdrs tree))
+        (doc-body-examples (str data-dir "/" id "/body-examples/") full tree (d/get-in-tree tree [:req :body-example]))
+        (doc-status-codes (str data-dir "/" id "/status-codes-success/") tree (d/success-status tree))
+        (doc-status-codes (str data-dir "/" id "/status-codes-error/") tree (d/error-status tree))))
     }))
 
 ;; =============================================================================
@@ -167,12 +185,5 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
-  (let [target-dir (cfg/target-dir)
-        silk-staging (staging-directory)
-        ; TODO should codex-dir be stored in corpus? think it is stored there since corpus not always available?
-        [{:keys [tree] :as entry} _] (first results) ; can use any result since all have :codex-dir
-        silk-template (d/to-path "silk_templates" tree)]
-    (doseq [f (dsk/path-list silk-template)]
-      (dsk/copy-recursive f silk-staging))
-    (silk/spin-or-reload false silk-staging false false)
-    (dsk/copy-recursive (str silk-staging "/site") target-dir)))
+  (silk/spin-or-reload false silk-staging-dir false false)
+  (dsk/copy-recursive (str silk-staging-dir "/site") (cfg/target-dir)))
