@@ -45,11 +45,17 @@
 ;; Sim Library Payload Transport Functions
 ;; =============================================================================
 
-(defn post [url body] (simple-request :post url body))
+(defn post
+  ([url body] (post nil body))
+  ([url hdrs body] (simple-request :post url hdrs body)))
 
-(defn put [url body] (simple-request :put url body))
+(defn put
+  ([url body] (put url nil body))
+  ([url hdrs body] (simple-request :put url hdrs body)))
 
-(defn patch [url body] (simple-request :patch url body))
+(defn patch
+  ([url body] (patch url nil body))
+  ([url hdrs body] (simple-request :patch url hdrs body)))
 
 
 ;; =============================================================================
