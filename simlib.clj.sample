@@ -36,7 +36,7 @@
 
 (defn rsp [s] {:status s})
 
-(defn jsn [s b] (b-rsp s {h/ctype h/jsn} (js b))
+(defn jsn [s b] (b-rsp s {h/ctype h/jsn} (js b)))
 
 (defn txt [s b] (b-rsp s {h/ctype h/txt} b))
 
