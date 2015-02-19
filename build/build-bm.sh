@@ -12,6 +12,9 @@ cp ../target/*standalone* ../target/bm
 cp -r etc/* ../target/bm
 cp -r ../public ../target/bm
 cp -r ../test-data ../target/bm
+# tidy up spin artefacts before packaging silk templates
+rm -rf ../silk_templates/data/protean-api/*
+rm -rf ../silk_templates/site/*
 cp -r ../silk_templates ../target/bm
 cp ../defaults.edn ../target/bm
 cp ../simlib.clj.sample ../target/bm/simlib.clj

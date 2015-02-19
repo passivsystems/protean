@@ -10,6 +10,8 @@
 # Assumes that lein uberjar has been run and uberjar exists in target directory
 mkdir -p ../target/tgz
 cp ../target/*standalone* ../target/tgz/protean.jar
+rm -rf ../silk_templates/data/protean-api/*
+rm -rf ../silk_templates/site/*
 cp -r ../silk_templates ../target/tgz
 cp -r ../public ../target/tgz
 cp -r ../test-data ../target/tgz

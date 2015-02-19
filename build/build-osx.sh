@@ -10,6 +10,8 @@
 # Assumes that lein uberjar has been run and uberjar exists in target directory
 mkdir -p ../target/osx
 cp ../target/*standalone* ../target/osx/protean.jar
+rm -rf ../silk_templates/data/protean-api/*
+rm -rf ../silk_templates/site/*
 cp -r ../silk_templates ../target/osx
 cp -r ../public ../target/osx
 cp -r ../test-data ../target/osx
