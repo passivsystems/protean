@@ -234,8 +234,7 @@
 
 (defn env
   "Accesses environment variables"
-  [name]
-  (ec/env name))
+  [name] (ec/env name))
 
 
 ;; =============================================================================

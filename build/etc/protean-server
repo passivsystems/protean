@@ -1,5 +1,4 @@
 #!/bin/bash
 
 export CODEX_DIR=/usr/lib/protean
-export ASSET_DIR=/usr/lib/protean/public
 cd /usr/lib/protean && java -cp protean.jar -Xmx32m protean.server.main

@@ -62,8 +62,6 @@
 ;; =============================================================================
 
 (defroutes admin-routes
-  (route/files "/resource" {:root (c/res-dir)})
-
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
   (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
@@ -98,7 +96,6 @@
         c-dir (c/codex-dir)]
     (info "Starting protean - v" (version))
     (info "Codex directory : " c-dir)
-    (info "Asset directory : " (c/asset-dir))
     (info (str "Services loaded : " (build-services c-dir)))
     (info (str "Sims loaded : " (build-sims c-dir)))
     (server (co/int api-port) (co/int (c/admin-port)))
