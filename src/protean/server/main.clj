@@ -96,8 +96,8 @@
         c-dir (c/codex-dir)]
     (info "Starting protean - v" (version))
     (info "Codex directory : " c-dir)
-    (info (str "Services loaded : " (build-services c-dir)))
-    (info (str "Sims loaded : " (build-sims c-dir)))
+    (info (str "Codices loaded : " (build-services c-dir)))
+    (info (str "Sim extensions loaded : " (build-sims c-dir)))
     (server (co/int api-port) (co/int (c/admin-port)))
     (info (str "Protean has started"
-      " : api-port " api-port ", admin-port " (c/admin-port)))))
+      " : sim-port " api-port ", admin-port " (c/admin-port)))))
