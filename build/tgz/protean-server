@@ -1,4 +1,3 @@
 #!/bin/bash
 
-export PROTEAN_CODEX_DIR=$HOME/bin
 cd $HOME/bin && java -cp protean.jar protean.server.main
