@@ -56,6 +56,17 @@
 
 
 ;; =============================================================================
+;; Sim Machinery Access
+;; =============================================================================
+
+(defn qslurp
+  "Quantum slurp, used to look for sim extension referenced resources in
+   multiple places.
+   p is a resource path (probably relative)."
+  [p] (slurp (d/to-path p *tree*)))
+
+
+;; =============================================================================
 ;; Scheduling
 ;; =============================================================================
 
@@ -175,7 +186,7 @@
   ([status] {:status status})
   ([status & {:keys [body-url]}]
     {:status status
-     :body (slurp body-url)
+     :body (qslurp body-url)
      :headers {h/ctype (h/mime body-url)}}))
 
 (defn encode
@@ -261,17 +272,6 @@
       (log-info (s/join "," errors)))))
 
 (defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
-
-
-;; =============================================================================
-;; Sim Machinery Access
-;; =============================================================================
-
-(defn qslurp
-  "Quantum slurp, used to look for sim extension referenced resources in
-   multiple places.
-   p is a resource path (probably relative)."
-  [p] (slurp (d/to-path p *tree*)))
 
 
 ;; =============================================================================
