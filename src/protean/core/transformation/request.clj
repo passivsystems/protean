@@ -9,7 +9,7 @@
 
 (defn- copy-> [payload tree source-keys target-keys]
   (if-let [kvs (d/get-in-tree tree source-keys)]
-    (assoc-in payload target-keys kvs)
+    (update-in payload target-keys #(merge kvs %))
     payload))
 
 (defn- headers-> [payload tree]
