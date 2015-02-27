@@ -135,7 +135,7 @@
 
 (defn form-param [p] (get-in *request* [:form-params p]))
 
-(defn body-param [p] ((c/clj (:body *request*)) p))
+(defn body-param [p] ((body-clj) p))
 
 (defn header [h] (get-in *request* [:headers h]))
 
