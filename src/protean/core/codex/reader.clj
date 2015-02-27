@@ -22,4 +22,4 @@
   (let [codex-dir (.getParent (.getAbsoluteFile file))]
     ;; TODO review this - alternatives are setting a binding, updating system
     ;; property (env caches values at startup)?
-    (merge {:codex-dir codex-dir} (read-codex-part file codex-dir))))
+    (merge {:codex-dir codex-dir} (read-codex-part codex-dir file))))

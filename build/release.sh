@@ -1,7 +1,6 @@
 #!/bin/sh
 #
 # release.sh Builds for neutral linux targets; OSX and TGZ.
-# Must be run from the current directory as paths are relative.
 #
 # Ross McDonald <ross@bheap.co.uk>
 #
