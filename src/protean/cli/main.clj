@@ -52,6 +52,8 @@
 
 (defn- usage-hud [options-summary]
   (->> [""
+        "PROTEAN_CODEX_DIR: " (conf/codex-dir)
+        ""
         "Usage: protean [options] action"
         ""
         "Options:"
