@@ -8,6 +8,7 @@
 # Check that CI variables exist in env
 ROOT_DIR=$(dirname $0)/..
 VERSION=$1
+
 if [ "$VERSION" != "" ]
 then
 
