@@ -322,7 +322,7 @@
       (do
         (log-warn "Warning - no endpoint found for" [svc endpoint method])
         (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
-          {:status 405 :headers {"Allow" (s/join ", " (map #(.toUpperCase (name %)) supported-methods))}}))
+          {:status 405 :headers {"Allow" (s/join ", " (map #(s/upper-case (name %)) supported-methods))}}))
       (do
         (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
         (log-debug "responding with" response)
