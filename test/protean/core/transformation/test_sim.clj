@@ -1,38 +1,70 @@
-; (ns protean.core.transformation.test-sim
-;   (:require [protean.core.protocol.http :as h]
-;             [protean.core.io.data :as d]
-;             [clojure.main :as m])
-;   (:use [clojure.test]
-;         [protean.core.transformation.sim :only (sim-rsp->)]))
-;
-; (defn request [m u c b f]
-;   {
-;     :ssl-client-cert nil
-;     :remote-addr "127.0.0.1"
-;     :params {:* u}
-;     :route-params {:* u}
-;     :headers {"user-agent" "curl/7.29.0"
-;               "content-type" c
-;               "accept" "*/*"
-;               "host" "localhost:3000"}
-;     :server-port 3000
-;     :content-length nil
-;     :form-params (or f {})
-;     :query-params {}
-;     :content-type nil
-;     :character-encoding nil
-;     :uri u
-;     :server-name "localhost"
-;     :query-string nil
-;     :body b
-;     :scheme :http
-;     :request-method m
-;   })
+(ns protean.core.transformation.test-sim
+  (:require [protean.core.protocol.http :as h]
+            [protean.core.io.data :as d]
+            [protean.core.transformation.coerce :as c]
+            [protean.core.transformation.sim :as sim]
+            [expectations :refer :all]))
+
+(defn request [m u c b f]
+  {
+    :ssl-client-cert nil
+    :remote-addr "127.0.0.1"
+    :params {:* u}
+    :route-params {:* u}
+    :headers {"user-agent" "curl/7.29.0"
+              "content-type" c
+              "accept" "*/*"
+              "host" "localhost:3000"}
+    :server-port 3000
+    :content-length nil
+    :form-params (or f {})
+    :query-params {}
+    :content-type nil
+    :character-encoding nil
+    :uri u
+    :server-name "localhost"
+    :query-string nil
+    :body b
+    :scheme :http
+    :request-method m
+  })
+
+(def codex {
+  "sample" {
+    "simple" {
+      :get [
+        {:rsp {:200 {:body "hello world", :doc "OK"}}}
+        {:get {:rsp {:200 {:body "hello world", :doc "OK"}}}}
+        {"simple" {:get {:rsp {:200 {:body "hello world", :doc "OK"}}}}}
+        {:get {:rsp {:200 {:doc "OK"}}},
+         :default-content-type "application/json; charset=utf-8",
+         :validating true,
+         :codex-dir "/Users/rossputin/Projects/protean/protean-simple-service",
+          "sample" {
+            "simple" {
+              :get {
+                :rsp {:200 {:body "hello world", :doc "OK"}}
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+})
+
+(def body (.getBytes "" "UTF-8"))
+(defn- get-req [p] (request :get p h/txt body nil))
+
+(let [req (get-req "/sample/simple")
+      cdx codex
+      rsp (sim/sim-rsp req cdx {})]
+  (expect (:status rsp) 200))
+
+
 ;
 ; (def sims (m/load-script "test-data/default.sim.edn"))
 ;
-; (def body (.getBytes "" "UTF-8"))
-; (defn- get-req [p] (request :get p h/txt body nil))
 ;
 ; (deftest get-rsp-200
 ;   (let [req (get-req "/sample/simple")
