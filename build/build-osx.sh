@@ -2,25 +2,26 @@
 #
 # build-osx.sh Builds the protean tgz binary package.
 # Used by the custom OSX tgz based install script.
-# Must be run from the current directory as paths are relative.
 #
 # Ross McDonald <ross@bheap.co.uk>
 #
 
 # Assumes that lein uberjar has been run and uberjar exists in target directory
-mkdir -p ../target/osx
-cp ../target/*standalone* ../target/osx/protean.jar
-rm -rf ../silk_templates/data/protean-api/*
-rm -rf ../silk_templates/site/*
-cp -r ../silk_templates ../target/osx
-cp -r ../public ../target/osx
-cp -r ../test-data ../target/osx
-cp ../defaults.edn ../target/osx
-cp ../simlib.clj.sample ../target/osx/simlib.clj
-cp ../sample-petstore.cod.edn ../target/osx
-cp ../protean-utils.cod.edn ../target/osx
-cp ../protean-utils.sim.edn ../target/osx
-cp osx/* ../target/osx
-cd ../target/osx
+ROOT_DIR=$(dirname $0)/..
+
+mkdir -p $ROOT_DIR/target/osx
+cp $ROOT_DIR/target/*standalone* $ROOT_DIR/target/osx/protean.jar
+rm -rf $ROOT_DIR/silk_templates/data/protean-api/*
+rm -rf $ROOT_DIR/silk_templates/site/*
+cp -r $ROOT_DIR/silk_templates $ROOT_DIR/target/osx
+cp -r $ROOT_DIR/public $ROOT_DIR/target/osx
+cp -r $ROOT_DIR/test-data $ROOT_DIR/target/osx
+cp $ROOT_DIR/defaults.edn $ROOT_DIR/target/osx
+cp $ROOT_DIR/simlib.clj.sample $ROOT_DIR/target/osx/simlib.clj
+cp $ROOT_DIR/sample-petstore.cod.edn $ROOT_DIR/target/osx
+cp $ROOT_DIR/protean-utils.cod.edn $ROOT_DIR/target/osx
+cp $ROOT_DIR/protean-utils.sim.edn $ROOT_DIR/target/osx
+cp $ROOT_DIR/build/osx/* $ROOT_DIR/target/osx
+cd $ROOT_DIR/target/osx
 tar cvzf protean-osx.tgz *
-cd ../../build
+cd -

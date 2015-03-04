@@ -16,14 +16,8 @@
 
 (defn codex-dir [] (or (env :protean-codex-dir) (d/pwd)))
 
-(defn asset-dir [] (or (env :protean-asset-dir) "public"))
-
 (defn log-dir [] (or (env :protean-log-dir) (d/pwd)))
 
 (defn log-level [] (keyword (or (env :protean-log-level) "info")))
-
-(defn res-dir [] (str (asset-dir) "/resource"))
-
-(defn html-dir [] (str (asset-dir) "/html"))
 
 (defn target-dir [] (or (env :protean-target) "target"))

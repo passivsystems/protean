@@ -56,6 +56,17 @@
 
 
 ;; =============================================================================
+;; Sim Machinery Access
+;; =============================================================================
+
+(defn qslurp
+  "Quantum slurp, used to look for sim extension referenced resources in
+   multiple places.
+   p is a resource path (probably relative)."
+  [p] (slurp (d/to-path p *tree*)))
+
+
+;; =============================================================================
 ;; Scheduling
 ;; =============================================================================
 
@@ -124,7 +135,7 @@
 
 (defn form-param [p] (get-in *request* [:form-params p]))
 
-(defn body-param [p] ((c/clj (:body *request*)) p))
+(defn body-param [p] ((body-clj) p))
 
 (defn header [h] (get-in *request* [:headers h]))
 
@@ -175,7 +186,7 @@
   ([status] {:status status})
   ([status & {:keys [body-url]}]
     {:status status
-     :body (slurp body-url)
+     :body (qslurp body-url)
      :headers {h/ctype (h/mime body-url)}}))
 
 (defn encode
@@ -234,8 +245,7 @@
 
 (defn env
   "Accesses environment variables"
-  [name]
-  (ec/env name))
+  [name] (ec/env name))
 
 
 ;; =============================================================================
@@ -262,17 +272,6 @@
       (log-info (s/join "," errors)))))
 
 (defmacro validate [then] `(if (valid-inputs?) ~then (respond 400)))
-
-
-;; =============================================================================
-;; Sim Machinery Access
-;; =============================================================================
-
-(defn qslurp
-  "Quantum slurp, used to look for sim extension referenced resources in
-   multiple places.
-   p is a resource path (probably relative)."
-  [p] (slurp (d/to-path p *tree*)))
 
 
 ;; =============================================================================
@@ -304,6 +303,17 @@
 
 (declare success)
 
+(defn- protean-error-405 [supported-methods]
+  {:status 405
+   :headers {
+     "Protean-error" "Method Not Allowed"
+     "Allow" (s/join ", " (map #(s/upper-case (name %)) supported-methods))
+   }
+  })
+
+(defn- protean-error-404 []
+  {:status 404 :headers {"Protean-error" "Not Found"}})
+
 (defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
@@ -323,7 +333,8 @@
       (do
         (log-warn "Warning - no endpoint found for" [svc endpoint method])
         (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
-          {:status 405 :headers {"Allow" (s/join ", " (map #(.toUpperCase (name %)) supported-methods))}}))
+          (protean-error-405 supported-methods)
+          (protean-error-404)))
       (do
         (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
         (log-debug "responding with" response)
