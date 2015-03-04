@@ -2,10 +2,10 @@
   (:require [protean.core.protocol.http :as h]
             [protean.core.io.data :as d]
             [protean.core.transformation.coerce :as c]
-            [protean.core.transformation.sim :as sim]
+            [protean.core.transformation.sim :as s]
             [expectations :refer :all]))
 
-(defn request [m u c b f]
+(defn- req [m u c b f]
   {
     :ssl-client-cert nil
     :remote-addr "127.0.0.1"
@@ -29,37 +29,25 @@
     :request-method m
   })
 
-(def codex {
+(def cdx-1 {
   "sample" {
     "simple" {
-      :get [
-        {:rsp {:200 {:body "hello world", :doc "OK"}}}
-        {:get {:rsp {:200 {:body "hello world", :doc "OK"}}}}
-        {"simple" {:get {:rsp {:200 {:body "hello world", :doc "OK"}}}}}
-        {:get {:rsp {:200 {:doc "OK"}}},
-         :default-content-type "application/json; charset=utf-8",
-         :validating true,
-         :codex-dir "/Users/rossputin/Projects/protean/protean-simple-service",
-          "sample" {
-            "simple" {
-              :get {
-                :rsp {:200 {:body "hello world", :doc "OK"}}
-              }
-            }
-          }
-        }
-      ]
+      :get [{:rsp {:200 {}}}]
+      :head [{:rsp {:200 {:headers {"token" "aGVsbG8gc2FpbG9y"}}}}]
+      :put [{:rsp {:204 {}}}]
     }
   }
 })
 
 (def body (.getBytes "" "UTF-8"))
-(defn- get-req [p] (request :get p h/txt body nil))
 
-(let [req (get-req "/sample/simple")
-      cdx codex
-      rsp (sim/sim-rsp req cdx {})]
-  (expect (:status rsp) 200))
+(let [rsp-1 (s/sim-rsp (req :get "/sample/simple" h/txt body nil) cdx-1 {})
+      rsp-2 (s/sim-rsp (req :head "/sample/simple" nil body nil) cdx-1 {})
+      rsp-3 (s/sim-rsp (req :put "/sample/simple" nil body nil) cdx-1 {})]
+  (expect (:status rsp-1) 200)
+  (expect (:status rsp-2) 200)
+  (expect (count (:headers rsp-2)) 1)
+  (expect (:status rsp-3) 204))
 
 
 ;
