@@ -303,6 +303,17 @@
 
 (declare success)
 
+(defn- protean-error-405 [supported-methods]
+  {:status 405
+   :headers {
+     "Protean-error" "Method Not Allowed"
+     "Allow" (s/join ", " (map #(s/upper-case (name %)) supported-methods))
+   }
+  })
+
+(defn- protean-error-404 []
+  {:status 404 :headers {"Protean-error" "Not Found"}})
+
 (defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
@@ -322,7 +333,8 @@
       (do
         (log-warn "Warning - no endpoint found for" [svc endpoint method])
         (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
-          {:status 405 :headers {"Allow" (s/join ", " (map #(s/upper-case (name %)) supported-methods))}}))
+          (protean-error-405 supported-methods)
+          (protean-error-404)))
       (do
         (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
         (log-debug "responding with" response)
