@@ -30,12 +30,6 @@
   (str (c/log-dir) "/protean.log"))
 (timbre/set-level! (c/log-level))
 
-;; configure classpath for this instance of protean
-;; we currently support local clj artefacts and remote coords (e.g. clojars)
-;; TODO: support local jar files in a directory
-(pom/add-classpath (c/codex-dir))
-(pom/add-classpath (str (file (c/codex-dir) "clj")))
-
 (defn- files [c-dir ext]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
       (do/filter-exts [ext])))
@@ -91,13 +85,22 @@
 
 (defmacro version [] (System/getProperty "protean.version"))
 
-(defn -main [& args]
+(defn start [codex-dir]
   (let [api-port (c/sim-port)
-        c-dir (c/codex-dir)]
+        c-dir (or codex-dir (c/codex-dir))]
     (info "Starting protean - v" (version))
     (info "Codex directory : " c-dir)
+
+    ;; configure classpath for this instance of protean
+    ;; we currently support local clj artefacts and remote coords (e.g. clojars)
+    ;; TODO: support local jar files in a directory
+    (pom/add-classpath c-dir)
+    (pom/add-classpath (str (file c-dir "clj")))
+
     (info (str "Codices loaded : " (build-services c-dir)))
     (info (str "Sim extensions loaded : " (build-sims c-dir)))
     (server (co/int api-port) (co/int (c/admin-port)))
     (info (str "Protean has started"
       " : sim-port " api-port ", admin-port " (c/admin-port)))))
+
+(defn -main [& args] (start nil))
