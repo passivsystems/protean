@@ -17,6 +17,7 @@
 (def del-sim "del-sim")
 (def doc "doc")
 (def int-test "test")
+(def sim "sim")
 (def visit "visit")
 
 ;; =============================================================================
@@ -26,5 +27,7 @@
 (defn doc? [{:keys [file]}] (not file))
 
 (defn int-test? [{:keys [file]}] (not file))
+
+(defn sim? [{:keys [directory]}] (not directory))
 
 (defn visit? [{:keys [file body]}] (or (not file) (not body)))
