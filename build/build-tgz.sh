@@ -2,25 +2,26 @@
 #
 # build-tgz.sh Builds the protean tgz binary package.
 # A self contained build you can place anywhere.
-# Must be run from the current directory as paths are relative.
 #
 # Ross McDonald <ross@bheap.co.uk>
 #
 
 # Assumes that lein uberjar has been run and uberjar exists in target directory
-mkdir -p ../target/tgz
-cp ../target/*standalone* ../target/tgz/protean.jar
-rm -rf ../silk_templates/data/protean-api/*
-rm -rf ../silk_templates/site/*
-cp -r ../silk_templates ../target/tgz
-cp -r ../public ../target/tgz
-cp -r ../test-data ../target/tgz
-cp ../defaults.edn ../target/tgz
-cp ../simlib.clj.sample ../target/tgz/simlib.clj
-cp ../sample-petstore.cod.edn ../target/tgz
-cp ../protean-utils.cod.edn ../target/tgz
-cp ../protean-utils.sim.edn ../target/tgz
-cp tgz/* ../target/tgz
-cd ../target/tgz
+ROOT_DIR=$(dirname $0)/..
+
+mkdir -p $ROOT_DIR/target/tgz
+cp $ROOT_DIR/target/*standalone* $ROOT_DIR/target/tgz/protean.jar
+rm -rf $ROOT_DIR/silk_templates/data/protean-api/*
+rm -rf $ROOT_DIR/silk_templates/site/*
+cp -r $ROOT_DIR/silk_templates $ROOT_DIR/target/tgz
+cp -r $ROOT_DIR/public $ROOT_DIR/target/tgz
+cp -r $ROOT_DIR/test-data $ROOT_DIR/target/tgz
+cp $ROOT_DIR/defaults.edn $ROOT_DIR/target/tgz
+cp $ROOT_DIR/simlib.clj.sample $ROOT_DIR/target/tgz/simlib.clj
+cp $ROOT_DIR/sample-petstore.cod.edn $ROOT_DIR/target/tgz
+cp $ROOT_DIR/protean-utils.cod.edn $ROOT_DIR/target/tgz
+cp $ROOT_DIR/protean-utils.sim.edn $ROOT_DIR/target/tgz
+cp $ROOT_DIR/build/tgz/* $ROOT_DIR/target/tgz
+cd $ROOT_DIR/target/tgz
 tar cvzf protean.tgz *
-cd ../../build
+cd -

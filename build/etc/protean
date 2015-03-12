@@ -1,3 +1,4 @@
 #!/bin/bash
 
-cd /usr/lib/protean && java -Xmx32m -jar protean.jar "$@"
+export PROTEAN_CODEX_DIR=/usr/lib/protean
+java -Xmx32m -jar /usr/lib/protean/protean.jar "$@"

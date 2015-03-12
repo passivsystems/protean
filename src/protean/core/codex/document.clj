@@ -2,6 +2,7 @@
   "Codex data extraction and truthiness functionality."
   (:require [protean.core.protocol.http :as h]
             [me.rossputin.diskops :as dsk]
+            [clojure.java.io :as io]
             [environ.core :refer [env]]))
 
 (defn custom-keys
@@ -47,19 +48,26 @@
     (clojure.java.io/as-relative-path path)
     (catch Exception e false)))
 
-(defn to-path
-  "Resolves relative paths to absolute"
-  [path tree]
-  (let [codex-dir (get-in-tree tree [:codex-dir])
-        current-dir (dsk/pwd)
+(defn to-path-dir
+  "Resolves relative paths to absolute, provided a codex-dir"
+  [path codex-dir]
+  (let [current-dir (dsk/pwd)
         protean-home (env :protean-codex-dir)]
     (if (is-relative path)
-      (cond
-        (dsk/exists? (str codex-dir "/" path)) (str codex-dir "/" path)
-        (dsk/exists? (str current-dir "/" path)) (str current-dir "/" path)
-        (dsk/exists? (str protean-home "/" path)) (str protean-home "/" path)
-        :else (throw (Exception. (str "Could not find relative path: " path))))
+      (let [locations [(str codex-dir "/" path)
+                       (str current-dir "/" path)
+                       (str protean-home "/" path)]
+            abs-path (first (filter dsk/exists? locations))]
+        (if abs-path
+          abs-path
+          (throw (Exception.
+            (str "Could not find relative path: '" path "', looked in " locations)))))
       path)))
+
+(defn to-path
+  "Resolves relative paths to absolute, provided a tree"
+  [path tree]
+  (to-path-dir path (get-in-tree tree [:codex-dir])))
 
 ;; =============================================================================
 ;; Codex request

@@ -11,7 +11,8 @@
             [protean.core.command.bridge :as b]
             [protean.core.codex.reader :as r]
             [protean.core.codex.document :as d]
-            [me.rossputin.diskops :as dsk])
+            [me.rossputin.diskops :as dsk]
+            [protean.server.main :as ps])
   (:use protean.cli.simadmin)
   (:import java.net.URI java.io.File)
   (:gen-class))
@@ -45,13 +46,15 @@
      :default "localhost"]
    ["-n" "--name NAME" "Project name"]
    ["-f" "--file FILE" "Project configuration file"]
-   ["-d" "--directory DIRECTORY" "Documentation site"]
+   ["-d" "--directory DIRECTORY" "Project directory"]
    ["-b" "--body BODY" "JSON body"]
    ["-s" "--status-err STATUS-ERROR" "Error status code"]
    ["-h" "--help"]])
 
 (defn- usage-hud [options-summary]
   (->> [""
+        "PROTEAN_CODEX_DIR: " (conf/codex-dir)
+        ""
         "Usage: protean [options] action"
         ""
         "Options:"
@@ -73,6 +76,10 @@
         "                            e.g. To integration test the sample-petstore service"
         "                              test -f sample-petstore.cod.edn"
         "                              test -f sample-petstore.cod.edn -b '{\"seed\": {\"tokenValue\": \"VALID_TOKEN\"}}'"
+        ""
+        "  sim                     -p /path/to/codex"
+        "                             e.g. To start a sim server for mycodex.cod.edn"
+        "                               sim -p /path/to/mycodex"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"
@@ -137,6 +144,8 @@
         options {:host host :port port :file file :body b}]
     (visit options)))
 
+(defn- sim [{:keys [host port directory body]}] (ps/start directory))
+
 
 ;; =============================================================================
 ;; Application entry point
@@ -159,7 +168,8 @@
       (and (= cmd i/del-sim) (not name)) (bomb summary)
       (and (= cmd i/visit (i/visit? options))) (bomb summary)
       (and (= cmd i/doc (i/doc? options))) (bomb summary)
-      (and (= cmd i/int-test (i/int-test? options))) (bomb summary))))
+      (and (= cmd i/int-test (i/int-test? options))) (bomb summary)
+      (and (= cmd i/sim (i/sim? options))) (bomb summary))))
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
@@ -178,5 +188,6 @@
       (= cmd i/visit) (visit options)
       (= cmd i/doc) (doc options)
       (= cmd i/int-test) (integration-test options)
+      (= cmd i/sim) (sim options)
       :else (exit 1 (usage-exit summary)))
     (shutdown-agents))) ; write graph image file seems to create threads which are not shutdown

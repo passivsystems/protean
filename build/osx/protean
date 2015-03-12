@@ -1,3 +1,4 @@
 #!/bin/bash
 
-cd $HOME/bin && java -jar protean.jar "$@"
+export PROTEAN_CODEX_DIR=$HOME/bin
+java -jar $HOME/bin/protean.jar "$@"
