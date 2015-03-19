@@ -175,11 +175,11 @@
   ([x]
     (let [errors (d/error-status *tree*)
           {:keys [svc request-method uri]} *request*
-          error (format-rsp
-                  (first (filter #(= (first %) (keyword (str x))) errors)))]
-      (if (empty? errors)
-        (log-warn "warning - no errors found for endpoint" [svc uri request-method])
-        (ph/swap error *tree* {} :gen-all true))))
+          error (filter #(= (first %) (keyword (str x))) errors)
+          error-rsp (format-rsp (first error))]
+      (when (empty? errors) (log-warn "warning - no errors found for endpoint" [svc uri request-method]))
+      (when (empty? error) (log-warn "warning - sim extension error not described in codex" [svc uri request-method]))
+      (if (seq error) (ph/swap error-rsp *tree* {} :gen-all true) {:status x})))
   ([] (error (Long. (name (first (rand-nth (d/error-status *tree*))))))))
 
 (defn respond
