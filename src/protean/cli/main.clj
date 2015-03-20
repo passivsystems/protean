@@ -129,8 +129,7 @@
         abs-site-dir (if (d/is-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
     (visit options)
     (println "Please see your docs, as demonstrated below.")
-    (println cm abs-site-dir)
-    (println "")))
+    (println (aa/bold-green (str cm " " abs-site-dir)) "")))
 
 
 (defn- integration-test
