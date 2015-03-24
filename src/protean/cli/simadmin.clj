@@ -19,7 +19,7 @@
   (let [rsp (clt/put (str "http://" host ":" port "/services")
               {:multipart [{:name "file"
                             :content (clojure.java.io/file file)}]})]
-    (println (:body rsp))))
+    (c/pretty-clj (:body rsp))))
 
 (defn delete-service [{:keys [host port name] :as options}]
   (let [rsp (clt/delete (str "http://" host ":" port "/services/" name)
