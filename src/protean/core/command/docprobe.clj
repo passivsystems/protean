@@ -26,9 +26,9 @@
 (defn- bomb [msg] (println (aa/red msg)) (System/exit 0))
 
 (defn- clean-dir [directory]
-  (if (dsk/exists-dir? directory)
-    (dsk/delete-directory (file directory)))
-  (.mkdirs (file directory)))
+  (if (dsk/exists-dir? directory) (dsk/delete-directory (file directory)))
+  (let [created (.mkdirs (file directory))]
+    (when-not created (throw (Error. "Setup failed - permissions problem ?")))))
 
 (def silk-staging-dir (str (cfg/target-dir) "/silk_staging"))
 
