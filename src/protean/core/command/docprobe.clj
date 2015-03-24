@@ -23,21 +23,16 @@
 (defn- hlr [t] (println (aa/bold-red t)))
 (defn- hlg [t] (println (aa/bold-green t)))
 
-(defn- bomb [msg]
-  (println (aa/red msg))
-    (System/exit 0))
+(defn- bomb [msg] (println (aa/red msg)) (System/exit 0))
 
 (defn- clean-dir [directory]
   (if (dsk/exists-dir? directory)
     (dsk/delete-directory (file directory)))
   (.mkdirs (file directory)))
 
-(def silk-staging-dir
-  (let [target (cfg/target-dir)]
-    (str target "/silk_staging")))
+(def silk-staging-dir (str (cfg/target-dir) "/silk_staging"))
 
-(def data-dir
-  (str silk-staging-dir "/data/protean-api"))
+(def data-dir (str silk-staging-dir "/data/protean-api"))
 
 (defn- prep-staging [silk-template]
   (doseq [f (dsk/path-list silk-template)]
@@ -49,8 +44,7 @@
   (.mkdirs (file (.getParent (.getAbsoluteFile (File. target)))))
   (spit target content))
 
-(defn slurp-file [p tree]
-  (slurp (d/to-path p tree)))
+(defn slurp-file [p tree] (slurp (d/to-path p tree)))
 
 (defn fname [p]
   (subs p (+ (.lastIndexOf p (dsk/fs)) 1) (.lastIndexOf p ".")))
