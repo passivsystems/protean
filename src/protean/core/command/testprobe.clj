@@ -278,7 +278,7 @@
           success (val success-rsp)
           expected-ctype (d/rsp-ctype success-rsp-code tree)]
       {:failures (->> (into [] (:failures response))
-        (v/validate-status-> (name success-rsp-code) response)
+        (v/validate-status (name success-rsp-code) response)
         (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
         (v/validate-body response expected-ctype
           (d/to-path (:body-schema success) tree)
