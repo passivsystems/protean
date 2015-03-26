@@ -67,7 +67,7 @@
 ;; Codex request
 ;; =============================================================================
 
-(defn qp [t] (git t [:req :query-params :required]))
+(defn qp [t] (git t [:req :query-params]))
 
 (defn fp [t] (git t [:req :form-params]))
 
