@@ -126,7 +126,7 @@
         options {:host nil :port nil :file file :body b}
         cm (if (.contains (conf/os) "Mac") "open" "firefox")
         site-dir (str (conf/target-dir) "/site/index.html")
-        abs-site-dir (if (d/is-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
+        abs-site-dir (if (dsk/as-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
     (visit options)
     (println "Please see your docs, as demonstrated below.")
     (println (aa/bold-green (str cm " " abs-site-dir)) "\n")))

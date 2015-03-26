@@ -42,18 +42,12 @@
     (if (empty? v) target (assoc-in target in-ks v))
     target))
 
-; TODO move to diskops
-(defn is-relative [path]
-  (try
-    (clojure.java.io/as-relative-path path)
-    (catch Exception e false)))
-
 (defn to-path-dir
   "Resolves relative paths to absolute, provided a codex-dir"
   [path codex-dir]
   (let [current-dir (dsk/pwd)
         protean-home (env :protean-codex-dir)]
-    (if (is-relative path)
+    (if (dsk/as-relative path)
       (let [locations [(str codex-dir "/" path)
                        (str current-dir "/" path)
                        (str protean-home "/" path)]

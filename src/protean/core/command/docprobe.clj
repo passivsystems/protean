@@ -35,7 +35,7 @@
 (def data-dir (str silk-staging-dir "/data/protean-api"))
 
 (defn- prep-staging [silk-template]
-  (doseq [f (dsk/path-list silk-template)]
+  (doseq [f (dsk/paths silk-template)]
     (dsk/copy-recursive f silk-staging-dir)))
 
 (defn spit-to
