@@ -87,5 +87,4 @@
       [cmd verbosity uri] (split (first (curly-analysis-> analysed)) #" ")]
   (expect cmd "curl")
   (expect verbosity "-v")
-  (expect (.contains uri "?blurb="))
-  )
+  (expect (.contains uri "?blurb=")))
