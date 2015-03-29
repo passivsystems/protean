@@ -106,6 +106,27 @@
   (expect (:status rsp-2) 404)
   (expect (contains? (:headers rsp-2) "Protean-error") true))
 
+
+;; =============================================================================
+;; Validation
+;; =============================================================================
+
+(def cdx-3 {
+  "sample" {
+    "simple" {
+      :get [{
+        :validating true
+        :vars {"rp1" {:type :String :doc "A test request param"}}
+        :req {:query-params {:required {"rp1" "${rp1}"}}}
+        :rsp {:200 {}}
+      }]
+    }
+  }
+  })
+
+(let [rsp-1 (s/sim-rsp (req :get "/sample/simple" h/txt body nil) cdx-3 {})]
+  (expect 400 (:status rsp-1)))
+
 ;
 ; (def sims (m/load-script "test-data/default.sim.edn"))
 ;
