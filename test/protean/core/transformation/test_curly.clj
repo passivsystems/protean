@@ -18,9 +18,9 @@
   }
   )
        [cmd verbosity uri] (split (first (curly-analysis-> analysed)) #" ")]
-  (expect cmd "curl")
-  (expect verbosity "-v")
-  (expect (.endsWith uri "/sample/simple'") true))
+  (expect "curl" cmd)
+  (expect "-v" verbosity)
+  (expect true (.endsWith uri "/sample/simple'")))
 
 (let [analysed '(
   {
@@ -85,6 +85,6 @@
   ]
    })
       [cmd verbosity uri] (split (first (curly-analysis-> analysed)) #" ")]
-  (expect cmd "curl")
-  (expect verbosity "-v")
-  (expect (.contains uri "?blurb=")))
+  (expect "curl" cmd)
+  (expect "-v" verbosity)
+  (expect true (.contains uri "?blurb=")))

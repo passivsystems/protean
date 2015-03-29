@@ -59,18 +59,18 @@
       rsp-6 (s/sim-rsp (req :patch "/sample/simple" nil body nil) cdx-1 {})
       rsp-7 (s/sim-rsp (req :get "/sample/404" nil body nil) cdx-1 {})
       rsp-8 (s/sim-rsp (req :muppet "/sample/simple" nil body nil) cdx-1 {})]
-  (expect (:status rsp-1) 200)
-  (expect (:status rsp-2) 200)
-  (expect (count (:headers rsp-2)) 1)
-  (expect (:status rsp-3) 204)
-  (expect (:status rsp-4) 201)
-  (expect (count (:headers rsp-4)) 1)
-  (expect (:status rsp-5) 204)
-  (expect (:status rsp-6) 204)
-  (expect (:status rsp-7) 404)
-  (expect (contains? (:headers rsp-7) "Protean-error") true)
-  (expect (:status rsp-8) 405)
-  (expect (contains? (:headers rsp-8) "Allow") true))
+  (expect 200 (:status rsp-1))
+  (expect 200 (:status rsp-2))
+  (expect 1 (count (:headers rsp-2)))
+  (expect 204 (:status rsp-3))
+  (expect 201 (:status rsp-4))
+  (expect 1 (count (:headers rsp-4)))
+  (expect 204 (:status rsp-5))
+  (expect 204 (:status rsp-6))
+  (expect 404 (:status rsp-7))
+  (expect true (contains? (:headers rsp-7) "Protean-error"))
+  (expect 405 (:status rsp-8))
+  (expect true (contains? (:headers rsp-8) "Allow")))
 
 
 ;; =============================================================================
@@ -102,9 +102,9 @@
 
 (let [rsp-1 (s/sim-rsp (req :get "/sample/simple/1" h/txt body nil) cdx-2 {})
       rsp-2 (s/sim-rsp (req :get "/sample/simple" h/txt body nil) cdx-2 {})]
-  (expect (:status rsp-1) 200)
-  (expect (:status rsp-2) 404)
-  (expect (contains? (:headers rsp-2) "Protean-error") true))
+  (expect 200 (:status rsp-1))
+  (expect 404 (:status rsp-2))
+  (expect true (contains? (:headers rsp-2) "Protean-error")))
 
 
 ;; =============================================================================
