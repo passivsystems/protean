@@ -77,7 +77,7 @@
         "                              test -f sample-petstore.cod.edn"
         "                              test -f sample-petstore.cod.edn -b '{\"seed\": {\"tokenValue\": \"VALID_TOKEN\"}}'"
         ""
-        "  sim                     -p /path/to/codex"
+        "  sim                     -d /path/to/codex"
         "                             e.g. To start a sim server for mycodex.cod.edn"
         "                               sim -p /path/to/mycodex"
         ""
