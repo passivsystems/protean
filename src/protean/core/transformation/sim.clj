@@ -154,7 +154,7 @@
                             (assoc headers h/ctype (h/mime body-url))
                             headers)
           raw-body (if body-url (slurp (d/to-path body-url *tree*)))
-          body (if (= (get headers_w_ctype "Content-Type") "text/plain")
+          body (if (h/txt? (get headers_w_ctype h/ctype))
                   (s/trim-newline raw-body)
                   raw-body)
           response {:status status-code :headers headers_w_ctype :body body}]
