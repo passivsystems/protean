@@ -153,8 +153,12 @@
           headers_w_ctype (if (and body-url (not (get-in headers [h/ctype])))
                             (assoc headers h/ctype (h/mime body-url))
                             headers)
-          body (if body-url (slurp (d/to-path body-url *tree*)))
+          raw-body (if body-url (slurp (d/to-path body-url *tree*)))
+          body (if (= (headers_w_ctype "Content-Type") "text/plain")
+                  (s/trim-newline raw-body)
+                  raw-body)
           response {:status status-code :headers headers_w_ctype :body body}]
+      (log-debug "rsp headers including inferred content type : " headers_w_ctype)
       (log-debug "formatting rsp:" rsp)
       (log-debug "returning :" response)
       response)
