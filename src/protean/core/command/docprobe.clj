@@ -104,10 +104,10 @@
   (.mkdirs (File. target-dir))
   (doseq [[rsp-code v] statuses]
     (spit (str target-dir (name rsp-code) ".edn")
-      (pr-str { :code (name rsp-code)
-                :doc (if-let [d (:doc v)] d "N/A")
-                :sample-response (if-let [s (:body-example v)] (slurp-file s tree) "N/A")
-                :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")}))))
+      (pr-str {:code (name rsp-code)
+               :doc (if-let [d (:doc v)] d "N/A")
+               :sample-response (if-let [s (:body-example v)] (slurp-file s tree) "N/A")
+               :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")}))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat
