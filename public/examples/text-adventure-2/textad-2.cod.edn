@@ -11,7 +11,7 @@
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/examples/text-adventure-2/look-ref.json"
+            :body-example ["public/examples/text-adventure-2/look-ref.json"]
           }
         }
       }
@@ -32,7 +32,7 @@ Accepts a request parameter called direction."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/examples/text-adventure-2/look-ref.json"
+            :body-example ["public/examples/text-adventure-2/look-ref.json"]
           }
           :404 {:doc "Not Found"}
         }
@@ -45,7 +45,7 @@ Accepts a request parameter called direction."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/examples/text-adventure-2/inventory-ref.json"
+            :body-example ["public/examples/text-adventure-2/inventory-ref.json"]
           }
         }
       }
@@ -63,7 +63,7 @@ Accepts a request parameter called item."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example "public/examples/text-adventure-2/look-ref.json"
+            :body-example ["public/examples/text-adventure-2/look-ref.json"]
           }
           :404 {:doc "Not Found"}
         }

@@ -107,7 +107,7 @@
 (defn rsp-ctype [rsp-code tree]
   (let [ctype (get-in (codex-rsp-hdrs rsp-code tree) h/ctype)
         body-schema (git tree [:rsp rsp-code :body-schema])
-        body-example (git tree [:rsp rsp-code :body-example])]
+        body-example (first (git tree [:rsp rsp-code :body-example]))]
     (cond
       ctype ctype
       body-schema (h/mime-schema body-schema)

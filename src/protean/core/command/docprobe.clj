@@ -107,7 +107,7 @@
       (spit (str target-dir (name rsp-code) ".edn")
         (pr-str {:code (name rsp-code)
                  :doc (if-let [d (:doc v)] d "N/A")
-                 :sample-response (if-let [s (:body-example v)] (slurp-file s tree) "N/A")
+                 :sample-response (if-let [s (first (:body-example v))] (slurp-file s tree) "N/A")
                  :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
                  :rsp-body-schema-id (str "schema-" (name rsp-code))
                  :rsp-body-schema-title (if schema (fname schema) "N/A")
