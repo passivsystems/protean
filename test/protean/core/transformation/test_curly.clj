@@ -30,7 +30,7 @@
     {
       :rsp {
         :200 {
-          :body-example "test-data/content/doc/responses/simple/200-ref.json"
+          :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
         }
       }
       :req {
@@ -42,7 +42,7 @@
       :get {
         :rsp {
           :200 {
-            :body-example "test-data/content/doc/responses/simple/200-ref.json"
+            :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
           }
         }
         :req {:query-params {:required {"blurb" "${blurb}"}}}
@@ -54,7 +54,7 @@
         :get {
           :rsp {
             :200 {
-              :body-example "test-data/content/doc/responses/simple/200-ref.json"
+              :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
             }
           }
           :req {:query-params {:required {"blurb" "${blurb}"}}}
@@ -71,7 +71,7 @@
           :get {
             :rsp {
               :200 {
-                :body-example "test-data/content/doc/responses/simple/200-ref.json"
+                :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
               }
             }
             :req {:query-params {:required {"blurb" "${blurb}"}}}
