@@ -13,7 +13,7 @@
         }
         :rsp {
           :200 {
-            :body-example "test-data/content/doc/responses/simple/200-ref.json"
+            :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
           }
         }
       }
