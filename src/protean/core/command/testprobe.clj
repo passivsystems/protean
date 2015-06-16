@@ -19,7 +19,8 @@
             [loom.graph :as lg]
             [loom.label :as ll]
             [loom.alg :as la]
-            [loom.io :as li]))
+            [loom.io :as li]
+            [json-path :as jp]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -64,14 +65,14 @@
               (d/get-in-tree tree [:req :form-params :required])
               (d/get-in-tree tree [:req :form-params :optional])
               (d/get-in-tree tree [:req :headers])
-              (d/get-in-tree tree [:req :body]))]
+              (d/get-in-tree tree [:req :extract-vars]))]
     (mapcat collect-params phs)))
 
 (defn- outputs-names [tree]
   (let [res (val (first (d/success-status tree)))]
     (distinct (concat
       (collect-params (get-in res [:headers]))
-      (collect-params (get-in res [:body]))))))
+      (collect-params (get-in res [:extract-vars]))))))
 
 (defn- diff [s1 s2]
   (cond
@@ -102,27 +103,27 @@
             {:error (str "could not extract " ph " from " response-value " with template '" v "'")}))))))
 
 (defn- outputs-body [response [k v]]
- (when-let [holder (ph/holder? v)]
-   (let [response-body (get-in response [:body])
-         ctype (pp/ctype response)]
-     (for [ph (map second holder)]
-       (do ;(println "ph:" ph)
-         (cond
-           (h/txt? ctype) (read-from v ph response-body)
-           (h/xml? ctype) nil ; TODO read from xml
-           :else
-             (try
-               (let [json (co/clj response-body)]
-                 (when-let [response-value (get-in json [k])]
-                   (if-let [extract (read-from v ph response-value)]
-                     {:ph ph :val extract}
-                     {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
-                (catch Exception e {:error (str "Could not parse json: " response-body " \n " (.getMessage e))}))))))))
+  (when-let [holder (ph/holder? v)]
+    (let [response-body (get-in response [:body])
+          ctype (pp/ctype response)]
+      (for [ph (map second holder)]
+        (do ;(println "ph:" ph)
+          (cond
+            (h/txt? ctype) (read-from v ph response-body)
+            (h/xml? ctype) nil ; TODO read from xml
+            :else
+              (try
+                (let [json (co/clj response-body true)]
+                  (when-let [response-value (jp/at-path k json)]
+                    (if-let [extract (read-from v ph response-value)]
+                      {:ph ph :val extract}
+                      {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
+                 (catch Exception e {:error (str "Could not parse json: " response-body " \n " (.getMessage e))}))))))))
 
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))
         header-phs (remove nil? (mapcat (partial outputs-hdrs response) (get-in res [:headers])))
-        body-phs (remove nil? (mapcat (partial outputs-body response) (get-in res [:body])))
+        body-phs (remove nil? (mapcat (partial outputs-body response) (get-in res [:extract-vars])))
         to-entry (fn [e] [(:ph e) (:val e)])
         bag (into {} (map to-entry (concat header-phs body-phs)))
         errors (remove nil? (map :error (concat header-phs body-phs)))]
