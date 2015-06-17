@@ -69,7 +69,7 @@
    Params is the gen information for a resources params."
   (.mkdirs (File. target-dir))
   (doseq [[k v] params]
-    (let [qm {:title k :type (:type v) :doc (:doc v)}]
+    (let [qm {:title k :type (:type v) :doc (:doc v) :attr (stg/join " " (:attr v))}]
       (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
 (defn- doc-hdrs [target-dir hdrs]
