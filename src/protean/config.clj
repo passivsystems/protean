@@ -21,3 +21,5 @@
 (defn log-level [] (keyword (or (env :protean-log-level) "info")))
 
 (defn target-dir [] (or (env :protean-target) "target"))
+
+(defn curl-option[] (or (env :protean-curl-option) "-i"))

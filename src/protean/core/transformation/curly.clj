@@ -5,6 +5,7 @@
             [clojure.set :as st]
             [ring.util.codec :as e]
             [cheshire.core :as jsn]
+            [protean.config :as cnf]
             [protean.core.codex.placeholder :as ph]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
@@ -54,7 +55,7 @@
     (str payload query)))
 
 (defn curly-request-> [request]
-  (->> "curl -v"
+  (->> (str "curl " (cnf/curl-option))
        (curly-method-> request)
        (curly-headers-> request)
        (curly-form-> request)
