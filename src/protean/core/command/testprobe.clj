@@ -4,6 +4,7 @@
             [clojure.java.io :refer [file]]
             [clojure.set :as st]
             [io.aviso.ansi :as aa]
+            [protean.config :as cfg]
             [protean.core.codex.document :as d]
             [protean.core.codex.placeholder :as ph]
             [protean.core.protocol.http :as h]
@@ -247,15 +248,23 @@
                           :request req
                           :response (update-in resp [:failures] conj errors)})]))))
 
+(defn- render-graph [graph graph-name]
+  (try
+    (if graph
+      (let [file-path (str (cfg/target-dir) "/" graph-name ".png")]
+        (with-open [w (clojure.java.io/output-stream file-path)]
+          (.write w ^bytes (li/render-to-bytes (second graph))))
+        (println "traversal graph rendered to: " file-path)))
+    (catch Exception e
+      (println "By installing graphviz on path, we can render traversal graph."))))
+
 (defn- select-path
   "return a walkable (non-cyclic) path from optional graphs"
   [gs graph-name]
   (let [tuples (map vector (map la/topsort gs) gs)
         walkable (remove #(nil? (first %)) tuples)
         selected (first walkable)]
-    ;; (if selected
-    ;;   (with-open [w (clojure.java.io/output-stream (str "target/" graph-name ".png"))]
-    ;;     (.write w ^bytes (li/render-to-bytes (second selected)))))
+    (render-graph selected graph-name)
     (first selected)))
 
 (defmethod pb/dispatch :test [_ corpus probes]
@@ -287,7 +296,7 @@
           success (val success-rsp)
           expected-ctype (d/rsp-ctype success-rsp-code tree)]
       {:failures (->> (into [] (:failures response))
-        (v/validate-status-> (name success-rsp-code) response)
+        (v/validate-status (name success-rsp-code) response)
         (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
         (v/validate-body response expected-ctype
           (d/to-path (:body-schema success) tree)

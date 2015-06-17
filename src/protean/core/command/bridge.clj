@@ -56,7 +56,7 @@
   [{:keys [host port locs commands seed] :as corpus} codices]
   (doseq [cmd commands]
     (pb/config cmd corpus)
-    (let [paths (p/paths-> codices locs)
+    (let [paths (p/paths codices locs)
           probes (filter some? (doall (map #(build cmd corpus %) paths)))
           results (pb/dispatch cmd corpus probes)]
       (pb/analyse cmd corpus results))))

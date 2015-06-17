@@ -30,3 +30,8 @@
 (defn str-xml [d] (xml/emit-str (xml d)))
 
 (defn pretty-xml [d] (xml/indent-str (xml d)))
+
+(defn hic-file [f]
+  (if (.endsWith (clojure.string/lower-case f) ".json")
+    (clj (slurp f))
+    (xml (slurp f))))

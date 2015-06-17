@@ -148,13 +148,17 @@
   (if rsp-entry
     (let [status-code (Integer/parseInt (name (key rsp-entry)))
           rsp (val rsp-entry)
-          body-url (:body-example rsp)
+          body-url (first (:body-example rsp))
           headers (:headers rsp)
           headers_w_ctype (if (and body-url (not (get-in headers [h/ctype])))
                             (assoc headers h/ctype (h/mime body-url))
                             headers)
-          body (if body-url (slurp (d/to-path body-url *tree*)))
+          raw-body (if body-url (slurp (d/to-path body-url *tree*)))
+          body (if (h/txt? (get headers_w_ctype h/ctype))
+                  (s/trim-newline raw-body)
+                  raw-body)
           response {:status status-code :headers headers_w_ctype :body body}]
+      (log-debug "rsp headers including inferred content type : " headers_w_ctype)
       (log-debug "formatting rsp:" rsp)
       (log-debug "returning :" response)
       response)
@@ -175,11 +179,11 @@
   ([x]
     (let [errors (d/error-status *tree*)
           {:keys [svc request-method uri]} *request*
-          error (format-rsp
-                  (first (filter #(= (first %) (keyword (str x))) errors)))]
-      (if (empty? errors)
-        (log-warn "warning - no errors found for endpoint" [svc uri request-method])
-        (ph/swap error *tree* {} :gen-all true))))
+          error (filter #(= (first %) (keyword (str x))) errors)
+          error-rsp (format-rsp (first error))]
+      (when (empty? errors) (log-warn "warning - no errors found for endpoint" [svc uri request-method]))
+      (when (empty? error) (log-warn "warning - sim extension error not described in codex" [svc uri request-method]))
+      (if (seq error) (ph/swap error-rsp *tree* {} :gen-all true) {:status x})))
   ([] (error (Long. (name (first (rand-nth (d/error-status *tree*))))))))
 
 (defn respond
