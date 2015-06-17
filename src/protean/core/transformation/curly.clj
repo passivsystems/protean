@@ -16,12 +16,6 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- translate [phs tree]
-  (if phs
-    ; Note, placeholder generation will be different each time we request them
-    ; also may not be url friendly (though we will encode them)
-    (ph/swap phs tree {})))
-
 (defn- curly-method-> [{:keys [method] :as request} payload]
   (if (= method :get)
     payload
@@ -66,6 +60,8 @@
 
 (defn curly-entry-> [{:keys [tree method uri]}]
   (let [request-template (r/prepare-request method uri tree)
+        ; Note, placeholder generation will be different each time we request them
+        ; also may not be url friendly (though we will encode them)
         request (ph/swap request-template tree {})]
     (curly-request-> request)))
 

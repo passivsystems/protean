@@ -129,7 +129,17 @@
                  (map val (d/get-in-tree tree [:req :headers])))
         extract-ph-names (fn [input] (map second (ph/holder? input)))
         ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
-        to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
+        get-attr (fn [varname]
+                   ; attributes like :multiple query-params should also be supported
+                   (let [optional (merge
+                     (d/get-in-tree tree [:req :query-params :optional])
+                     (d/get-in-tree tree [:req :form-params :optional]))]
+                     (if (contains? optional varname)
+                         [:optional]
+                         [])))
+        to-map (fn [varname]
+          {varname (-> (d/get-in-tree tree [:vars varname])
+                       (merge {:attr (get-attr varname)}))})]
   (reduce merge (map to-map ph-names))))
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
