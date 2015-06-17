@@ -41,11 +41,11 @@
   "Prepare payload - may still contain placeholders."
   [method uri tree]
   (-> {:method method :uri uri}
-    ; TODO only include when (corpus) test level is 2?
     (copy-> tree [:req :query-params :required] [:query-params])
-    (copy-> tree [:req :query-params :optional] [:query-params])
     (copy-> tree [:req :form-params :required] [:form-params])
-    (copy-> tree [:req :form-params :optional] [:form-params])
+    ; TODO activate optional when (corpus) test level is 2
+    ;(copy-> tree [:req :query-params :optional] [:query-params])
+    ;(copy-> tree [:req :form-params :optional] [:form-params])
     (headers-> tree)
     (transform-query-params-> tree)
     (content-> tree)))

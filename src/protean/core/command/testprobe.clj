@@ -56,23 +56,31 @@
         collect (fn [v] (map second (ph/holder? v)))]
     (mapcat collect (tolist m))))
 
+(defn- body-val [tree]
+  (let [examples (d/get-in-tree tree [:req :body-example])
+        body (d/get-in-tree tree [:req :body])]
+    (if examples
+      (-> (first examples) (d/to-path tree) slurp s/trim)
+      body)))
+
 (defn- inputs [uri tree]
   (let [phs (list
               uri
-              ; TODO only include optional when (corpus) test level is 2?
               (d/get-in-tree tree [:req :query-params :required])
-              (d/get-in-tree tree [:req :query-params :optional])
               (d/get-in-tree tree [:req :form-params :required])
-              (d/get-in-tree tree [:req :form-params :optional])
+              ; TODO activate optional when (corpus) test level is 2
+              ;(d/get-in-tree tree [:req :query-params :optional])
+              ;(d/get-in-tree tree [:req :form-params :optional])
               (d/get-in-tree tree [:req :headers])
-              (d/get-in-tree tree [:req :extract-vars]))]
+              (d/get-in-tree tree [:req :body])
+              (body-val tree))]
     (mapcat collect-params phs)))
 
 (defn- outputs-names [tree]
   (let [res (val (first (d/success-status tree)))]
     (distinct (concat
       (collect-params (get-in res [:headers]))
-      (collect-params (get-in res [:extract-vars]))))))
+      (collect-params (get-in res [:body-data]))))))
 
 (defn- diff [s1 s2]
   (cond
@@ -123,7 +131,7 @@
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))
         header-phs (remove nil? (mapcat (partial outputs-hdrs response) (get-in res [:headers])))
-        body-phs (remove nil? (mapcat (partial outputs-body response) (get-in res [:extract-vars])))
+        body-phs (remove nil? (mapcat (partial outputs-body response) (get-in res [:body-data])))
         to-entry (fn [e] [(:ph e) (:val e)])
         bag (into {} (map to-entry (concat header-phs body-phs)))
         errors (remove nil? (map :error (concat header-phs body-phs)))]
