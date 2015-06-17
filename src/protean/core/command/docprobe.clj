@@ -153,7 +153,7 @@
             site {:site-name (d/get-in-tree main [:title])
                   :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
             full {:id id
-                  :path (subs uri-path 1)
+                  :path (str svc "/" path)
                   :curl (c/curly-entry-> (assoc-in e [:uri] uri))
                   :doc (d/get-in-tree tree [:doc])
                   :desc (if-let [d (d/get-in-tree tree [:description])] d "")
