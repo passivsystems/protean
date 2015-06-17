@@ -48,6 +48,9 @@
                      e/url-decode))]
     (str payload query)))
 
+(defn curly-flatten-> [payload]
+  (if (cnf/curl-flatten?) (s/trim (s/replace payload #"\s+" " ")) payload))
+
 (defn curly-request-> [request]
   (->> (str "curl " (cnf/curl-option))
        (curly-method-> request)
@@ -57,7 +60,8 @@
        (curly-literal-> " '")
        (curly-uri-> request)
        (curly-query-params-> request)
-       (curly-literal-> "'")))
+       (curly-literal-> "'")
+       (curly-flatten->)))
 
 (defn curly-entry-> [{:keys [tree method uri]}]
   (let [request-template (r/prepare-request method uri tree)

@@ -1,5 +1,6 @@
 (ns protean.config
-  (:require [environ.core :refer [env]]
+  (:require [clojure.string :as s]
+            [environ.core :refer [env]]
             [me.rossputin.diskops :as d]))
 
 ;; =============================================================================
@@ -22,4 +23,9 @@
 
 (defn target-dir [] (or (env :protean-target) "target"))
 
-(defn curl-option[] (or (env :protean-curl-option) "-i"))
+(defn curl-option [] (or (env :protean-curl-option) "-i"))
+
+(defn curl-flatten? []
+  (some
+    #{(s/lower-case (or (env :protean-curl-flatten) "on"))}
+    ["on" "true" "yes" "y"]))
