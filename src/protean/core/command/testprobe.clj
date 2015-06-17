@@ -140,22 +140,31 @@
 (defn- uri [host port {:keys [svc path] :as entry}]
   (p/uri host port svc path))
 
-(defmethod pb/build :test [_ {:keys [locs host port] :as corpus} {:keys [method tree] :as entry}]
-  (println "building a test probe to visit " method ":" locs)
-  (let [h (or host "localhost")
-        p (or port 3000)
-        uri (uri h p entry)
-        request-template (r/prepare-request method uri tree)
-        engage-fn (fn [bag]
-          (let [request (ph/swap request-template tree bag)]
-            (if-let [phs (ph/holder? request)]
-              [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
-              (t/test! request))))]
-    {:entry entry
-     :inputs (inputs uri tree)
-     :outputs (outputs-names tree)
-     :engage engage-fn
-    }))
+(defmethod pb/build :test [_ {:keys [locs host port excludes] :as corpus} {:keys [svc path method tree] :as entry}]
+  (let [f (fn [[esvc emethod epath]] (and
+                                       (= esvc svc)
+                                       (= emethod (name method))
+                                       (= epath path)))]
+    (if (some f excludes)
+      (do
+        (println "skipping " method ":" locs)
+        nil)
+      (do
+        (println "building a test probe to visit " method ":" locs)
+        (let [h (or host "localhost")
+              p (or port 3000)
+              uri (uri h p entry)
+              request-template (r/prepare-request method uri tree)
+              engage-fn (fn [bag]
+                (let [request (ph/swap request-template tree bag)]
+                  (if-let [phs (ph/holder? request)]
+                    [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
+                    (t/test! request))))]
+          {:entry entry
+           :inputs (inputs uri tree)
+           :outputs (outputs-names tree)
+           :engage engage-fn
+         })))))
 
 
 ;; =============================================================================
