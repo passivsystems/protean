@@ -18,9 +18,9 @@
   }
   )
        [cmd verbosity uri] (split (first (curly-analysis-> analysed)) #" ")]
-  (expect cmd "curl")
-  (expect verbosity "-v")
-  (expect (.endsWith uri "/sample/simple'") true))
+  (expect "curl" cmd)
+  (expect "-v" verbosity)
+  (expect true (.endsWith uri "/sample/simple'")))
 
 (let [analysed '(
   {
@@ -30,7 +30,7 @@
     {
       :rsp {
         :200 {
-          :body-example "test-data/content/doc/responses/simple/200-ref.json"
+          :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
         }
       }
       :req {
@@ -42,7 +42,7 @@
       :get {
         :rsp {
           :200 {
-            :body-example "test-data/content/doc/responses/simple/200-ref.json"
+            :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
           }
         }
         :req {:query-params {:required {"blurb" "${blurb}"}}}
@@ -54,7 +54,7 @@
         :get {
           :rsp {
             :200 {
-              :body-example "test-data/content/doc/responses/simple/200-ref.json"
+              :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
             }
           }
           :req {:query-params {:required {"blurb" "${blurb}"}}}
@@ -71,7 +71,7 @@
           :get {
             :rsp {
               :200 {
-                :body-example "test-data/content/doc/responses/simple/200-ref.json"
+                :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
               }
             }
             :req {:query-params {:required {"blurb" "${blurb}"}}}
@@ -85,7 +85,6 @@
   ]
    })
       [cmd verbosity uri] (split (first (curly-analysis-> analysed)) #" ")]
-  (expect cmd "curl")
-  (expect verbosity "-v")
-  (expect (.contains uri "?blurb="))
-  )
+  (expect "curl" cmd)
+  (expect "-v" verbosity)
+  (expect true (.contains uri "?blurb=")))

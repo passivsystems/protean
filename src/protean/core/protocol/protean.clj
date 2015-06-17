@@ -10,6 +10,6 @@
 ;;;;;;;;;;
 
 (defn ctype [req] (or (get-in req [:headers "content-type"])
-                      (get-in req [:headers "Content-Type"])))
+                      (get-in req [:headers h/ctype])))
 
 (defn accept [req] (get-in req [:headers "accept"]))

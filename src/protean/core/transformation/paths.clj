@@ -65,7 +65,7 @@
 ;; Path calculation functions
 ;; =============================================================================
 
-(defn paths->
+(defn paths
   "Get all service paths or specified combinations of service/path | service."
   [codices locs]
   (let [res (locs-range codices locs)]

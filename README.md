@@ -1,5 +1,8 @@
 ![Protean - evolving api's](/public/resource/img/logo.png?raw=true "Protean - evolving api's")
 
+[![Build Status](https://api.travis-ci.org/passivsystems/protean.svg)](https://travis-ci.org/passivsystems/protean)
+
+
 # About
 
 Evolve RESTful API's. Encode them, simulate them, document how to use them, test them and figure out how failure affects your architecture. No invasive changes to your code base.

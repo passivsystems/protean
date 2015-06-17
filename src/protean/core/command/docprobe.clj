@@ -23,24 +23,19 @@
 (defn- hlr [t] (println (aa/bold-red t)))
 (defn- hlg [t] (println (aa/bold-green t)))
 
-(defn- bomb [msg]
-  (println (aa/red msg))
-    (System/exit 0))
+(defn- bomb [msg] (println (aa/red msg)) (System/exit 0))
 
 (defn- clean-dir [directory]
-  (if (dsk/exists-dir? directory)
-    (dsk/delete-directory (file directory)))
-  (.mkdirs (file directory)))
+  (if (dsk/exists-dir? directory) (dsk/delete-directory (file directory)))
+  (let [created (.mkdirs (file directory))]
+    (when-not created (throw (Error. "Setup failed - permissions problem ?")))))
 
-(def silk-staging-dir
-  (let [target (cfg/target-dir)]
-    (str target "/silk_staging")))
+(def silk-staging-dir (str (cfg/target-dir) "/silk_staging"))
 
-(def data-dir
-  (str silk-staging-dir "/data/protean-api"))
+(def data-dir (str silk-staging-dir "/data/protean-api"))
 
 (defn- prep-staging [silk-template]
-  (doseq [f (dsk/path-list silk-template)]
+  (doseq [f (dsk/paths silk-template)]
     (dsk/copy-recursive f silk-staging-dir)))
 
 (defn spit-to
@@ -49,8 +44,7 @@
   (.mkdirs (file (.getParent (.getAbsoluteFile (File. target)))))
   (spit target content))
 
-(defn slurp-file [p tree]
-  (slurp (d/to-path p tree)))
+(defn slurp-file [p tree] (slurp (d/to-path p tree)))
 
 (defn fname [p]
   (subs p (+ (.lastIndexOf p (dsk/fs)) 1) (.lastIndexOf p ".")))
@@ -109,11 +103,15 @@
    filter-exp is a regular expression to match the status codes to include."
   (.mkdirs (File. target-dir))
   (doseq [[rsp-code v] statuses]
-    (spit (str target-dir (name rsp-code) ".edn")
-      (pr-str { :code (name rsp-code)
-                :doc (if-let [d (:doc v)] d "N/A")
-                :sample-response (if-let [s (:body-example v)] (slurp-file s tree) "N/A")
-                :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")}))))
+    (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])]
+      (spit (str target-dir (name rsp-code) ".edn")
+        (pr-str {:code (name rsp-code)
+                 :doc (if-let [d (:doc v)] d "N/A")
+                 :sample-response (if-let [s (first (:body-example v))] (slurp-file s tree) "N/A")
+                 :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
+                 :rsp-body-schema-id (str "schema-" (name rsp-code))
+                 :rsp-body-schema-title (if schema (fname schema) "N/A")
+                 :rsp-body-schema (if schema (slurp-file schema tree) "N/A")})))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat

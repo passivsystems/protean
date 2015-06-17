@@ -93,7 +93,7 @@
 (defn load-codex [f]
   (let [codex (r/read-codex f)
         locs (d/custom-keys codex)
-        tpaths (p/paths-> codex locs)]
+        tpaths (p/paths codex locs)]
     (doseq [path tpaths]
       (swap! paths assoc-in [(:svc path) (:path path) (:method path)] (:tree path)))
     (reset! state (merge @state codex))))

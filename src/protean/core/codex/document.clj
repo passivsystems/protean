@@ -42,18 +42,12 @@
     (if (empty? v) target (assoc-in target in-ks v))
     target))
 
-; TODO move to diskops
-(defn is-relative [path]
-  (try
-    (clojure.java.io/as-relative-path path)
-    (catch Exception e false)))
-
 (defn to-path-dir
   "Resolves relative paths to absolute, provided a codex-dir"
   [path codex-dir]
   (let [current-dir (dsk/pwd)
         protean-home (env :protean-codex-dir)]
-    (if (is-relative path)
+    (if (dsk/as-relative path)
       (let [locations [(str codex-dir "/" path)
                        (str current-dir "/" path)
                        (str protean-home "/" path)]
@@ -73,7 +67,7 @@
 ;; Codex request
 ;; =============================================================================
 
-(defn qp [t] (git t [:req :query-params :required]))
+(defn qp [t] (git t [:req :query-params]))
 
 (defn fp [t] (git t [:req :form-params]))
 
@@ -113,7 +107,7 @@
 (defn rsp-ctype [rsp-code tree]
   (let [ctype (get-in (codex-rsp-hdrs rsp-code tree) h/ctype)
         body-schema (git tree [:rsp rsp-code :body-schema])
-        body-example (git tree [:rsp rsp-code :body-example])]
+        body-example (first (git tree [:rsp rsp-code :body-example]))]
     (cond
       ctype ctype
       body-schema (h/mime-schema body-schema)
