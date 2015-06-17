@@ -123,9 +123,9 @@
                  (map val (d/get-in-tree tree [:req :form-params :required]))
                  (map val (d/get-in-tree tree [:req :form-params :optional]))
                  (map val (d/get-in-tree tree [:req :body]))
+                 (map #(co/hic-file %) (d/get-in-tree tree [:req :body-example]))
                  (map val (d/get-in-tree tree [:req :headers])))
-        extract-ph-names (fn [input]
-            (map second (ph/holder? input)))
+        extract-ph-names (fn [input] (map second (ph/holder? input)))
         ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
         to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
   (reduce merge (map to-map ph-names))))
