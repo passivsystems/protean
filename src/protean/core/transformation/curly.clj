@@ -67,7 +67,7 @@
 
 (defn curly-entry-> [{:keys [tree method uri]}]
   (let [request-template (r/prepare-request method uri tree)
-        request (ph/swap request-template tree{})]
+        request (ph/swap request-template tree {})]
     (curly-request-> request)))
 
 ;; =============================================================================
