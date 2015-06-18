@@ -198,5 +198,7 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
+  ;; TODO remove for smooth transistion between Silk 0.10.0 and latest
+  (when-let [d (dsk/exists-dir? "silk_templates/data")] (dsk/delete-directory d))
   (silk/spin-or-reload false silk-staging-dir false false)
   (dsk/copy-recursive (str silk-staging-dir "/site") (cfg/target-dir)))
