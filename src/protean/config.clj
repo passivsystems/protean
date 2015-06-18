@@ -25,7 +25,13 @@
 
 (defn curl-option [] (or (env :protean-curl-option) "-i"))
 
-(defn curl-flatten? []
+(defn- to-bool [str]
   (some
-    #{(s/lower-case (or (env :protean-curl-flatten) "on"))}
+    #{(s/lower-case str)}
     ["on" "true" "yes" "y"]))
+
+(defn curl-flatten? []
+  (to-bool (or (env :protean-curl-flatten) "on")))
+
+(defn hdr-qlfs-optional? []
+  (to-bool (or (env :hdr-qlfs-optional) "true")))

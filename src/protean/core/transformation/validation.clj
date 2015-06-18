@@ -4,6 +4,7 @@
             [clojure.xml :as x]
             [clojure.zip :as z]
             [cheshire.core :as jsn]
+            [protean.config :as cfg]
             [protean.core.codex.document :as d]
             [protean.core.protocol.http :as h]
             [protean.core.protocol.protean :as pp]
@@ -92,13 +93,35 @@
         (catch Exception e (conj errors (str "Could not parse json:" (:body payload) "\n" (.getMessage e)))))
       errors)))
 
+(defn parse-hdr [hdr]
+  (let [parse-qlf (fn [qlf]
+         (if qlf
+           (let [[k v _] (map s/trim (s/split qlf #"="))]
+              {k v})))
+        [value rest] (s/split hdr #";")
+        qlfs (into {} (parse-qlf rest))]
+      [(s/trim value) qlfs]))
+
+(defn- validate-ctype [expected-ctype actual-ctype]
+  (and
+    expected-ctype actual-ctype
+    (let [qlfs-optional (cfg/hdr-qlfs-optional?)
+          [expected expected-qlfs](parse-hdr expected-ctype)
+          [actual actual-qlfs] (parse-hdr actual-ctype)]
+      (or
+        (not (= expected actual))
+        (if qlfs-optional
+          (let [f (fn [[k v]] (= (get expected-qlfs k) v))
+                match-if-present (every? identity (map f actual-qlfs))]
+            (not match-if-present))
+          (not (= expected-qlfs actual-qlfs)))))))
+
+
 (defn validate-body [payload expected-ctype schema codex-body errors]
   (if payload
     (let [ctype (pp/ctype payload)]
       (cond
-        (and
-          expected-ctype ctype
-          (not (= (s/lower-case expected-ctype) (s/lower-case ctype))))
+        (validate-ctype expected-ctype ctype)
           (conj errors (str "expected content-type " expected-ctype " (was " ctype ")"))
         (h/xml? ctype)
           (validate-xml-body payload schema codex-body errors)
