@@ -79,7 +79,7 @@
         ""
         "  sim                     -d /path/to/codex"
         "                             e.g. To start a sim server for mycodex.cod.edn"
-        "                               sim -p /path/to/mycodex"
+        "                               sim -d /path/to/mycodex"
         ""
         "Interact with running Protean server:"
         "  services               (List services)"
@@ -88,7 +88,7 @@
         "  add-services           -f service-config-file.cod.edn (Add services in a codex)"
         "  del-service            -n myservice (Delete a service)"
         "  sims                   (List sims)"
-        ;"  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
+        "  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
         "  del-sim                -n myservice (Delete a sim)"
         ""
         "Please refer to the manual page for more information."]

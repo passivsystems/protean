@@ -99,8 +99,7 @@
     (reset! state (merge @state codex))))
 
 (defn put-services [req]
-  (let [file ((:params req) "file")
-        data (r/read-codex (:tempfile file))]
+  (let [file ((:params req) "file")]
     (load-codex (:tempfile file)))
   (services))
 
