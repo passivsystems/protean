@@ -33,8 +33,11 @@
 ;; Commands
 ;; =============================================================================
 
-(defn- build [cmd corpus path]
-  (pb/build cmd (assoc-in corpus [:locs] (path2loc path)) path))
+(defn- build [cmd corpus idx path]
+  (pb/build
+    cmd
+    (assoc-in corpus [:locs] (path2loc path))
+    (assoc path :codex-order idx)))
 
 (defn visit
   "Construct and dispatch a range of probes of different types based on a
@@ -56,7 +59,7 @@
   [{:keys [host port locs commands seed] :as corpus} codices]
   (doseq [cmd commands]
     (pb/config cmd corpus)
-    (let [paths (p/paths codices locs)
-          probes (doall (map #(build cmd corpus %) paths))
+    (let [paths (reverse (p/paths codices locs))
+          probes (doall (map-indexed (fn [idx itm] (build cmd corpus idx itm)) paths))
           results (pb/dispatch cmd corpus probes)]
       (pb/analyse cmd corpus results))))
