@@ -105,5 +105,5 @@
   [ph tree bag & {:keys [gen-all]}]
   (-> ph
      (holder-swap holder-swap-bag bag)
-     (holder-swap (partial holder-swap-gen gen-all) tree)
-     (holder-swap holder-swap-exp tree)))
+     (holder-swap holder-swap-exp tree)
+     (holder-swap (partial holder-swap-gen gen-all) tree)))

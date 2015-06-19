@@ -5,6 +5,7 @@
             [clojure.set :as st]
             [ring.util.codec :as e]
             [cheshire.core :as jsn]
+            [protean.config :as cnf]
             [protean.core.codex.placeholder :as ph]
             [protean.core.codex.document :as d]
             [protean.core.transformation.coerce :as c]
@@ -15,12 +16,6 @@
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
-
-(defn- translate [phs tree]
-  (if phs
-    ; Note, placeholder generation will be different each time we request them
-    ; also may not be url friendly (though we will encode them)
-    (ph/swap phs tree {})))
 
 (defn- curly-method-> [{:keys [method] :as request} payload]
   (if (= method :get)
@@ -53,8 +48,11 @@
                      e/url-decode))]
     (str payload query)))
 
+(defn curly-flatten-> [payload]
+  (if (cnf/curl-flatten?) (s/trim (s/replace payload #"\s+" " ")) payload))
+
 (defn curly-request-> [request]
-  (->> "curl -v"
+  (->> (str "curl " (cnf/curl-option))
        (curly-method-> request)
        (curly-headers-> request)
        (curly-form-> request)
@@ -62,11 +60,14 @@
        (curly-literal-> " '")
        (curly-uri-> request)
        (curly-query-params-> request)
-       (curly-literal-> "'")))
+       (curly-literal-> "'")
+       (curly-flatten->)))
 
 (defn curly-entry-> [{:keys [tree method uri]}]
   (let [request-template (r/prepare-request method uri tree)
-        request (ph/swap request-template tree{})]
+        ; Note, placeholder generation will be different each time we request them
+        ; also may not be url friendly (though we will encode them)
+        request (ph/swap request-template tree {})]
     (curly-request-> request)))
 
 ;; =============================================================================

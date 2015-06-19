@@ -21,7 +21,7 @@
     }
     :vars {
       "petId" {:type :PetId :doc "ID of pet" :gen false}
-      "name" {:type :String :doc "Updated name of the pet"}
+      "name" {:type :String :doc "Updated name of the pet" :examples ["tiddles"]}
       "status" {:type :Status :doc "Updated status of the pet"}
     }
 
@@ -32,7 +32,7 @@
         :req {
           :query-params {:optional {"status" "${status}" "tags" "${tags}"}}
         }
-        :vars {"tags" {:type :String :doc "Tags to filter by"}}
+        :vars {"tags" {:type :String :doc "Tags to filter by" :examples ["dog"]}}
       }
 
       :put {

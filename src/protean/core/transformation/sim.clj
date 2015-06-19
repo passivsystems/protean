@@ -148,7 +148,9 @@
   (if rsp-entry
     (let [status-code (Integer/parseInt (name (key rsp-entry)))
           rsp (val rsp-entry)
-          body-url (first (:body-example rsp))
+;          TODO swap - backwards compatibiliy req body-example should always be a list
+;          body-url (first (:body-example rsp))
+          body-url (first (flatten (list (:body-example rsp))))
           headers (:headers rsp)
           headers_w_ctype (if (and body-url (not (get-in headers [h/ctype])))
                             (assoc headers h/ctype (h/mime body-url))

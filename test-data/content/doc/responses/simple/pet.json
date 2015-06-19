@@ -1,1 +1,1 @@
-{"name": "Spot", "status": "available"}
+{"name": "${name}", "status": "${status}"}

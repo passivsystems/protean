@@ -59,15 +59,15 @@
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
   (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
-  (mp/wrap-multipart-params (PUT    "/services" req (pipe/put-services req)))
+  (PUT    "/services" req (pipe/put-services req))
   (DELETE "/services/:id" [id] (pipe/del-service-handled id))
   (GET    "/sims" [] (pipe/sims-names))
-  (mp/wrap-multipart-params (PUT    "/sims" req (pipe/put-sims req))) ; TODO only first mp/wrap-multipart-params wrapped route works with multi-part...
+  (PUT    "/sims" req (pipe/put-sims req))
   (DELETE "/sims/:id" [id] (pipe/del-sim-handled id))
   (GET    "/status" [] (pipe/status)))
 
 (defroutes api-routes
-  (mp/wrap-multipart-params (ANY "*" req (pipe/api req))))
+  (ANY "*" req (pipe/api req)))
 
 
 ;; =============================================================================
@@ -75,8 +75,10 @@
 ;; =============================================================================
 
 (defn- server [api-port admin-port]
-  (jetty/run-jetty admin-routes {:port admin-port :join? false})
-  (jetty/run-jetty (-> api-routes handler/api) {:port api-port :join? false}))
+  (jetty/run-jetty (-> admin-routes mp/wrap-multipart-params)
+    {:port admin-port :join? false})
+  (jetty/run-jetty (-> api-routes handler/api mp/wrap-multipart-params)
+    {:port api-port :join? false}))
 
 
 ;; =============================================================================

@@ -69,7 +69,7 @@
    Params is the gen information for a resources params."
   (.mkdirs (File. target-dir))
   (doseq [[k v] params]
-    (let [qm {:title k :type (:type v) :doc (:doc v)}]
+    (let [qm {:title k :type (:type v) :doc (:doc v) :attr (stg/join " " (:attr v))}]
       (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
 (defn- doc-hdrs [target-dir hdrs]
@@ -123,11 +123,23 @@
                  (map val (d/get-in-tree tree [:req :form-params :required]))
                  (map val (d/get-in-tree tree [:req :form-params :optional]))
                  (map val (d/get-in-tree tree [:req :body]))
-                 (map #(co/hic-file %) (d/get-in-tree tree [:req :body-example]))
+                 (->> (d/get-in-tree tree [:req :body-example])
+                      (map #(d/to-path % tree))
+                      (map #(co/hic-file %)))
                  (map val (d/get-in-tree tree [:req :headers])))
         extract-ph-names (fn [input] (map second (ph/holder? input)))
         ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
-        to-map (fn [varname] {varname (d/get-in-tree tree [:vars varname])})]
+        get-attr (fn [varname]
+                   ; attributes like :multiple query-params should also be supported
+                   (let [optional (merge
+                     (d/get-in-tree tree [:req :query-params :optional])
+                     (d/get-in-tree tree [:req :form-params :optional]))]
+                     (if (contains? optional varname)
+                         [:optional]
+                         [])))
+        to-map (fn [varname]
+          {varname (-> (d/get-in-tree tree [:vars varname])
+                       (merge {:attr (get-attr varname)}))})]
   (reduce merge (map to-map ph-names))))
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
@@ -143,7 +155,7 @@
     (prep-staging silk-template)
     {:entry entry
      :engage (fn []
-      (let [{:keys [svc method tree path] :as e} entry
+      (let [{:keys [svc method tree path codex-order] :as e} entry
             uri (p/uri "host" 1234 svc path)
             safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
             uri-path (-> (URI. (safe-uri uri)) (.getPath))
@@ -154,6 +166,7 @@
                   :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
             full {:id id
                   :path (str svc "/" path)
+                  :codex-order codex-order
                   :curl (c/curly-entry-> (assoc-in e [:uri] uri))
                   :doc (d/get-in-tree tree [:doc])
                   :desc (if-let [d (d/get-in-tree tree [:description])] d "")
@@ -185,5 +198,7 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
+  ;; TODO remove for smooth transistion between Silk 0.10.0 and latest
+  (when-let [d (dsk/exists-dir? "silk_templates/data")] (dsk/delete-directory d))
   (silk/spin-or-reload false silk-staging-dir false false)
   (dsk/copy-recursive (str silk-staging-dir "/site") (cfg/target-dir)))
