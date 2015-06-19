@@ -222,6 +222,26 @@
       (for [g gs] (add-delete-dependencies g probes)))
     gs))
 
+(defn- add-manual-dependencies
+  "endpoint ordering that may not be inferred from codex may be provided in corpus"
+  [gs corpus probes]
+  (let [probe-match (fn [[svc method path] p]
+                    (and
+                       (= (get-in p [:entry :svc]) svc)
+                       (= (get-in p [:entry :method]) (keyword method))
+                       (= (get-in p [:entry :path]) path)))
+        find-probe (fn [o]
+          (let [p (first (filter (partial probe-match o) probes))]
+            (if p
+              p
+              (hlr "No endpoint found matching" o "!"))))
+        h (fn [g [from to]]
+            (let [from-probe (find-probe from)
+                  to-probe (find-probe to)]
+            (ll/add-labeled-edges g [from-probe to-probe] (str "manual"))))
+        f (fn [g] (reduce h g (get-in corpus [:order])))]
+    (for [g gs] (f g))))
+
 (defn- build-graphs
   "returns a list of graphs covering all possible ways to walk over endpoints,
    satisfying input/output constraints."
@@ -230,11 +250,12 @@
         g-nodes (reduce add-node (lg/digraph) probes)
         dependencies (fn [probe] (get-dependencies corpus probes probe))
         add-dependencies (fn [probe gs [input dependencies]]
-                      (if (empty? dependencies)
-                        gs
-                        (-> gs
-                          (all-input-possibilities dependencies probe input)
-                          (delete-after-other-input-consumers probe input probes))))
+          (if (empty? dependencies)
+            gs
+            (-> gs
+              (all-input-possibilities dependencies probe input)
+              (delete-after-other-input-consumers probe input probes)
+              (add-manual-dependencies corpus probes))))
         add-all-dependencies (fn [gs probe]
           (let [dependencies (group-by first (dependencies probe))
                 res (reduce (partial add-dependencies probe) gs dependencies)]
