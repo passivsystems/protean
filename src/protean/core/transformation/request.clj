@@ -37,15 +37,20 @@
       (update-in payload [:query-params] qp-to-json))
     payload))
 
+(defn- copy-optional-params-> [payload tree include-optional]
+  (if include-optional
+    (-> payload
+      (copy-> tree [:req :query-params :optional] [:query-params])
+      (copy-> tree [:req :form-params :optional] [:form-params]))
+    payload))
+
 (defn prepare-request
   "Prepare payload - may still contain placeholders."
-  [method uri tree]
+  [method uri tree include-optional]
   (-> {:method method :uri uri}
     (copy-> tree [:req :query-params :required] [:query-params])
     (copy-> tree [:req :form-params :required] [:form-params])
-    ; TODO activate optional when (corpus) test level is 2
-    ;(copy-> tree [:req :query-params :optional] [:query-params])
-    ;(copy-> tree [:req :form-params :optional] [:form-params])
+    (copy-optional-params-> tree include-optional)
     (headers-> tree)
     (transform-query-params-> tree)
     (content-> tree)))

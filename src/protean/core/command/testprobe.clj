@@ -35,14 +35,17 @@
 ;; =============================================================================
 
 (defn- show-test [level]
-  (cond
-    (= level 1) (hlr "ʘ‿ʘ I'm too young to die")
-    (= level 2) (hlr "⊙︿⊙ Hey not too rough")
-    (= level 3) (hlr "ミ●﹏☉ミ Hurt me plenty")
-    (= level 4) (hlr "✖_✖ Ultra violence")))
+  (case level
+    1 (hlr "ʘ‿ʘ I'm too young to die")
+    2 (hlr "⊙︿⊙ Hey not too rough")
+    3 (hlr "ミ●﹏☉ミ Hurt me plenty")
+    4 (hlr "✖_✖ Ultra violence")))
+
+(defn test-level [corpus]
+  (get-in corpus [:config "test-level"] 1))
 
 (defmethod pb/config :test [_ corpus]
-  (show-test (get-in corpus [:config "test-level"] 1))
+  (show-test (test-level corpus))
   (hlg "building probes"))
 
 ;; =============================================================================
@@ -64,17 +67,19 @@
       (-> (first examples) (d/to-path tree) slurp s/trim)
       body)))
 
-(defn- inputs [uri tree]
-  (let [phs (list
+(defn- inputs [uri tree corpus]
+  (let [phs (concat (list
               uri
               (d/get-in-tree tree [:req :query-params :required])
               (d/get-in-tree tree [:req :form-params :required])
-              ; TODO activate optional when (corpus) test level is 2
-              ;(d/get-in-tree tree [:req :query-params :optional])
-              ;(d/get-in-tree tree [:req :form-params :optional])
               (d/get-in-tree tree [:req :headers])
               (d/get-in-tree tree [:req :body])
-              (body-val tree))]
+              (body-val tree))
+            (if (= 2 (test-level corpus))
+              (list
+                (d/get-in-tree tree [:req :query-params :optional])
+                (d/get-in-tree tree [:req :form-params :optional]))
+              (list)))]
     (mapcat collect-params phs)))
 
 (defn- outputs-names [tree]
@@ -155,14 +160,15 @@
         (let [h (or host "localhost")
               p (or port 3000)
               uri (uri h p entry)
-              request-template (r/prepare-request method uri tree)
+              include-optional (= 2 (test-level corpus))
+              request-template (r/prepare-request method uri tree include-optional)
               engage-fn (fn [bag]
                 (let [request (ph/swap request-template tree bag)]
                   (if-let [phs (ph/holder? request)]
                     [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
                     (t/test! request))))]
           {:entry entry
-           :inputs (inputs uri tree)
+           :inputs (inputs uri tree corpus)
            :outputs (outputs-names tree)
            :engage engage-fn
          })))))

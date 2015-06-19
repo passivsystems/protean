@@ -139,7 +139,7 @@
         svc (ffirst (filter #(= (type (key %)) String) codices))
         b (c/js (merge
             {:locs [svc] :commands [:test] :config {:test-level 1}}
-            (c/clj body)))
+            (c/clj body true)))
         options {:host host :port port :file file :body b}]
     (visit options)))
 
