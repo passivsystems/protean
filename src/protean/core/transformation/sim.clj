@@ -337,7 +337,7 @@
         response (or (some identity (map execute rules)) default-success)]
     (if (not tree)
       (do
-        (log-warn "Warning - no endpoint found for" [svc endpoint method])
+        (log-warn "warning - no endpoint found for" [uri method])
         (if-let [supported-methods (keys (get-in paths [svc endpoint]))]
           (protean-error-405 supported-methods)
           (protean-error-404)))
