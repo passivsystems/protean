@@ -7,14 +7,9 @@
     [protean.core.transformation.coerce :as co]
     [protean.core.transformation.paths :as p]))
 
-(defn- copy-> [payload tree source-keys target-keys]
-  (if-let [kvs (d/get-in-tree tree source-keys)]
+(defn- copy-> [payload kvs target-keys]
+  (if kvs
     (update-in payload target-keys #(merge kvs %))
-    payload))
-
-(defn- headers-> [payload tree]
-  (if-let [headers (d/req-hdrs tree)]
-    (assoc-in payload [:headers] headers)
     payload))
 
 (defn- content-> [payload tree]
@@ -40,17 +35,42 @@
 (defn- copy-optional-params-> [payload tree include-optional]
   (if include-optional
     (-> payload
-      (copy-> tree [:req :query-params :optional] [:query-params])
-      (copy-> tree [:req :form-params :optional] [:form-params]))
+      (copy-> (d/get-in-tree tree [:req :query-params :optional]) [:query-params])
+      (copy-> (d/get-in-tree tree [:req :form-params :optional]) [:form-params]))
     payload))
 
 (defn prepare-request
   "Prepare payload - may still contain placeholders."
   [method uri tree include-optional]
   (-> {:method method :uri uri}
-    (copy-> tree [:req :query-params :required] [:query-params])
-    (copy-> tree [:req :form-params :required] [:form-params])
+    (copy-> (d/get-in-tree tree [:req :query-params :required]) [:query-params])
+    (copy-> (d/get-in-tree tree [:req :form-params :required]) [:form-params])
     (copy-optional-params-> tree include-optional)
-    (headers-> tree)
+    (copy-> (d/req-hdrs tree) [:headers])
     (transform-query-params-> tree)
     (content-> tree)))
+
+(defn- prepare-request2
+  [method uri tree {:keys [without-qps without-fps without-hdrs]}]
+  (-> {:method method :uri uri}
+    (copy-> (dissoc (d/get-in-tree tree [:req :query-params :required]) without-qps) [:query-params])
+    (copy-> (dissoc (d/get-in-tree tree [:req :form-params :required]) without-fps) [:form-params])
+    (copy-> (dissoc (d/req-hdrs tree) without-hdrs) [:headers])
+    (transform-query-params-> tree)
+    (content-> tree)))
+
+(defn- remove-qp [method uri tree]
+  (for [missing-qp (keys (d/get-in-tree tree [:req :query-params :required]))]
+    [(str "missing required query-param: " missing-qp) (prepare-request2 method uri tree {:without-qps missing-qp})]))
+
+(defn- remove-fp [method uri tree]
+  (for [missing-fp (keys (d/get-in-tree tree [:req :form-params :required]))]
+    [(str "missing required form-param: " missing-fp) (prepare-request2 method uri tree {:without-qfs missing-fp})]))
+
+; TODO also include missing headers, and missing json/xml fields in body
+(defn prepare-invalid-requests
+  "Create cartesian product of invalid parameters/headers."
+  [method uri tree]
+  (concat
+    (remove-qp method uri tree)
+    (remove-fp method uri tree)))

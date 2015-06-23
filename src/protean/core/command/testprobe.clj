@@ -132,7 +132,8 @@
                     (if-let [extract (read-from v ph response-value)]
                       {:ph ph :val extract}
                       {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
-                 (catch Exception e {:error (str "Could not parse json: " response-body " \n " (.getMessage e))}))))))))
+                 (catch Exception e
+                   {:error (str "Could not parse json: " response-body " \n " e)}))))))))
 
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))
@@ -146,31 +147,43 @@
 (defn- uri [host port {:keys [svc path] :as entry}]
   (p/uri host port svc path))
 
+(defn- prepare-requests [method uri tree corpus]
+  (let [req-templates
+         (case (test-level corpus)
+           1 [[:success "only mandatory"   (r/prepare-request method uri tree false)]] ; include-optional false
+           2 [[:success "include optional" (r/prepare-request method uri tree true)]] ; include-optional true
+           (conj
+             (map #(into [:client-error] %) (r/prepare-invalid-requests method uri tree))
+             ; including success case, to allow us to proceed to the following endpoint
+             [:success "only mandatory" (r/prepare-request method uri tree false)]))]
+  (for [[type label req-template] req-templates]
+    [type label (fn [bag]
+        (let [request (ph/swap req-template tree bag)]
+          (if-let [phs (ph/holder? request)]
+            [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
+            (t/test! request))))])))
+
 (defmethod pb/build :test [_ {:keys [locs host port excludes] :as corpus} {:keys [svc path method tree] :as entry}]
   (let [f (fn [[esvc emethod epath]] (and
                                        (= esvc svc)
                                        (= emethod (name method))
                                        (= epath path)))]
+    ; TODO we may just want to exclude endpoint for success testing -
+    ;      could still cover it for negative test cases
     (if (some f excludes)
       (do
         (println "skipping " method ":" locs)
         nil)
       (do
-        (println "building a test probe to visit " method ":" locs)
+        (println "building test probes to visit " method ":" locs)
         (let [h (or host "localhost")
               p (or port 3000)
               uri (uri h p entry)
-              include-optional (= 2 (test-level corpus))
-              request-template (r/prepare-request method uri tree include-optional)
-              engage-fn (fn [bag]
-                (let [request (ph/swap request-template tree bag)]
-                  (if-let [phs (ph/holder? request)]
-                    [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
-                    (t/test! request))))]
+              engage-fns (prepare-requests method uri tree corpus)]
           {:entry entry
            :inputs (inputs uri tree corpus)
            :outputs (outputs-names tree)
-           :engage engage-fn
+           :engage engage-fns
          })))))
 
 
@@ -262,18 +275,26 @@
             (if (empty? dependencies) gs res)))]
     (reduce add-all-dependencies (list g-nodes) probes)))
 
-(defn- execute [[bag reses] probe]
-  (let [[req resp] ((:engage probe) bag)
+(defn- collect-rsp [probe [bag reses] [type l engage-fn]]
+  (println "executing" l "(" type ")")
+  (let [[req rsp] (engage-fn bag)
         tree (get-in probe [:entry :tree])
-        outputs (outputs-values tree resp)]
+        ; skip output parsing for asserted failures
+        outputs (if (= type :success) (outputs-values tree rsp))]
     (println (label probe) "\noutputs" outputs "\n")
     (let [errors (s/join "," (:errors outputs))]
       (if (empty? errors)
         [(merge (:bag outputs) bag)
-         (conj reses {:entry (:entry probe) :request req :response resp})]
-        [bag (conj reses {:entry (:entry probe)
+         (conj reses {:entry (:entry probe) :request req :response rsp :label l :type type})]
+        (do
+          [bag (conj reses {:entry (:entry probe)
                           :request req
-                          :response (update-in resp [:failures] conj errors)})]))))
+                          :response (update-in rsp [:failures] conj errors)
+                          :label l
+                          :type type})])))))
+
+(defn- execute [[bag reses] probe]
+  (reduce (partial collect-rsp probe) [bag reses] (:engage probe)))
 
 (defn- render-graph [graph graph-name]
   (try
@@ -314,7 +335,7 @@
 ;; Probe data analysis
 ;; =============================================================================
 
-(defn- assess [{:keys [entry request response]}]
+(defn- assess [{:keys [entry request response label type]}]
   (if-let [error (:error response)]
     {:error error}
     (let [tree (:tree entry)
@@ -323,25 +344,31 @@
           success (val success-rsp)
           expected-ctype (d/rsp-ctype success-rsp-code tree)]
       {:failures (->> (into [] (:failures response))
-        (v/validate-status (name success-rsp-code) response)
-        (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
-        (v/validate-body response expected-ctype
-          (d/to-path (:body-schema success) tree)
-          (:body success)))})))
+                      (v/validate-status (name success-rsp-code) response)
+                      (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
+                      (v/validate-body response expected-ctype
+                      (d/to-path (:body-schema success) tree)
+                      (:body success)))})))
 
-(defn- print-result [{:keys [entry request response error failures]}]
+(defn- is-success [type response error failures]
+  (cond
+    error (aa/bold-red (str "error - " error))
+    (seq failures) (aa/bold-red (str "fail - " (s/join "\n" failures)))
+    (= type :client-error)
+      (cond
+        (= (:status response) 400) (aa/bold-green "pass")
+        :else (aa/bold-red (str "error - expected 400")))
+      :else (aa/bold-green "pass")))
+
+(defn- print-result [{:keys [entry request response error failures label type]}]
   ;      (println "result - request:" request)
   ;      (println "result - response:" response)
   (let [name (str (:method entry) " " (:svc entry) " " (:path entry))
         status (:status response)
-        so (cond
-          error (aa/bold-red (str "error - " error))
-          (seq failures) (aa/bold-red (str "fail - " (s/join "\n" failures)))
-          :else (aa/bold-green "pass"))]
-    (println "Test : " name ", status - " status ": " so)))
+        so (is-success type response error failures)]
+    (println "\nTest:" name "\n" (str label " (" type "), status: " status " - " so))))
 
 (defmethod pb/analyse :test [_ corpus results]
-  (hlg "analysing probe data")
   (let [assessed (map conj results (map assess results))]
     (doall (map print-result assessed))
     (j/write-report assessed)))
