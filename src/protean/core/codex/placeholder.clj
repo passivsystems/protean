@@ -6,9 +6,7 @@
             [clojure.pprint]
             [protean.core.generation.generate :as gn]
             [protean.core.codex.document :as d]
-            [protean.core.transformation.coerce :as c])
-  (:import org.databene.benerator.primitive.RegexStringGenerator
-           org.databene.benerator.engine.DefaultBeneratorContext))
+            [protean.core.transformation.coerce :as c]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -17,21 +15,16 @@
 ; place holder has form: ${xxx}
 (def ph #"\$\{([^\}]*)\}")
 
-(defn- generate [regex]
-  (let [generator (RegexStringGenerator. regex)]
-    (.init generator (DefaultBeneratorContext.))
-    (.generate generator)))
-
 (defn- g-val [v tree]
   (if-let [regex (d/get-in-tree tree [:types v])]
-    (generate regex)
+    (gn/generate regex)
     (case v
       :Int (str (gn/rnd-int))
       :Long (str (gn/rnd-long))
       :Double (str (gn/rnd-double))
       :Boolean (str (gn/rnd-bool))
       :Uuid (str (gn/rnd-uuid))
-    (generate v))))
+    (gn/generate v))))
 
 (defn replace-placeholders [s r]
   (s/replace s ph r))

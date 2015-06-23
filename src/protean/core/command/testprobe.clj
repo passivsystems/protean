@@ -350,13 +350,13 @@
                       (d/to-path (:body-schema success) tree)
                       (:body success)))})))
 
-(defn- is-success [type response error failures]
+(defn- interpret-resp [type response error failures]
   (cond
     error (aa/bold-red (str "error - " error))
     (seq failures) (aa/bold-red (str "fail - " (s/join "\n" failures)))
     (= type :client-error)
       (cond
-        (= (:status response) 400) (aa/bold-green "pass")
+        (= (:status response) 400) (aa/bold-green "pass") ; we may get other 4xx errors (e.g. 401 for missing auth header)
         :else (aa/bold-red (str "error - expected 400")))
       :else (aa/bold-green "pass")))
 
@@ -365,7 +365,7 @@
   ;      (println "result - response:" response)
   (let [name (str (:method entry) " " (:svc entry) " " (:path entry))
         status (:status response)
-        so (is-success type response error failures)]
+        so (interpret-resp type response error failures)]
     (println "\nTest:" name "\n" (str label " (" type "), status: " status " - " so))))
 
 (defmethod pb/analyse :test [_ corpus results]

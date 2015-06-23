@@ -1,7 +1,9 @@
 (ns protean.core.generation.generate
   "Simple generative capability - includes simulation testing map making facilities etc."
   (:import java.lang.Math
-           (java.util Random UUID)))
+           (java.util Random UUID)
+           org.databene.benerator.primitive.RegexStringGenerator
+           org.databene.benerator.engine.DefaultBeneratorContext))
 
 (def rnd (Random.))
 
@@ -26,3 +28,8 @@
 (defn rnd-vec [& generators] (into [] (map #(%) generators)))
 
 (defn rnd-map [sz kgen vgen] (into {} (repeatedly sz #(rnd-vec kgen vgen))))
+
+(defn generate [regex]
+  (let [generator (RegexStringGenerator. regex)]
+    (.init generator (DefaultBeneratorContext.))
+    (.generate generator)))
