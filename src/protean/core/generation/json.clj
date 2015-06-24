@@ -52,7 +52,9 @@
         "string"  (gen-str o)
         (gen-obj o)))))
 
-(defn gen [schema-path]
+(defn gen
+  "generate a json which is valid according to provided schema"
+  [schema-path]
   (-> (slurp schema-path)
       (cc/parse-string true)
       gen2

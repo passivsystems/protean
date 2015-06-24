@@ -150,12 +150,13 @@
 (defn- prepare-requests [method uri tree corpus]
   (let [req-templates
          (case (test-level corpus)
-           1 [[:success "only mandatory"   (r/prepare-request method uri tree false)]] ; include-optional false
-           2 [[:success "include optional" (r/prepare-request method uri tree true)]] ; include-optional true
+           1 [[:success "only mandatory"   (r/prepare-request method uri tree)]]
+           2 [[:success "include optional" (r/prepare-request method uri tree :include-optional true)]]
+           ; level 3 could turn on generate success cases from schema
            (conj
-             (map #(into [:client-error] %) (r/prepare-invalid-requests method uri tree))
+             (map #(into [:client-error] %) (r/prepare-invalid-requests method uri tree :gen-from-schema true))
              ; including success case, to allow us to proceed to the following endpoint
-             [:success "only mandatory" (r/prepare-request method uri tree false)]))]
+             [:success "only mandatory" (r/prepare-request method uri tree)]))]
   (for [[type label req-template] req-templates]
     [type label (fn [bag]
         (let [request (ph/swap req-template tree bag)]
@@ -342,23 +343,23 @@
           success-rsp (first (d/success-status tree))
           success-rsp-code (key success-rsp)
           success (val success-rsp)
+          ; TODO we may get other 4xx errors (e.g. 401 for missing auth header)
+          expected-status (if (= type :client-error) "400" (name success-rsp-code))
+          ; TODO we may have error headers defined in codex
+          expected-hdrs (if (= type :client-error) [] (d/rsp-hdrs success-rsp-code tree))
           expected-ctype (d/rsp-ctype success-rsp-code tree)]
       {:failures (->> (into [] (:failures response))
-                      (v/validate-status (name success-rsp-code) response)
-                      (v/validate-headers (d/rsp-hdrs success-rsp-code tree) response)
+                      (v/validate-status expected-status response)
+                      (v/validate-headers expected-hdrs response)
                       (v/validate-body response expected-ctype
                       (d/to-path (:body-schema success) tree)
                       (:body success)))})))
 
 (defn- interpret-resp [type response error failures]
   (cond
-    error (aa/bold-red (str "error - " error))
+    error          (aa/bold-red (str "error - " error))
     (seq failures) (aa/bold-red (str "fail - " (s/join "\n" failures)))
-    (= type :client-error)
-      (cond
-        (= (:status response) 400) (aa/bold-green "pass") ; we may get other 4xx errors (e.g. 401 for missing auth header)
-        :else (aa/bold-red (str "error - expected 400")))
-      :else (aa/bold-green "pass")))
+    :else          (aa/bold-green "pass")))
 
 (defn- print-result [{:keys [entry request response error failures label type]}]
   ;      (println "result - request:" request)

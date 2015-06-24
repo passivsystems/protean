@@ -64,7 +64,7 @@
        (curly-flatten->)))
 
 (defn curly-entry-> [{:keys [tree method uri]}]
-  (let [request-template (r/prepare-request method uri tree true)
+  (let [request-template (r/prepare-request method uri tree :include-optional true)
         ; Note, placeholder generation will be different each time we request them
         ; also may not be url friendly (though we will encode them)
         request (ph/swap request-template tree {})]
