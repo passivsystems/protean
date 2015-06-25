@@ -17,9 +17,9 @@
           {"sample" {"simple" {:get nil}} :get {:rsp {:200 {:doc "OK"}}}}]
   }
   )
-       [cmd verbosity uri] (split (first (curly-analysis-> analysed)) #" ")]
+       [cmd options uri] (split (first (curly-analysis-> analysed)) #" ")]
   (expect "curl" cmd)
-  (expect "-v" verbosity)
+  (expect "-i" options)
   (expect true (.endsWith uri "/sample/simple'")))
 
 (let [analysed '(
@@ -84,7 +84,7 @@
     }
   ]
    })
-      [cmd verbosity uri] (split (first (curly-analysis-> analysed)) #" ")]
+      [cmd options uri] (split (first (curly-analysis-> analysed)) #" ")]
   (expect "curl" cmd)
-  (expect "-v" verbosity)
+  (expect "-i" options)
   (expect true (.contains uri "?blurb=")))
