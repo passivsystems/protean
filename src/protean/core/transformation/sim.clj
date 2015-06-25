@@ -290,6 +290,20 @@
   [req ep svc]
   (assoc req :endpoint ep :svc svc :body (or (dk/slurp-pun (:body req)) "")))
 
+(defn- protean-error-405 [supported-methods]
+  {:status 405
+   :headers {
+     "Protean-error" "Method Not Allowed"
+     "Allow" (s/join ", " (map #(s/upper-case (name %)) supported-methods))
+   }
+  })
+
+(defn- protean-error-404 []
+  {:status 404 :headers {"Protean-error" "Not Found"}})
+
+(defn- protean-error-500 []
+  {:status 500 :headers {"Protean-error" "Error in sim"}})
+
 (defn- execute-fn
   "Prepare bindings for use through out sim execution context.
    Handle rules processing.
@@ -305,20 +319,11 @@
                 *request* (aug-path-params rep ep req)
                 *corpus* corpus]
         (apply rule nil))
-    (catch Exception e (print-error e)))))
+    (catch Exception e
+      (print-error e)
+      (protean-error-500)))))
 
 (declare success)
-
-(defn- protean-error-405 [supported-methods]
-  {:status 405
-   :headers {
-     "Protean-error" "Method Not Allowed"
-     "Allow" (s/join ", " (map #(s/upper-case (name %)) supported-methods))
-   }
-  })
-
-(defn- protean-error-404 []
-  {:status 404 :headers {"Protean-error" "Not Found"}})
 
 (defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
