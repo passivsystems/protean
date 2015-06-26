@@ -25,6 +25,7 @@
 ;; Helper functions
 ;; =============================================================================
 
+(timbre/set-config! [:timestamp-pattern] "yyyy-MM-dd HH:mm:ss.SSS")
 (timbre/set-config! [:appenders :spit :enabled?] true)
 (timbre/set-config! [:shared-appender-config :spit-filename]
   (str (c/log-dir) "/protean.log"))
