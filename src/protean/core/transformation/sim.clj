@@ -26,13 +26,16 @@
     (h/txt? ctype) s
     :else (c/pretty-js s)))
 
+(defn- parse-endpoint [requested-endpoint cod-endpoint]
+  (let [any (fn [s] (if (.startsWith s ";")
+              "(;[^/^?]*)?" ; matrixParam regex
+              "([^/^?])+")) ; pathParam regex
+        regex (ph/replace-all-with cod-endpoint any)]
+    (re-matches (re-pattern regex) requested-endpoint)))
+
 (defn- to-endpoint [requested-endpoint paths svc]
-  (let [endpoints (keys (get-in paths [svc]))
-        any (fn [s] "[^/]+")
-        to-tuple (fn [endpoint] [(ph/replace-all-with endpoint any) endpoint])
-        regexs (map to-tuple endpoints)
-        is-match (fn [[regex original]] (if (re-matches (re-pattern regex) requested-endpoint) original))]
-    (some is-match regexs)))
+  (let [endpoints (keys (get-in paths [svc]))]
+    (first (filter #(parse-endpoint requested-endpoint %) endpoints))))
 
 (defn- stacktrace [e]
   (let [sw (java.io.StringWriter.)]
@@ -41,13 +44,10 @@
 
 (defn- print-error [e] (log-error (aa/red (str "caught exception: " (stacktrace e)))))
 
-(defn- fnfirst [x] (first (nfirst x)))
-
 (defn- aug-path-params [req-endpoint cod-endpoint request]
-  (let [p-ks (s/split cod-endpoint #"/")
-        p-vs (s/split req-endpoint #"/")
-        raw-params (into {} (filter #(re-seq ph/ph (key %)) (zipmap p-ks p-vs)))
-        params (into {} (for [[k v] raw-params] [(fnfirst (re-seq ph/ph k)) v]))]
+  (let [ph-ks (map second (re-seq ph/ph cod-endpoint))
+        ph-vs (drop 1 (parse-endpoint req-endpoint cod-endpoint))
+        params (into {} (map vector ph-ks ph-vs))]
     (assoc request :path-params params)))
 
 (def ^:dynamic *tree*)
@@ -125,6 +125,17 @@
 (defn query-param [p] (get-in *request* [:query-params p]))
 
 (defn path-param [p] (get-in *request* [:path-params p]))
+
+(defn flip [f]
+  (fn [x y] (f y x)))
+
+(defn matrix-params [mp-name]
+  (if-let [pp (path-param (str ";" mp-name))]
+    (->> pp
+        ((flip s/split) #";")
+        (filter seq)
+        (map #(s/split % #"="))
+        (into {}))))
 
 (defn param [p] (get-in *request* [:params p]))
 

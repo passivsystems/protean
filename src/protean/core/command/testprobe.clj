@@ -88,31 +88,12 @@
       (collect-params (get-in res [:headers]))
       (collect-params (get-in res [:body-data]))))))
 
-(defn- diff [s1 s2]
-  (cond
-    (and (nil? (first s1)) (nil? (first s2))) []
-    (= (first s1) (first s2)) (diff (rest s1) (rest s2))
-    :else [s1 s2]))
-
-(defn- diff-str [s1 s2]
-  (into [] (map s/join (diff (char-array (str s1)) (char-array (str s2))))))
-
-(defn- read-from [template ph s]
-  (let [[left right] (diff-str template s)
-        diff-match (if left (re-matches ph/ph left))]
-        ; note currently only works until first mismatch.
-        ; Which only works if our placeholder is the only placeholder, and is at the end of the string.
-        ; e.g. abc${def} - ok
-        ;      abc${def}ghi - not ok
-    (if (= (second diff-match) ph)
-      right)))
-
 (defn- outputs-hdrs [response [k v]]
   (when-let [holder (ph/holder? v)]
     (for [ph (map second holder)]
       (do ;(println "ph:" ph)
         (when-let [response-value (get-in response [:headers k])]
-          (if-let [extract (read-from v ph response-value)]
+          (if-let [extract (ph/read-from v ph response-value)]
             {:ph ph :val extract}
             {:error (str "could not extract " ph " from " response-value " with template '" v "'")}))))))
 
@@ -123,13 +104,13 @@
       (for [ph (map second holder)]
         (do ;(println "ph:" ph)
           (cond
-            (h/txt? ctype) (read-from v ph response-body)
+            (h/txt? ctype) (ph/read-from v ph response-body)
             (h/xml? ctype) nil ; TODO read from xml
             :else
               (try
                 (let [json (co/clj response-body true)]
                   (when-let [response-value (jp/at-path k json)]
-                    (if-let [extract (read-from v ph response-value)]
+                    (if-let [extract (ph/read-from v ph response-value)]
                       {:ph ph :val extract}
                       {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
                  (catch Exception e
