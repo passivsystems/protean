@@ -29,13 +29,6 @@
           :else (f body))]
     (assoc-in payload [:body] body-val)))
 
-(defn- transform-query-params-> [payload tree]
-  (if (d/qp-json? tree)
-    (let [to-json (fn [[k v]] [k (co/js v)])
-          qp-to-json (fn [m] (into {} (map to-json m)))]
-      (update-in payload [:query-params] qp-to-json))
-    payload))
-
 (defn prepare-request
   "Prepare payload - may still contain placeholders."
   [method uri tree & {:keys [include-optional gen-from-schema] :or {include-optional false gen-from-schema false}}]
@@ -43,7 +36,6 @@
     (copy-> (d/qps tree include-optional) [:query-params])
     (copy-> (d/fps tree include-optional) [:form-params])
     (copy-> (d/req-hdrs tree) [:headers])
-    (transform-query-params-> tree)
     (content-> tree gen-from-schema)))
 
 (defn- missing-qps [request tree]

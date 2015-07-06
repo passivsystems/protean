@@ -146,13 +146,4 @@
 ;; Codex fragment functions (codex fragments that travel with tests etc)
 ;; =============================================================================
 
-(defn qp-type [t] (get-in-tree t [:req :query-params-type]))
-
 (defn azn [c] (get-in c [:headers h/azn]))
-
-
-;; =============================================================================
-;; Truthiness functions
-;; =============================================================================
-
-(defn qp-json? [t] (= (qp-type t) :json))

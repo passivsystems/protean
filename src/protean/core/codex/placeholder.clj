@@ -15,19 +15,18 @@
 ; place holder has form: ${xxx}
 (def ph #"\$\{([^\}]*)\}")
 
-(defn- g-val [v tree]
-  (if-let [regex (d/get-in-tree tree [:types v])]
+(defn- g-val [type structured tree]
+  (if-let [regex (d/get-in-tree tree [:types type])]
     (gn/generate regex)
-    (case v
+    (case type
       :Int (str (gn/rnd-int))
       :Long (str (gn/rnd-long))
       :Double (str (gn/rnd-double))
       :Boolean (str (gn/rnd-bool))
       :Uuid (str (gn/rnd-uuid))
-    (gn/generate v))))
-
-(defn replace-placeholders [s r]
-  (s/replace s ph r))
+      :Json (c/js structured)
+      :MatrixParams (c/->matrix-params structured)
+      (gn/generate type))))
 
 ;; =============================================================================
 ;; Truthiness functions
@@ -71,10 +70,24 @@
   (if-let [x (d/get-in-tree tree [:vars v :examples])]
     (first x)))
 
-(defn- holder-swap-gen [gen-all tree v]
-  (if (or gen-all (not (= false (d/get-in-tree tree [:vars v :gen]))))
-    (if-let [x (d/get-in-tree tree [:vars v :type])]
-      (g-val x tree))))
+(declare swap)
+
+; TODO we will probably want to control if we generate optional elements
+(defn gen-struct
+  "generate a structed value, where the sub-values may be recursively generated"
+  [struct tree bag gen-all]
+  (let [struct-with-ph (->> struct
+                         (map (fn [[k v]] [k (first v)]))
+                         (into {}))]
+    (swap struct-with-ph tree bag :gen-all gen-all)))
+
+
+(defn- holder-swap-gen [gen-all bag tree v]
+  (let [{:keys [gen type struct]} (d/get-in-tree tree [:vars v])
+        structured (gen-struct struct tree bag gen-all)]
+    (if (or gen-all (not (= false gen)))
+      (if type
+        (g-val type structured tree)))))
 
 (defn- holder-swap-bag [bag v]
   (if-let [x (get-in bag [v])]
@@ -92,14 +105,14 @@
     :else m))
 
 (defn swap
-  "swaps all occurances of placeholders in ph with values in bag
+  "swaps all occurances of placeholders in m with values in bag
    or generated/examples from tree.
    Note vars marked as :gen false in tree will not be generated (unless optional parameter :gen-all is true)"
-  [ph tree bag & {:keys [gen-all]}]
-  (-> ph
+  [m tree bag & {:keys [gen-all]}]
+  (-> m
      (holder-swap holder-swap-bag bag)
      (holder-swap holder-swap-exp tree)
-     (holder-swap (partial holder-swap-gen gen-all) tree)))
+     (holder-swap (partial holder-swap-gen gen-all bag) tree)))
 
 
 ;; =============================================================================

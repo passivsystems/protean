@@ -2,6 +2,7 @@
   "General purpose coercion."
   (:refer-clojure :exclude [int long])
   (:require [clojure.set :as st]
+            [clojure.string :as s]
             [clojure.data.xml :as xml]
             [cheshire.core :as jsn]
             [yaclot.core :refer [convert to-type]])
@@ -35,3 +36,9 @@
   (if (.endsWith (clojure.string/lower-case f) ".json")
     (clj (slurp f))
     (xml (slurp f))))
+
+(defn ->matrix-params [m]
+  (->> m
+    (map (fn [[k v]] (str k "=" v)))
+    (s/join ";")
+    (str ";")))
