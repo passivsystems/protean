@@ -27,6 +27,9 @@
     :else (c/pretty-js s)))
 
 (defn- parse-endpoint [requested-endpoint cod-endpoint]
+  ; TODO instead of requiring namedparameter to start with ';' when a matrix parameter
+  ;      could look up [:var s :type] to see if is a Matrix parameter
+  ;      however currently require parse-endpoint before we can get tree
   (let [any (fn [s] (if (.startsWith s ";")
               "(;[^/^?]*)?" ; matrixParam regex
               "([^/^?])+")) ; pathParam regex

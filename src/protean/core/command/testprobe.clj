@@ -68,18 +68,14 @@
       body)))
 
 (defn- inputs [uri tree corpus]
-  (let [phs (concat (list
+  (let [include-optional (= 2 (test-level corpus))
+        phs (concat (list
               uri
-              (d/get-in-tree tree [:req :query-params :required])
-              (d/get-in-tree tree [:req :form-params :required])
+              (d/qps tree include-optional)
+              (d/fps tree include-optional)
               (d/get-in-tree tree [:req :headers])
               (d/get-in-tree tree [:req :body])
-              (body-val tree))
-            (if (= 2 (test-level corpus))
-              (list
-                (d/get-in-tree tree [:req :query-params :optional])
-                (d/get-in-tree tree [:req :form-params :optional]))
-              (list)))]
+              (body-val tree)))]
     (mapcat collect-params phs)))
 
 (defn- outputs-names [tree]

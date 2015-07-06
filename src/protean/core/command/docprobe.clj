@@ -118,10 +118,8 @@
 (defn- input-params [tree uri]
   (let [inputs (concat
                  (list uri)
-                 (map val (d/get-in-tree tree [:req :query-params :required]))
-                 (map val (d/get-in-tree tree [:req :query-params :optional]))
-                 (map val (d/get-in-tree tree [:req :form-params :required]))
-                 (map val (d/get-in-tree tree [:req :form-params :optional]))
+                 (map val (d/qps tree true))
+                 (map val (d/fps tree true))
                  (map val (d/get-in-tree tree [:req :body]))
                  (->> (d/get-in-tree tree [:req :body-example])
                       (map #(d/to-path % tree))
@@ -130,13 +128,9 @@
         extract-ph-names (fn [input] (map second (ph/holder? input)))
         ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
         get-attr (fn [varname]
-                   ; attributes like :multiple query-params should also be supported
-                   (let [optional (merge
-                     (d/get-in-tree tree [:req :query-params :optional])
-                     (d/get-in-tree tree [:req :form-params :optional]))]
-                     (if (contains? optional varname)
-                         [:optional]
-                         [])))
+          (into [] (concat
+            (drop 1 (d/get-in-tree tree [:req :query-params varname]))
+            (drop 1 (d/get-in-tree tree [:req :form-params varname])))))
         to-map (fn [varname]
           {varname (-> (d/get-in-tree tree [:vars varname])
                        (merge {:attr (get-attr varname)}))})]

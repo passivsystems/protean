@@ -29,7 +29,7 @@
     errors))
 
 (defn validate-query-params [request tree errors]
-  (if-let [rpms (:required (d/qp tree))]
+  (if-let [rpms (d/qps tree false)]
     (let [expected-qps (keys rpms)
           received-qps (map name (keys (:params request)))]
       (if (every? (set received-qps) expected-qps)
@@ -39,7 +39,7 @@
     errors))
 
 (defn validate-form-params [request tree errors]
-  (if-let [f-keys (:required (d/fp tree))]
+  (if-let [f-keys (d/fps tree false)]
     (let [expected-form (keys f-keys)
           received-form (keys (:form-params request))]
       (if (= (set received-form) (set (keys f-keys)))

@@ -67,9 +67,19 @@
 ;; Codex request
 ;; =============================================================================
 
-(defn qp [t] (git t [:req :query-params]))
+(defn- f [include-optional [k [v & attr]]]
+  (if (or include-optional (not (contains? (into #{} attr) :optional)))
+    [k v]))
 
-(defn fp [t] (git t [:req :form-params]))
+(defn qps [t include-optional]
+  (->> (git t [:req :query-params])
+       (map (partial f include-optional))
+       (into {})))
+
+(defn fps [t include-optional]
+  (->> (git t [:req :form-params])
+       (map (partial f include-optional))
+       (into {})))
 
 (defn- codex-req-hdrs [tree]
   ; we don't use get-in-tree as we want to merge definitions in all scopes here

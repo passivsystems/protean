@@ -36,31 +36,23 @@
       (update-in payload [:query-params] qp-to-json))
     payload))
 
-(defn- copy-optional-params-> [payload tree include-optional]
-  (if include-optional
-    (-> payload
-      (copy-> (d/get-in-tree tree [:req :query-params :optional]) [:query-params])
-      (copy-> (d/get-in-tree tree [:req :form-params :optional]) [:form-params]))
-    payload))
-
 (defn prepare-request
   "Prepare payload - may still contain placeholders."
   [method uri tree & {:keys [include-optional gen-from-schema] :or {include-optional false gen-from-schema false}}]
   (-> {:method method :uri uri}
-    (copy-> (d/get-in-tree tree [:req :query-params :required]) [:query-params])
-    (copy-> (d/get-in-tree tree [:req :form-params :required]) [:form-params])
-    (copy-optional-params-> tree include-optional)
+    (copy-> (d/qps tree include-optional) [:query-params])
+    (copy-> (d/fps tree include-optional) [:form-params])
     (copy-> (d/req-hdrs tree) [:headers])
     (transform-query-params-> tree)
     (content-> tree gen-from-schema)))
 
 (defn- missing-qps [request tree]
-  (for [required-qp (keys (d/get-in-tree tree [:req :query-params :required]))]
+  (for [required-qp (keys (d/qps tree false))]
     [(str "missing required query-param: " required-qp)
      (update-in request [:query-params] dissoc required-qp)]))
 
 (defn- missing-fps [request tree]
-  (for [required-fp (keys (d/get-in-tree tree [:req :form-params :required]))]
+  (for [required-fp (keys (d/qps tree false))]
     [(str "missing required form-param: " required-fp)
      (update-in request [:form-params] dissoc required-fp)]))
 

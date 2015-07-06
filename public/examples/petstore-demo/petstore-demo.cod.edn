@@ -28,7 +28,10 @@
       :get {
         :doc "Finds all pets, or pets filtered by status or tags"
         :req {
-          :query-params {:optional {"status" "${status}" "tags" "${tags}"}}
+          :query-params {
+            "status" ["${status}" :optional]
+            "tags"   ["${tags}"   :optional]
+          }
         }
         :vars {"tags" {:type :String :doc "Tags to filter by"}}
       }
