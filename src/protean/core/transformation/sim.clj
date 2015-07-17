@@ -32,7 +32,7 @@
   ;      however currently require parse-endpoint before we can get tree
   (let [any (fn [s] (if (.startsWith s ";")
               "(;[^/^?]*)?" ; matrixParam regex
-              "([^/^?])+")) ; pathParam regex
+              "([^/^?]+)")) ; pathParam regex
         regex (ph/replace-all-with cod-endpoint any)]
     (re-matches (re-pattern regex) requested-endpoint)))
 
