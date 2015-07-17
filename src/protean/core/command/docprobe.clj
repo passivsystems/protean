@@ -151,7 +151,9 @@
      :engage (fn []
       (let [{:keys [svc method tree path codex-order] :as e} entry
             uri (p/uri "host" 1234 svc path)
-            safe-uri (fn [uri] (ph/replace-all-with uri #(str "_" % "_")))
+            safe-uri (fn [uri] (-> uri
+                                 (ph/replace-all-with #(str "_" % "_"))
+                                 (stg/replace #";" "")))
             uri-path (-> (URI. (safe-uri uri)) (.getPath))
             id (str (name method) (stg/replace uri-path #"/" "-"))
             main (filter #(get-in % [:title]) tree)
