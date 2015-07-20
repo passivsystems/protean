@@ -42,7 +42,7 @@
   (if-let [f-keys (d/fps tree false)]
     (let [expected-form (keys f-keys)
           received-form (keys (:form-params request))]
-      (if (= (set received-form) (set (keys f-keys)))
+      (if (every? (set received-form) expected-form)
         errors
         (conj errors
           (str "expected form params " expected-form " (was " received-form ")"))))
