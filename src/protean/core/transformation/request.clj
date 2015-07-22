@@ -10,7 +10,7 @@
     [cheshire.core :as cc]))
 
 (defn- copy-> [payload kvs target-keys]
-  (if kvs
+  (if (not (empty? kvs))
     (update-in payload target-keys #(merge kvs %))
     payload))
 
