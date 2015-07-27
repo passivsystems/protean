@@ -117,7 +117,7 @@
       :get [{
         :validating true
         :vars {"rp1" {:type :String :doc "A test request param"}}
-        :req {:query-params {:required {"rp1" "${rp1}"}}}
+        :req {:query-params {"rp1" ["${rp1}" :required]}}
         :rsp {:200 {}}
       }]
     }

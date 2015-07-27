@@ -26,7 +26,6 @@
     }
 
     "api/pet" {
-
       :get {
         :doc "Finds all pets, or pets filtered by status or tags"
         :req {
@@ -72,15 +71,16 @@
           :405 {:doc "Validation exception"}
         }
       }
-
     }
 
     "api/pet/${petId}" {
-
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
-          :form-params {:required {"name" "${name}" "status" "${status}"}}
+          :form-params {
+            "name" ["${name}" :required]
+            "status" ["${status}" :required]
+          }
         }
         :rsp {
           :200 {:doc "Updated"}
@@ -90,7 +90,6 @@
 
       :get {
         :doc "Find a pet by ID"
-
         :rsp {
           :200 {
             :body-schema  "test-data/schemas/pet.schema.json"
@@ -115,16 +114,16 @@
         :doc "Partial updates to a pet"
         :rsp {:404 {:doc "Invalid ID supplied"}}
       }
-
     }
 
     "api/uploadImage" {
       :post {
         :doc "uploads an image"
         :req {
-          :query-params {:required {"additionalMetadata" "${additionalMetadata}"}}
-;           {"file" {:type :File}} ; Binary?; Multipart?
-        }
+          :query-params {
+            "additionalMetadata" ["${additionalMetadata}" :required]
+;           "file" [:File ; Binary?; Multipart?]
+        }}
         :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
       }
     }
