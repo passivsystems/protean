@@ -15,7 +15,7 @@
                  [compojure "1.3.4"]
                  [cheshire "5.4.0"]
                  [environ "1.0.0"]
-                 [com.taoensso/timbre "3.3.1"]
+                 [com.taoensso/timbre "4.0.2"]
                  [clj-http "1.0.1"]
                  [io.aviso/pretty "0.1.13"]
                  [com.novemberain/pantomime "2.3.0"]

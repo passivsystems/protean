@@ -16,7 +16,8 @@
             [protean.core.transformation.coerce :as co]
             [protean.core.codex.reader :as r]
             [protean.core.codex.document :as d]
-            [clojure.pprint])
+            [clojure.pprint]
+            [taoensso.timbre.appenders.core :as appenders])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File)
   (:gen-class))
@@ -25,10 +26,9 @@
 ;; Helper functions
 ;; =============================================================================
 
-(timbre/set-config! [:timestamp-pattern] "yyyy-MM-dd HH:mm:ss.SSS")
-(timbre/set-config! [:appenders :spit :enabled?] true)
-(timbre/set-config! [:shared-appender-config :spit-filename]
-  (str (c/log-dir) "/protean.log"))
+(timbre/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
+(timbre/merge-config! {:appenders {:spit (appenders/spit-appender {:fname
+  (str (c/log-dir) "/protean2.log")})}})
 (timbre/set-level! (c/log-level))
 
 (defn- files [c-dir ext]
