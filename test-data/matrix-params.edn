@@ -19,8 +19,9 @@
     "sortDirection" {:type :SortDirection}
     ";groupFilter" {
       :type :MatrixParams
+      ; doc includes struct information, since not currently included in generated doc
       :doc "matrix parameters to filter groups. Valid parameters are: groupId (multiple), city (multiple)"
-      :examples [";city=London,Glasgow"]
+    ;  :examples [";city=London,Glasgow" ";city=London;city=Glasgow" ";city=London;city=Glasgow;groupId=10"]
       :struct {
         "groupId" ["${groupId}" :optional :multiple]
         "city"    ["${city}"    :optional :multiple]
@@ -28,8 +29,9 @@
     }
     ";userFilter" {
       :type :MatrixParams
+      ; doc includes struct information, since not currently included in generated doc
       :doc "matrix parameters to filter users. Valid parameters are: active, userId (multiple)"
-      :examples [";active=true"]
+    ;  :examples [";active=true" ";userId=7;userId=9"]
       :struct {
         "userId" ["${userId}" :optional :multiple]
         "active" ["${active}" :optional]
