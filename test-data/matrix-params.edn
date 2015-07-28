@@ -1,0 +1,115 @@
+{
+  :includes [ "defaults.edn" ]
+
+  :title "Groups and Users"
+  :doc "Groups and Users API - a Matrix Params example."
+
+  :types {
+    :SortBy "[a-zA-Z]{0,10}"
+    :SortDirection "(asc|desc)"
+  }
+  :vars {
+    "groupId"       {:type :Int           :doc "Group Id"}
+    "userId"        {:type :Int           :doc "User Id"}
+    "active"        {:type :Boolean       :doc "Optionally filter by active flag"}
+    "city"          {:type :String        :doc "City"}
+    "page"          {:type :Int           :doc "page for paginated results. default value: 1" :examples [1]}
+    "perPage"       {:type :Int           :doc "num results per page for paginated results, default value: 10" :examples [10]}
+    "sortBy"        {:type :SortBy        :doc "any resource property"}
+    "sortDirection" {:type :SortDirection}
+    ";groupFilter" {
+      :type :MatrixParams
+      :doc "matrix parameters to filter groups. Valid parameters are: groupId (multiple), city (multiple)"
+      :examples [";city=London,Glasgow"]
+      :struct {
+        "groupId" ["${groupId}" :optional :multiple]
+        "city"    ["${city}"    :optional :multiple]
+      }
+    }
+    ";userFilter" {
+      :type :MatrixParams
+      :doc "matrix parameters to filter users. Valid parameters are: active, userId (multiple)"
+      :examples [";active=true"]
+      :struct {
+        "userId" ["${userId}" :optional :multiple]
+        "active" ["${active}" :optional]
+      }
+    }
+  }
+
+
+
+  "gu" {
+    "groups${;groupFilter}" {
+
+      ;;; =====================================================================
+      ;;; Retrieve groups
+      ;;; =====================================================================
+
+      :get {
+        :doc "Get groups"
+        :description "Returns groups."
+        :req {
+          :query-params {
+            "sortBy"        ["${sortBy}"        :optional]
+            "sortDirection" ["${sortDirection}" :optional]
+            "page"          ["${page}"          :optional]
+            "perPage"       ["${perPage}"       :optional]
+          }
+        }
+        :rsp {
+          :200 {}
+          :400 {:doc "Bad request"}
+        }
+      }
+    }
+
+    "groups/${groupId}/users${;userFilter}" {
+
+      ;;; =====================================================================
+      ;;; Retrieve users for given groupId
+      ;;; =====================================================================
+
+      :get {
+        :doc "Get users for given groupId"
+        :description "Returns users for given groupId (equivalent to gu/groups;groupId=${groupId}/users${;userFilter})."
+        :req {
+          :query-params {
+            "sortBy"        ["${sortBy}"        :optional]
+            "sortDirection" ["${sortDirection}" :optional]
+            "page"          ["${page}"          :optional]
+            "perPage"       ["${perPage}"       :optional]
+          }
+        }
+        :rsp {
+          :200 {}
+          :400 {:doc "Bad request"}
+        }
+      }
+    }
+
+    "groups${;groupFilter}/users${;userFilter}" {
+
+      ;;; =====================================================================
+      ;;; Retrieve users for groups
+      ;;; =====================================================================
+
+      :get {
+        :doc "Get users for groups"
+        :description "Returns users associated with groups."
+        :req {
+          :query-params {
+            "sortBy"        ["${sortBy}"        :optional]
+            "sortDirection" ["${sortDirection}" :optional]
+            "page"          ["${page}"          :optional]
+            "perPage"       ["${perPage}"       :optional]
+          }
+        }
+        :rsp {
+          :200 {}
+          :400 {:doc "Bad request"}
+        }
+      }
+    }
+  }
+}
