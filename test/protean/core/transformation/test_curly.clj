@@ -33,9 +33,7 @@
           :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
         }
       }
-      :req {
-        :query-params {:required {"blurb" "${blurb}"}}
-      }
+      :req {:query-params {"blurb" ["${blurb}" :required]}}
       :vars {"blurb" {:doc "A sample request param", :type :String}}
     }
     {
@@ -45,7 +43,7 @@
             :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
           }
         }
-        :req {:query-params {:required {"blurb" "${blurb}"}}}
+        :req {:query-params {"blurb" ["${blurb}" :required]}}
         :vars {"blurb" {:doc "A sample request param", :type :String}}
       }
     }
@@ -57,7 +55,7 @@
               :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
             }
           }
-          :req {:query-params {:required {"blurb" "${blurb}"}}}
+          :req {:query-params {"blurb" ["${blurb}" :required]}}
           :vars {"blurb" {:doc "A sample request param", :type :String}}
         }
       }
@@ -74,7 +72,7 @@
                 :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
               }
             }
-            :req {:query-params {:required {"blurb" "${blurb}"}}}
+            :req {:query-params {"blurb" ["${blurb}" :required]}}
             :vars {"blurb" {:doc "A sample request param", :type :String}}
           }
         }

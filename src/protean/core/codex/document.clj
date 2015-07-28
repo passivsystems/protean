@@ -117,9 +117,7 @@
 (defn rsp-ctype [rsp-code tree]
   (let [ctype (get-in (codex-rsp-hdrs rsp-code tree) h/ctype)
         body-schema (git tree [:rsp rsp-code :body-schema])
-;         TODO swap - backwards compatibiliy req body-example should always be a list
-;         body-example (first (git tree [:rsp rsp-code :body-example]))]
-        body-example (first (flatten (list (git tree [:rsp rsp-code :body-example]))))]
+        body-example (first (git tree [:rsp rsp-code :body-example]))]
     (cond
       ctype ctype
       body-schema (h/mime-schema body-schema)

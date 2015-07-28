@@ -107,9 +107,7 @@
       (spit (str target-dir (name rsp-code) ".edn")
         (pr-str {:code (name rsp-code)
                  :doc (if-let [d (:doc v)] d "N/A")
-;                  TODO swap - backwards compatibiliy req body-example should always be a list
-;                  :sample-response (if-let [s (first (:body-example v))] (slurp-file s tree) "N/A")
-                 :sample-response (if-let [s (first (flatten (list (:body-example v))))] (slurp-file s tree) "N/A")
+                 :sample-response (if-let [s (first (:body-example v))] (slurp-file s tree) "N/A")
                  :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
                  :rsp-body-schema-id (str "schema-" (name rsp-code))
                  :rsp-body-schema-title (if schema (fname schema) "N/A")
@@ -194,7 +192,7 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
-  ;; TODO remove for smooth transistion between Silk 0.10.0 and latest
+  ;; TODO remove? This was added for transistion between Silk 0.10.0 and 0.11.0
   (when-let [d (dsk/exists-dir? "silk_templates/data")] (dsk/delete-directory d))
   (silk/spin-or-reload false silk-staging-dir false false)
   (dsk/copy-recursive (str silk-staging-dir "/site") (cfg/target-dir)))
