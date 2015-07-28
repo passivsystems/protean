@@ -89,21 +89,22 @@
 (defmacro version [] (System/getProperty "protean.version"))
 
 (defn start [codex-dir]
-  (let [api-port (c/sim-port)
-        c-dir (or codex-dir (c/codex-dir))]
-    (info "Starting protean - v" (version))
-    (info "Codex directory : " c-dir)
+  (timbre/log-and-rethrow-errors
+    (let [api-port (c/sim-port)
+          c-dir (or codex-dir (c/codex-dir))]
+      (info "Starting protean - v" (version))
+      (info "Codex directory : " c-dir)
 
-    ;; configure classpath for this instance of protean
-    ;; we currently support local clj artefacts and remote coords (e.g. clojars)
-    ;; TODO: support local jar files in a directory
-    (pom/add-classpath c-dir)
-    (pom/add-classpath (str (file c-dir "clj")))
+      ;; configure classpath for this instance of protean
+      ;; we currently support local clj artefacts and remote coords (e.g. clojars)
+      ;; TODO: support local jar files in a directory
+      (pom/add-classpath c-dir)
+      (pom/add-classpath (str (file c-dir "clj")))
 
-    (info (str "Codices loaded : " (build-services c-dir)))
-    (info (str "Sim extensions loaded : " (build-sims c-dir)))
-    (server (co/int api-port) (co/int (c/admin-port)))
-    (info (str "Protean has started"
-      " : sim-port " api-port ", admin-port " (c/admin-port)))))
+      (info (str "Codices loaded : " (build-services c-dir)))
+      (info (str "Sim extensions loaded : " (build-sims c-dir)))
+      (server (co/int api-port) (co/int (c/admin-port)))
+      (info (str "Protean has started"
+        " : sim-port " api-port ", admin-port " (c/admin-port))))))
 
 (defn -main [& args] (start nil))
