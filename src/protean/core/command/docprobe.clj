@@ -63,14 +63,20 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defn- doc-params [target-dir params]
+(defn- doc-params [tree target-dir params]
   "Doc query params for a given node.
    target-dir is the directory to write to.
    Params is the gen information for a resources params."
   (.mkdirs (File. target-dir))
-  (doseq [[k v] params]
-    (let [qm {:title k :type (:type v) :doc (:doc v) :attr (stg/join " " (:attr v))}]
-      (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
+  (let [schema-file (d/get-in-tree tree [:req :body-schema])
+        schema (if schema-file (co/hic-file schema-file) nil)
+        schema-ext (dsk/extension (file schema-file))]
+    (doseq [[k v] params]
+      (let [opt-k (some #{k} (get-in schema ["required"]))
+            req-opt (if (empty? (:attr v)) [:required] (:attr v))
+            optionality (if (= "json" schema-ext) (if opt-k :required :optional) (stg/join "" req-opt))
+            qm {:title k :type (:type v) :doc (:doc v) :attr optionality}]
+        (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm))))))
 
 (defn- doc-hdrs [target-dir hdrs]
   "Doc headers for a given node.
@@ -170,7 +176,7 @@
                   :req-body-schema (if schema (slurp-file schema tree) "N/A")}]
         (spit-to (str data-dir "/global/site.edn") (pr-str site))
         (spit-to (str data-dir "/api/" id ".edn") (pr-str full))
-        (doc-params (str data-dir "/" id "/params/") (input-params tree uri))
+        (doc-params tree (str data-dir "/" id "/params/") (input-params tree uri))
         (doc-hdrs (str data-dir "/" id "/headers/") (d/req-hdrs tree))
         (doc-body-examples (str data-dir "/" id "/body-examples/") full tree (d/get-in-tree tree [:req :body-example]))
         (doc-status-codes (str data-dir "/" id "/status-codes-success/") tree (d/success-status tree))
