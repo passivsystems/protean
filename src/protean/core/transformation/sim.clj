@@ -37,8 +37,11 @@
     (re-matches (re-pattern regex) requested-endpoint)))
 
 (defn- to-endpoint [requested-endpoint paths svc]
-  (let [endpoints (keys (get-in paths [svc]))]
-    (first (filter #(parse-endpoint requested-endpoint %) endpoints))))
+  (let [endpoints (keys (get-in paths [svc]))
+        filtered-ep (filter #(parse-endpoint requested-endpoint %) endpoints)]
+    (if (next filtered-ep)
+      (or (some #{requested-endpoint} filtered-ep) requested-endpoint nil)
+        (first (filter #(parse-endpoint requested-endpoint %) endpoints)))))
 
 (defn- stacktrace [e]
   (let [sw (java.io.StringWriter.)]
