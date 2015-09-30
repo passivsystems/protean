@@ -8,7 +8,7 @@
 ;; Methods
 ;;;;;;;;;;
 
-(def methods #{:get :post :put :delete :patch :head})
+(def methods #{:get :post :put :delete :patch :head :options})
 
 ;; Status codes
 ;;;;;;;;;;;;;;;
