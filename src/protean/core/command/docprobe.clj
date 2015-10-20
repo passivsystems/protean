@@ -69,7 +69,13 @@
    Params is the gen information for a resources params."
   (.mkdirs (File. target-dir))
   (doseq [[k v] params]
-    (let [qm {:title k :type (:type v) :doc (:doc v) :attr (stg/join " " (:attr v))}]
+    (let [qm {:title k
+              :type (:type v)
+              :regx (if (:regx v)
+                      (str "Custom type (defined by regx): " (:regx v))
+                      (str "Native Protean type: " (name (:type v))))
+              :doc (:doc v)
+              :attr (stg/join " " (:attr v))}]
       (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
 (defn- doc-hdrs [target-dir hdrs]
@@ -131,7 +137,8 @@
             (drop 1 (d/get-in-tree tree [:req :form-params varname])))))
         to-map (fn [varname]
           {varname (-> (d/get-in-tree tree [:vars varname])
-                       (merge {:attr (get-attr varname)}))})]
+                       (merge {:attr (get-attr varname)})
+                       (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))})]
   (reduce merge (map to-map ph-names))))
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
