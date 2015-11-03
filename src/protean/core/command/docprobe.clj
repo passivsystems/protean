@@ -76,11 +76,11 @@
             req-opt (if (empty? (:attr v)) [:required] (:attr v))
             optionality (if (= "json" schema-ext) (if opt-k :required :optional) (stg/join "" req-opt))
             qm {:title k
-                :type (:type v)
+                :type (:type v "*undefined!")
                 :regx (if (:regx v)
                         (str "Custom type (defined by regx): " (:regx v))
-                        (str "Native Protean type: " (name (:type v))))
-                :doc (:doc v)
+                        (str "Native Protean type: " (name (:type v "*undefined!"))))
+                :doc (:doc v " ")
                 :attr optionality}]
         (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm))))))
 
