@@ -70,11 +70,12 @@
   (.mkdirs (File. target-dir))
   (doseq [[k v] params]
     (let [qm {:title k
-              :type (:type v)
-              :regx (if (:regx v)
-                      (str "Custom type (defined by regx): " (:regx v))
-                      (str "Native Protean type: " (name (:type v))))
-              :doc (:doc v)
+              :type (:type v "Undefined")
+              :regx (cond
+                      (:regx v) (str "Custom type defined by regx: " (:regx v))
+                      (:type v) (str "Standard type: " (name (:type v)))
+                      :else     "The type was not defined")
+              :doc (:doc v "")
               :attr (stg/join " " (:attr v))}]
       (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
 
