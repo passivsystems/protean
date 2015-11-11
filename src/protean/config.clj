@@ -13,7 +13,11 @@
 
 (defn sim-port [] (or (env :protean-sim-port) "3000"))
 
+(defn sim-max-threads [] (or (env :protean-sim-max-threads) "1000"))
+
 (defn admin-port [] (or (env :protean-admin-port) "3001"))
+
+(defn admin-max-threads [] (or (env :protean-admin-max-threads) "50"))
 
 (defn codex-dir [] (or (env :protean-codex-dir) (d/pwd)))
 

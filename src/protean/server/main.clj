@@ -8,7 +8,6 @@
             [compojure.core :refer [defroutes ANY DELETE GET POST PUT]]
             [compojure.handler :as handler]
             [compojure.route :as route]
-            [environ.core :refer [env]]
             [cemerick.pomegranate :as pom]
             [me.rossputin.diskops :as do]
             [protean.config :as c]
@@ -75,11 +74,17 @@
 ;; Server setup
 ;; =============================================================================
 
-(defn- server [api-port admin-port]
-  (jetty/run-jetty (-> admin-routes mp/wrap-multipart-params)
-    {:port admin-port :join? false})
-  (jetty/run-jetty (-> api-routes handler/api mp/wrap-multipart-params)
-    {:port api-port :join? false}))
+(defn- server [sim-port sim-max-threads admin-port admin-max-threads]
+  (jetty/run-jetty
+    (-> admin-routes mp/wrap-multipart-params)
+    { :port (co/int admin-port)
+      :join? false
+      :max-threads (co/int admin-max-threads)})
+  (jetty/run-jetty
+    (-> api-routes handler/api mp/wrap-multipart-params)
+    { :port (co/int sim-port)
+      :join? false
+      :max-threads (co/int sim-max-threads)}))
 
 
 ;; =============================================================================
@@ -90,7 +95,10 @@
 
 (defn start [codex-dir]
   (timbre/log-and-rethrow-errors
-    (let [api-port (c/sim-port)
+    (let [sim-port (c/sim-port)
+          sim-max-threads (c/sim-max-threads)
+          admin-port (c/admin-port)
+          admin-max-threads (c/admin-max-threads)
           c-dir (or codex-dir (c/codex-dir))]
       (info "Starting protean - v" (version))
       (info "Codex directory : " c-dir)
@@ -103,8 +111,9 @@
 
       (info (str "Codices loaded : " (build-services c-dir)))
       (info (str "Sim extensions loaded : " (build-sims c-dir)))
-      (server (co/int api-port) (co/int (c/admin-port)))
-      (info (str "Protean has started"
-        " : sim-port " api-port ", admin-port " (c/admin-port))))))
+      (server sim-port sim-max-threads admin-port admin-max-threads)
+      (info (str "Protean has started \n"
+                 "Sim Port:   " sim-port   " Max threads: " sim-max-threads "\n"
+                 "Admin Port: " admin-port " Max threads: " admin-max-threads)))))
 
 (defn -main [& args] (start nil))
