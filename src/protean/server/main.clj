@@ -27,7 +27,7 @@
 
 (timbre/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
 (timbre/merge-config! {:appenders {:spit (appenders/spit-appender {:fname
-  (str (c/log-dir) "/protean2.log")})}})
+  (str (c/log-dir) "/protean.log")})}})
 (timbre/set-level! (c/log-level))
 
 (defn- files [c-dir ext]
