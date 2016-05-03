@@ -128,7 +128,7 @@
                  (map val (d/get-in-tree tree [:req :body]))
                  (->> (d/get-in-tree tree [:req :body-example])
                       (map #(d/to-path % tree))
-                      (map #(co/hic-file %)))
+                      (map #(slurp %)))
                  (map val (d/get-in-tree tree [:req :headers])))
         extract-ph-names (fn [input] (map second (ph/holder? input)))
         ph-names (filter identity (reduce concat (map extract-ph-names inputs)))

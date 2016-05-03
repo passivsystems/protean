@@ -32,11 +32,6 @@
 
 (defn pretty-xml [d] (xml/indent-str (xml d)))
 
-(defn hic-file [f]
-  (if (.endsWith (clojure.string/lower-case f) ".json")
-    (clj (slurp f))
-    (xml (slurp f))))
-
 (defn ->matrix-params [m]
   (->> m
     (map (fn [[k v]] (str k "=" v)))
