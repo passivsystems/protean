@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
+            [clojure.pprint :refer [pprint *print-miser-width* *print-right-margin*]]
             [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
             [protean.cli.interface :as i]
@@ -145,6 +146,64 @@
 
 (defn- sim [{:keys [host port directory body]}] (ps/start directory))
 
+(defn sim-tree-value-fn
+  "transform a codex tree map value into a sim tree map value"
+  [k v]
+  (let [mk (first (keys v))]
+    (println "k : " k)
+    (println "method-key : " mk)
+    (hash-map mk ['#(flibble)])))
+
+(defn emit-sim-tree
+  "transform a codex tree map m into a sim tree"
+  [m]
+  (hash-map "service" (into {} (for [[k v] (get m "service")] [k (sim-tree-value-fn k v)]))))
+
+(defn emit-ns
+  "emit a namespace for the simext
+   m is the codex map"
+  [m]
+  `(ns ~(symbol (str "protean" "." "service" "." "simext"))))
+
+(defn emit-endpoint-fn
+  "emit an endpoint function built from the current map entry e"
+  [e]
+  (let [fn-name "flibble"]
+    `(defn ~(symbol fn-name) [] "I am a simple flibble response")))
+
+(def m
+  {
+    "service" {
+      "api/v1/landings" {
+        :get {
+          :doc "Gets all landings"
+          :rsp { :200 { :body-example ["some-store-artefact"] } }
+        }
+      }
+      "api/v1/landings/${landingId}/sub-landings" {
+        :get {
+          :doc "Get a sub landings for a specific landing"
+          :rsp { :200 { :body-example ["some-store-sub-artefact"] } }
+        }
+      }
+    }
+  }
+)
+
+(defn- build [options]
+  (let [n m
+        f-res (emit-sim-tree m)
+        n (emit-ns m)
+        str-n (pr-str n)
+        epf (emit-endpoint-fn m)
+        str-epf (pr-str epf)
+        pretty-st (with-out-str (clojure.pprint/pprint f-res))
+        sim-out (str str-n "\n" str-epf "\n" pretty-st)]
+    (println "pretty-n : " str-n)
+    (pprint f-res)
+    (println "concat : " sim-out)
+    (spit "new-simext.sim.edn" sim-out)))
+
 
 ;; =============================================================================
 ;; Application entry point
@@ -168,6 +227,7 @@
       (and (= cmd i/visit (i/visit? options))) (bomb summary)
       (and (= cmd i/doc (i/doc? options))) (bomb summary)
       (and (= cmd i/int-test (i/int-test? options))) (bomb summary)
+      (and (= cmd i/sim (i/sim? options))) (bomb summary)
       (and (= cmd i/sim (i/sim? options))) (bomb summary))))
 
 (defn -main [& args]
@@ -188,5 +248,6 @@
       (= cmd i/doc) (doc options)
       (= cmd i/int-test) (integration-test options)
       (= cmd i/sim) (sim options)
+      (= cmd i/build) (build options)
       :else (exit 1 (usage-exit summary)))
     (shutdown-agents))) ; write graph image file seems to create threads which are not shutdown

@@ -216,6 +216,7 @@
 (defn- add-manual-dependencies
   "endpoint ordering that may not be inferred from codex may be provided in corpus"
   [gs corpus probes]
+  (hlr "!!!!!! corpus : " corpus)
   (let [probe-match (fn [[svc method path] p]
                     (and
                        (= (get-in p [:entry :svc]) svc)
