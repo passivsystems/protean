@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [clojure.edn :as edn]
             [clojure.java.io :refer [file]]
+            [clojure.pprint :refer [pprint *print-miser-width* *print-right-margin*]]
             [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
             [protean.cli.interface :as i]
@@ -145,6 +146,86 @@
 
 (defn- sim [{:keys [host port directory body]}] (ps/start directory))
 
+(defn sim-tree-value-fn
+  "transform a codex tree map value into a sim tree map value"
+  [k v]
+  (println "k : " k ", v : " v)
+  (for [mk (keys v)]
+    (let [fname (symbol (str (name mk) "-rsp"))]
+      (hash-map mk [`#(~fname)]))))
+
+(defn emit-sim-tree
+  "transform a codex tree map m into a sim tree"
+  [m]
+  (hash-map "scrs" (into {} (for [[k v] (get m "scrs")] [k (sim-tree-value-fn k v)]))))
+
+(defn emit-ns
+  "emit a namespace for the simext
+   m is the codex map"
+  [m]
+  `(ns ~(symbol (str "protean" "." "service" "." "simext"))))
+
+(defn emit-endpoint-fn
+  "emit an endpoint function built from the current map entry e"
+  [k v]
+  (for [mk (keys v)]
+    (let [fname (symbol (str (name mk) "-rsp"))]
+      `(defn ~fname [] "I am a simple flibble response"))))
+
+(defn emit-endpoint-fns
+  "emit endpoint functions built from map"
+  [m]
+  (mapcat identity (for [[k v] (get m "scrs")] (emit-endpoint-fn k v))))
+
+(def m
+  {
+    "scrs" {
+      "taxes/${id}" {
+        :get {
+          :doc "Gets a tax"
+          :rsp { :200 { :body-example ["some-store-artefact"] } }
+        }
+        :delete {
+          :doc "Delete a tax"
+          :rsp { :204 { :doc "No Content" } }
+        }
+        :put {
+          :doc "Edit a tax"
+          :rsp { :204 { :doc "No Content" } }
+        }
+      }
+
+      "taxes" {
+        :get {
+          :doc "Get all taxes"
+          :rsp { :200 { :body-example ["some-store-sub-artefact"] } }
+        }
+        :post {
+          :doc "Create a tax"
+          :rsp { :201 { :headers {"Location" "/taxes/${id}"} } }
+        }
+      }
+    }
+  }
+)
+
+(defn- build [options]
+  (let [n m
+        f-res (emit-sim-tree m)
+        n (emit-ns m)
+        str-n (pr-str n)
+        epf (emit-endpoint-fns m)
+        str-epf (apply pr-str epf)
+        pretty-st (with-out-str (clojure.pprint/pprint f-res))
+        sim-out (str str-n "\n" str-epf "\n" pretty-st)]
+    (println "pretty-n : " str-n)
+    (println "!!!! functions : " str-epf)
+    (println "count of str-epf : " (count str-epf))
+    (pr-str str-epf)
+    (pprint f-res)
+    (println "concat : " sim-out)
+    (spit "new-simext.sim.edn" sim-out)))
+
 
 ;; =============================================================================
 ;; Application entry point
@@ -168,7 +249,8 @@
       (and (= cmd i/visit (i/visit? options))) (bomb summary)
       (and (= cmd i/doc (i/doc? options))) (bomb summary)
       (and (= cmd i/int-test (i/int-test? options))) (bomb summary)
-      (and (= cmd i/sim (i/sim? options))) (bomb summary))))
+      (and (= cmd i/sim (i/sim? options))) (bomb summary)
+      (and (= cmd i/build (i/build? options))) (bomb summary))))
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
@@ -188,5 +270,6 @@
       (= cmd i/doc) (doc options)
       (= cmd i/int-test) (integration-test options)
       (= cmd i/sim) (sim options)
+      (= cmd i/build) (build options)
       :else (exit 1 (usage-exit summary)))
     (shutdown-agents))) ; write graph image file seems to create threads which are not shutdown
