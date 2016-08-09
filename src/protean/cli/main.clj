@@ -150,9 +150,10 @@
   "transform a codex tree map value into a sim tree map value"
   [k v]
   (println "k : " k ", v : " v)
-  (for [mk (keys v)]
-    (let [fname (symbol (str (name mk) "-rsp"))]
-      (hash-map mk [`#(~fname)]))))
+  (apply merge
+    (for [mk (keys v)]
+      (let [fname (symbol (str (name mk) "-rsp"))]
+        (hash-map mk [`#(~fname)])))))
 
 (defn emit-sim-tree
   "transform a codex tree map m into a sim tree"
