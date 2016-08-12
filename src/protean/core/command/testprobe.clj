@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [clojure.java.io :refer [file]]
             [clojure.set :as st]
+            [clojure.pprint]
             [io.aviso.ansi :as aa]
             [protean.config :as cfg]
             [protean.core.codex.document :as d]
@@ -78,13 +79,31 @@
               (body-val tree)))]
     (mapcat collect-params phs)))
 
+(defn- find-nested
+  [m k]
+  (->> (tree-seq map? vals m)
+       (filter map?)
+       (some k)))
+
+(defn- body-items [tree res]
+  (println "!!!!****>>>>^^^^ res : " res)
+  (or
+    (get-in res [:body-data])
+    (let [rawb (co/clj (slurp (d/to-path (first (:body-example res)) tree)) true)
+          body-keys (find-nested rawb :href)]
+      (println "!!!!!!!!!!!!!NNNNNNNNN body-keys : " body-keys)
+      {:href body-keys})))
+
 (defn- outputs-names [tree]
   (let [res (val (first (d/success-status tree)))]
     (distinct (concat
       (collect-params (get-in res [:headers]))
-      (collect-params (get-in res [:body-data]))))))
+      (collect-params (body-items tree res))))))
 
 (defn- outputs-hdrs [response [k v]]
+  (println "!!!! >> in output-hdrs")
+  (println "!!!! v : " v)
+  (println "!!!! holder : " (ph/holder? v))
   (when-let [holder (ph/holder? v)]
     (for [ph (map second holder)]
       (do ;(println "ph:" ph)
@@ -94,9 +113,12 @@
             {:error (str "could not extract " ph " from " response-value " with template '" v "'")}))))))
 
 (defn- outputs-body [response [k v]]
+  (println "!!!! >> in outputs-body v : " v)
   (when-let [holder (ph/holder? v)]
     (let [response-body (get-in response [:body])
           ctype (pp/ctype response)]
+      (println "!!!! outputs-body v : " v)
+      (println "!!!! outputs-body holder : " holder)
       (for [ph (map second holder)]
         (do ;(println "ph:" ph)
           (cond
@@ -105,20 +127,31 @@
             :else
               (try
                 (let [json (co/clj response-body true)]
-                  (when-let [response-value (jp/at-path k json)]
+                (println "NNNNNNNNNNIIIIIIIIICCCCCCCKKKKKKKKK NOOOOOOOOOO!!!!!!")
+                (println "response-body : " response-body)
+                (println "K : " k)
+                (println "json : " json)
+                  (when-let [response-value (find-nested json k)]
                     (if-let [extract (ph/read-from v ph response-value)]
                       {:ph ph :val extract}
                       {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
                  (catch Exception e
                    {:error (str "Could not parse json: " response-body " \n " e)}))))))))
 
+;; TODO: include a read on the response body from file, extracting href style HATEOAS or other links
+;;       which contain matching uri and identifier composite
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))
         header-phs (remove nil? (mapcat (partial outputs-hdrs response) (get-in res [:headers])))
-        body-phs (remove nil? (mapcat (partial outputs-body response) (get-in res [:body-data])))
+        body-phs (remove nil? (mapcat (partial outputs-body response) (body-items tree res)))
         to-entry (fn [e] [(:ph e) (:val e)])
         bag (into {} (map to-entry (concat header-phs body-phs)))
         errors (remove nil? (map :error (concat header-phs body-phs)))]
+    (println "!!!! >>>> outputs-values res : " res)
+    (println "!!!! >>>> outputs-values get-in res headers : " (get-in res [:headers]))
+    (println "!!!! >>>> outputs-values get-in res body-data : " (get-in res [:body-data]))
+    (println "!!!! >>>> outputs-values, header-phs : " header-phs)
+    (println "!!!! >>>> outputs-values, body-phs : " body-phs)
     {:bag bag :errors errors}))
 
 (defn- uri [host port {:keys [svc path] :as entry}]
@@ -137,6 +170,7 @@
   (for [[type label req-template] req-templates]
     [type label (fn [bag]
         (let [request (ph/swap req-template tree bag)]
+          (println "<><><><><><><><><>request swapped placeholder : " request)
           (if-let [phs (ph/holder? request)]
             [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
             (t/test! request))))])))
@@ -295,6 +329,7 @@
 
 (defmethod pb/dispatch :test [_ corpus probes]
   (hlg "dispatching probes")
+  (clojure.pprint/pprint probes)
   (let [gs (build-graphs corpus probes)
         ordered-probes (select-path gs (get-in (first probes) [:entry :svc]))
         bag (get-in corpus [:seed])
@@ -307,7 +342,9 @@
           (println "\nexecuting probes in the following order:\n"
             (s/join "\n" (map print-inputs-outputs ordered-probes))
             "\n")
-          (reverse (second (reduce execute [bag (list)] ordered-probes)))))))
+          (reverse
+            (second
+              (reduce execute [bag (list)] ordered-probes)))))))
 
 ;; =============================================================================
 ;; Probe data analysis

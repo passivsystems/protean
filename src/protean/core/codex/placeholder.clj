@@ -129,6 +129,7 @@
   (into [] (map s/join (diff (char-array (str s1)) (char-array (str s2))))))
 
 (defn read-from [template a-ph s]
+  (println "!!! template : " template)
   (let [[left right] (diff-str template s)
         diff-match (if left (re-matches ph left))]
         ; note currently only works until first mismatch.
