@@ -129,15 +129,6 @@
   (into [] (map s/join (diff (char-array (str s1)) (char-array (str s2))))))
 
 (defn read-from [template a-ph s]
-  (println "!!! template : " template)
   (let [[left right] (diff-str template s)
-        diff-match (if left (re-matches ph left))]
-        ; note currently only works until first mismatch.
-        ; Which only works if our placeholder is the only placeholder, and is at the end of the string.
-        ; e.g. abc${def} - ok
-        ;      abc${def}ghi - not ok
-    (println "left" left)
-    (println "right" right)
-    (println "diff-match" diff-match)
-    (if (= (second diff-match) a-ph)
-      right)))
+        lookup (zipmap (s/split left #"/") (s/split right #"/"))]
+    (lookup (str "${" a-ph "}"))))
