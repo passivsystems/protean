@@ -24,7 +24,7 @@
 .bs-sidebar .nav > li > a {
   display: block;
   color: #716b7a;
-  padding: 5px 20px;
+  padding: 5px 10px;
   word-wrap: break-word;
 }
 .bs-sidebar .nav > li > a:hover,
@@ -56,25 +56,20 @@
 
 /* Show and affix the side nav when space allows it */
 @media screen and (min-width: 992px) {
-  .bs-sidebar .nav > .active > ul {
-    display: block;
-  }
   /* Widen the fixed sidebar */
   .bs-sidebar.affix,
   .bs-sidebar.affix-bottom {
-    width: 213px;
+    width: inherit;
+    padding-left: 0px;
+    padding-right: inherit;
   }
+
   .bs-sidebar.affix {
-    position: fixed; /* Undo the static from mobile first approach */
-    top: 80px;
+    position: fixed;
+    top: 30px;
   }
   .bs-sidebar.affix-bottom {
-    position: absolute; /* Undo the static from mobile first approach */
-  }
-  .bs-sidebar.affix-bottom .bs-sidenav,
-  .bs-sidebar.affix .bs-sidenav {
-    margin-top: 0;
-    margin-bottom: 0;
+    position: relative;;
   }
 }
 
