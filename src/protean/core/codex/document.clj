@@ -135,9 +135,9 @@
       [k (update-in v [:headers] #(merge (git tree [:rsp :headers]) %))])]
     (seq (into {} (map include-defaults statuses)))))
 
-(defn success-status [tree] (status-matching tree #"2\d\d"))
+(defn success-status [tree] (status-matching tree #"[123]\d\d"))
 
-(defn error-status [tree] (status-matching tree #"[1345]\d\d"))
+(defn error-status [tree] (status-matching tree #"[45]\d\d"))
 
 
 ;; =============================================================================
