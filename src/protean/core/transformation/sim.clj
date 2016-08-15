@@ -125,8 +125,8 @@
 (defn body [] (:body *request*))
 
 (defn body-clj
-  ([] (c/clj (:body *request*)))
-  ([k] (c/clj (:body *request*) (or k false))))
+  ([] (c/clj (body)))
+  ([k] (c/clj (body) (or k false))))
 
 (defn query-param [p] (get-in *request* [:query-params p]))
 
@@ -152,7 +152,9 @@
 
 (defn form-param [p] (get-in *request* [:form-params p]))
 
-(defn body-param [p] ((body-clj) p))
+(defn body-param
+  ([p] ((body-clj) p))
+  ([p k] (p (body-clj k))))
 
 (defn header [h] (get-in *request* [:headers h]))
 

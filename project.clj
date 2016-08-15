@@ -22,6 +22,7 @@
                  [expectations "2.0.13"]
                  [me.raynes/laser "1.1.1"]
                  [me.raynes/hickory "0.4.2"]
+                 [lockedon/if-let "0.1.0"]
                  [me.rossputin/diskops "0.4.1"]
                  [org.silkyweb/silk "0.7.0"]
                  [me.rossputin/pew "0.1.0"]
