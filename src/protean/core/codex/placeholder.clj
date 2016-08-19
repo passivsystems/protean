@@ -119,6 +119,26 @@
 ;; Extraction functions
 ;; =============================================================================
 
+(defn- query-param-value
+  [tree request placeholder]
+  (let [qps    (d/qps tree true)
+        ph-qps (into (sorted-map) (map #(hash-map (ffirst(holder? %)) (second %)) (map-invert qps)))
+        param  (get-in ph-qps [placeholder])
+        value  (get-in request [:params (keyword param)])]
+    (when-let [qps-v (get-in qps [param])]
+      (second (re-find (re-pattern (s/replace qps-v ph "(.*)")) value)))))
+
+(defn response-bag
+  "Creates a bag of placeholder values for the response from the request"
+  [tree tree-response request]
+  (into
+    (sorted-map)
+    (map
+      #(hash-map
+        (second %)
+        (query-param-value tree request (first %)))
+      (holder? tree-response))))
+
 (defn- diff [s1 s2]
   (cond
     (and (nil? (first s1)) (nil? (first s2))) []

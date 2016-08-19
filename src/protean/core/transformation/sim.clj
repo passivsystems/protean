@@ -191,7 +191,7 @@
         success (format-rsp (rand-nth successes))]
     (if (empty? successes)
       (log-warn "warning - no successes found for endpoint" [svc uri request-method])
-      (ph/swap success *tree* {} :gen-all true))))
+      (ph/swap success *tree* (ph/response-bag *tree* success *request*) :gen-all true))))
 
 (defn error
   "Returns a specific or randomly selected error response for an endpoint"
@@ -202,7 +202,7 @@
           error-rsp (format-rsp (first error))]
       (when (empty? errors) (log-warn "warning - no errors found for endpoint" [svc uri request-method]))
       (when (empty? error) (log-warn "warning - sim extension error not described in codex" [svc uri request-method]))
-      (if (seq error) (ph/swap error-rsp *tree* {} :gen-all true) {:status x})))
+      (if (seq error) (ph/swap error-rsp *tree* (ph/response-bag *tree* error *request*)  :gen-all true) {:status x})))
   ([] (error (Long. (name (first (rand-nth (d/error-status *tree*))))))))
 
 (defn respond
