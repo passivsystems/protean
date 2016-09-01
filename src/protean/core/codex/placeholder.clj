@@ -125,7 +125,7 @@
         ph-qps (into (sorted-map) (map #(hash-map (ffirst(holder? %)) (second %)) (map-invert qps)))
         param  (get-in ph-qps [placeholder])
         value  (get-in request [:params (keyword param)])]
-    (when-let [qps-v (get-in qps [param])]
+    (when-let [qps-v (when (some? value) (get-in qps [param]))]
       (second (re-find (re-pattern (s/replace qps-v ph "(.*)")) value)))))
 
 (defn response-bag
