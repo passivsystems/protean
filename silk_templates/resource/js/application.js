@@ -5,7 +5,7 @@
     var $window = $(window)
     var $body   = $(document.body)
 
-    var navHeight = $('.navbar').outerHeight(true) + 10
+    var navHeight = $('.navbar').outerHeight(true)
 
     $body.scrollspy({
       target: '.bs-sidebar',
@@ -24,7 +24,7 @@
         offset: {
           top: function () {
             var offsetTop      = $sideBar.offset().top
-            var sideBarMargin  = parseInt($sideBar.children(0).css('margin-top'), 10)
+            var sideBarMargin  = parseInt($sideBar.children(0).css('margin-top'), 0)
             var navOuterHeight = $('.bs-docs-nav').height()
 
             return (this.top = offsetTop - navOuterHeight - sideBarMargin)
