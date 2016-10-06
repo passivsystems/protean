@@ -28,7 +28,7 @@
 
 Accepts a request parameter called direction."
         :vars {"direction" {:type :Direction :doc "Direction to move in"}}
-        :req {:query-params {:required {"direction" "${direction}"}}}
+        :req {:query-params { "direction" ["${direction}" :required]}}
         :rsp {
           :200 {
             :doc "OK"
