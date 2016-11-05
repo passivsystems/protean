@@ -63,62 +63,37 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defn- doc-params [target-dir params]
-  "Doc query params for a given node.
-   target-dir is the directory to write to.
-   Params is the gen information for a resources params."
-  (.mkdirs (File. target-dir))
-  (doseq [[k v] params]
-    (let [qm {:title k
-              :type (:type v "Undefined")
-              :regx (cond
-                      (:regx v) (str "Custom type defined by regx: " (:regx v))
-                      (:type v) (str "Standard type: " (name (:type v)))
-                      :else     "The type was not defined")
-              :doc (:doc v "")
-              :attr (stg/join " " (:attr v))}]
-      (spit (str target-dir (UUID/randomUUID) ".edn") (pr-str qm)))))
+(defn- doc-params [params]
+  (vec (for [[k v] params]
+    {:title k
+     :type (:type v "Undefined")
+     :regx (cond
+             (:regx v) (str "Custom type defined by regx: " (:regx v))
+             (:type v) (str "Standard type: " (name (:type v)))
+             :else     "The type was not defined")
+     :doc (:doc v "")
+     :attr (stg/join " " (:attr v))})))
 
-(defn- doc-hdrs [target-dir hdrs]
-  "Doc headers for a given node.
-   target-dir is the directory to write to.
-   hdrs is the codex req/rsp headers."
-  (.mkdirs (File. target-dir))
-  (doseq [[k v] hdrs]
-    (spit (str target-dir (UUID/randomUUID) ".edn")
-          (pr-str {:title k :value v}))))
+(defn- doc-hdrs [hdrs]
+  (vec (for [[k v] hdrs] {:title k :value v})))
 
-(defn- doc-body-examples [target-dir full tree paths]
-  "Doc body examples for a given node.
-  target-dir is the directory to write to.
-  paths is a list rsp body example paths."
-  (.mkdirs (File. target-dir))
-  (doseq [p paths]
-    (let [id (UUID/randomUUID)]
-      (spit (str target-dir id ".edn")
-      (pr-str {
-        :id id
-        :title (fname p)
-        :method (get full :method)
-        :path (get full :path)
-        :value (slurp-file p tree)})))))
+(defn- doc-body-examples [id tree paths]
+  (vec (for [p paths]
+    {:id (str id "-" (fname p))
+     :#id (str "#" id "-" (fname p))
+     :title (fname p)
+     :value (slurp-file p tree)})))
 
-(defn- doc-status-codes [target-dir tree statuses]
-  "Doc response headers for a given node.
-   Directory is the data directory root.
-   Resource is the current endpoint (parent of headers).
-   filter-exp is a regular expression to match the status codes to include."
-  (.mkdirs (File. target-dir))
-  (doseq [[rsp-code v] statuses]
+(defn- doc-status-codes [tree statuses]
+  (vec (for [[rsp-code v] statuses]
     (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])]
-      (spit (str target-dir (name rsp-code) ".edn")
-        (pr-str {:code (name rsp-code)
-                 :doc (if-let [d (:doc v)] d "N/A")
-                 :sample-response (if-let [s (first (:body-example v))] (slurp-file s tree) "N/A")
-                 :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
-                 :rsp-body-schema-id (str "schema-" (name rsp-code))
-                 :rsp-body-schema-title (if schema (fname schema) "N/A")
-                 :rsp-body-schema (if schema (slurp-file schema tree) "N/A")})))))
+      {:code (name rsp-code)
+       :doc (if-let [d (:doc v)] d "N/A")
+       :sample-response (if-let [s (first (:body-example v))] (slurp-file s tree) "N/A")
+       :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
+       :rsp-body-schema-id (str "schema-" (name rsp-code))
+       :rsp-body-schema-title (if schema (fname schema) "N/A")
+       :rsp-body-schema (if schema (slurp-file schema tree) "N/A")}))))
 
 (defn- input-params [tree uri]
   (let [inputs (concat
@@ -167,6 +142,7 @@
             site {:site-name (d/get-in-tree main [:title])
                   :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
             full {:id id
+                  :#id (str "#" id )
                   :path (str svc "/" path)
                   :codex-order codex-order
                   :curl (c/curly-entry-> (assoc-in e [:uri] uri))
@@ -174,16 +150,16 @@
                   :desc (if-let [d (d/get-in-tree tree [:description])] d "")
                   :method (name method)
                   :req-body-schema-id (str "schema-" id)
+                  :#req-body-schema-id (str "#schema-" id)
                   :req-body-schema-title (if schema (fname schema) "N/A")
-                  :req-body-schema (if schema (slurp-file schema tree) "N/A")}]
+                  :req-body-schema (if schema (slurp-file schema tree) "N/A")
+                  :req-params (doc-params (input-params tree uri))
+                  :req-headers (doc-hdrs (d/req-hdrs tree))
+                  :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-example]))
+                  :rsp-success-codes (doc-status-codes tree (d/success-status tree))
+                  :rsp-error-codes (doc-status-codes tree (d/error-status tree))}]
         (spit-to (str data-dir "/global/site.edn") (pr-str site))
-        (spit-to (str data-dir "/api/" id ".edn") (pr-str full))
-        (doc-params (str data-dir "/" id "/params/") (input-params tree uri))
-        (doc-hdrs (str data-dir "/" id "/headers/") (d/req-hdrs tree))
-        (doc-body-examples (str data-dir "/" id "/body-examples/") full tree (d/get-in-tree tree [:req :body-example]))
-        (doc-status-codes (str data-dir "/" id "/status-codes-success/") tree (d/success-status tree))
-        (doc-status-codes (str data-dir "/" id "/status-codes-error/") tree (d/error-status tree))))
-    }))
+        (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))}))
 
 ;; =============================================================================
 ;; Probe dispatch
@@ -200,7 +176,5 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
-  ;; TODO remove? This was added for transistion between Silk 0.10.0 and 0.11.0
-  (when-let [d (dsk/exists-dir? "silk_templates/data")] (dsk/delete-directory d))
   (silk/spin-or-reload false silk-staging-dir false false)
   (dsk/copy-recursive (str silk-staging-dir "/site") (cfg/target-dir)))
