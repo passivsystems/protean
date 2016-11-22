@@ -14,7 +14,7 @@
 "Register to play the text adventure.
 
 Accepts a request parameter called name."
-        :req {:query-params {:required {"name" "${name}"}}}
+        :req {:query-params {"name" ["${name}" :required]}}
         :rsp {
           :200 {
             :doc "OK"
@@ -30,7 +30,7 @@ Accepts a request parameter called name."
         :doc "See your current location"
         :description
 "Look at your current location."
-        :req {:query-params {:required {"name" "${name}"}}}
+        :req {:query-params {"name" ["${name}" :required]}}
         :rsp {
           :200 {
             :doc "OK"
@@ -51,7 +51,8 @@ Accepts a request parameter called name."
         :vars {"direction" {:type :Direction :doc "Direction to move in"}}
         :req {
           :query-params {
-            :required {"name" "${name}" "direction" "${direction}"}
+            "name" ["${name}" :required]
+            "direction" ["${direction}" :required]
           }
         }
         :rsp {
@@ -67,7 +68,7 @@ Accepts a request parameter called name."
     "inventory" {
       :get {
         :doc "See your inventory"
-        :req {:query-params {:required {"name" "${name}"}}}
+        :req {:query-params {"name" ["${name}" :required]}}
         :rsp {
           :200 {
             :doc "OK"
@@ -85,7 +86,12 @@ Accepts a request parameter called name."
 
 Accepts a request parameter called item."
         :vars {"item" {:type :String :doc "Item to pick up"}}
-        :req {:query-params {:required {"name" "${name}" "item" "${item}"}}}
+        :req {
+          :query-params {
+            "name" ["${name}" :required]
+            "item" ["${item}" :required]
+          }
+        }
         :rsp {
           :200 {
             :doc "OK"
