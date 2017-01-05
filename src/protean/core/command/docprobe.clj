@@ -103,17 +103,18 @@
         :path (get full :path)
         :value (slurp-file p tree)})))))
 
-(defn- doc-status-codes [target-dir tree statuses]
+(defn- doc-status-codes [target-dir tree method statuses]
   "Doc response headers for a given node.
    Directory is the data directory root.
    Resource is the current endpoint (parent of headers).
    filter-exp is a regular expression to match the status codes to include."
   (.mkdirs (File. target-dir))
   (doseq [[rsp-code v] statuses]
-    (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])]
+    (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
+          default-doc (d/get-in-tree tree [method :rsp rsp-code :doc])]
       (spit (str target-dir (name rsp-code) ".edn")
         (pr-str {:code (name rsp-code)
-                 :doc (if-let [d (:doc v)] d "N/A")
+                 :doc (or (:doc v) default-doc "N/A")
                  :sample-response (if-let [s (first (:body-examples v))] (slurp-file s tree) "N/A")
                  :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
                  :rsp-body-schema-id (str "schema-" (name rsp-code))
@@ -181,8 +182,8 @@
         (doc-params (str data-dir "/" id "/params/") (input-params tree uri))
         (doc-hdrs (str data-dir "/" id "/headers/") (d/req-hdrs tree))
         (doc-body-examples (str data-dir "/" id "/body-examples/") full tree (d/get-in-tree tree [:req :body-examples]))
-        (doc-status-codes (str data-dir "/" id "/status-codes-success/") tree (d/success-status tree))
-        (doc-status-codes (str data-dir "/" id "/status-codes-error/") tree (d/error-status tree))))
+        (doc-status-codes (str data-dir "/" id "/status-codes-success/") tree method (d/success-status tree))
+        (doc-status-codes (str data-dir "/" id "/status-codes-error/") tree method (d/error-status tree))))
     }))
 
 ;; =============================================================================
