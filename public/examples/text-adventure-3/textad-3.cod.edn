@@ -18,7 +18,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example ["public/examples/text-adventure-3/look-ref.json"]
+            :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
           :400 {:doc "Bad Request"}
         }
@@ -34,7 +34,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example ["public/examples/text-adventure-3/look-ref.json"]
+            :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
         }
       }
@@ -58,7 +58,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example ["public/examples/text-adventure-3/look-ref.json"]
+            :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
           :404 {:doc "Not Found"}
         }
@@ -72,7 +72,7 @@ Accepts a request parameter called name."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example ["public/examples/text-adventure-3/inventory-ref.json"]
+            :body-examples ["public/examples/text-adventure-3/inventory-ref.json"]
           }
         }
       }
@@ -95,7 +95,7 @@ Accepts a request parameter called item."
         :rsp {
           :200 {
             :doc "OK"
-            :body-example ["public/examples/text-adventure-3/look-ref.json"]
+            :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
           :404 {:doc "Not Found"}
         }

@@ -30,7 +30,7 @@
     {
       :rsp {
         :200 {
-          :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
+          :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
         }
       }
       :req {:query-params {"blurb" ["${blurb}" :required]}}
@@ -40,7 +40,7 @@
       :get {
         :rsp {
           :200 {
-            :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
+            :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
           }
         }
         :req {:query-params {"blurb" ["${blurb}" :required]}}
@@ -52,7 +52,7 @@
         :get {
           :rsp {
             :200 {
-              :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
+              :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
             }
           }
           :req {:query-params {"blurb" ["${blurb}" :required]}}
@@ -69,7 +69,7 @@
           :get {
             :rsp {
               :200 {
-                :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
+                :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
               }
             }
             :req {:query-params {"blurb" ["${blurb}" :required]}}

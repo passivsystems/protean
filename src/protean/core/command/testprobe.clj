@@ -61,7 +61,7 @@
     (mapcat collect (tolist m))))
 
 (defn- body-val [tree]
-  (let [examples (d/get-in-tree tree [:req :body-example])
+  (let [examples (d/get-in-tree tree [:req :body-examples])
         body (d/get-in-tree tree [:req :body])]
     (if examples
       (-> (first examples) (d/to-path tree) slurp s/trim)

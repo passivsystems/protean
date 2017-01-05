@@ -15,7 +15,7 @@
     payload))
 
 (defn- content-> [payload tree gen-from-schema]
-  (let [example (first (d/get-in-tree tree [:req :body-example]))
+  (let [example (first (d/get-in-tree tree [:req :body-examples]))
         schema (d/get-in-tree tree [:req :body-schema])
         body (d/get-in-tree tree [:req :body])
         ctype (pp/ctype payload)

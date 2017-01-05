@@ -22,7 +22,7 @@
         :rsp {
           :200 {
             :doc "OK"
-            :body-example ["public/tutorial/3/200-ref.json"]
+            :body-examples ["public/tutorial/3/200-ref.json"]
           }
           :404 {:doc "Not Found"}
         }

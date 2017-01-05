@@ -43,7 +43,7 @@
         :rsp {
           :200 {
             ;; no need for a header, it is derived from the body file
-            :body-example ["test-data/content/doc/responses/simple/200-ref.json"]
+            :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
           }
           :400 {:doc "Pet not found"}
           :404 {:doc "Invalid ID supplied"}
@@ -51,7 +51,7 @@
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body-example ["test-data/content/problems/bad-custom-domain-field.json"]
+            :body-examples ["test-data/content/problems/bad-custom-domain-field.json"]
           }
         }
       }
@@ -61,7 +61,7 @@
         :req {
           ; :body-schema is an optional addition for payload validation - either .json for json-schema, or .xsd for xml validation.
           :body-schema "test-data/schemas/pet.schema.json"
-          :body-example ["test-data/content/doc/requests/new-pet.json"]
+          :body-examples ["test-data/content/doc/requests/new-pet.json"]
         }
         :rsp {
           :201 {
@@ -93,14 +93,14 @@
         :rsp {
           :200 {
             :body-schema  "test-data/schemas/pet.schema.json"
-            :body-example ["test-data/content/doc/responses/simple/pet.json"]
+            :body-examples ["test-data/content/doc/responses/simple/pet.json"]
           }
           :404 {:doc "Invalid ID supplied"}
           :405 {
             :doc "Validation exception"
             ;; override the content type calculated from the file extension
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body-example ["test-data/content/problems/bad-custom-domain-field.json"]
+            :body-examples ["test-data/content/problems/bad-custom-domain-field.json"]
           }
         }
       }

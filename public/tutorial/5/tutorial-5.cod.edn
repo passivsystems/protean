@@ -19,12 +19,12 @@
         :rsp {
           :200 {
             :doc "OK"
-            :body-example ["public/tutorial/3/200-ref.json"]
+            :body-examples ["public/tutorial/3/200-ref.json"]
           }
           :503 {
             :doc "Service Unavailable"
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
-            :body-example ["public/tutorial/3/lazy-server-gremlins.json"]
+            :body-examples ["public/tutorial/3/lazy-server-gremlins.json"]
           }
         }
       }

@@ -89,7 +89,7 @@
   (let [hdrs (codex-req-hdrs tree)
         ctype (get-in hdrs h/ctype)
         body-schema (git tree [:req :body-schema])
-        body-example (git tree [0 :req :body-example])
+        body-example (git tree [0 :req :body-examples])
         body (git tree [:req :body])
         default-ctype (git tree [:default-content-type])]
     (cond
@@ -117,7 +117,7 @@
 (defn rsp-ctype [rsp-code tree]
   (let [ctype (get-in (codex-rsp-hdrs rsp-code tree) h/ctype)
         body-schema (git tree [:rsp rsp-code :body-schema])
-        body-example (first (git tree [:rsp rsp-code :body-example]))]
+        body-example (first (git tree [:rsp rsp-code :body-examples]))]
     (cond
       ctype ctype
       body-schema (h/mime-schema body-schema)
