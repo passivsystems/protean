@@ -105,8 +105,16 @@ pre.text {
   max-height: 100%;
 }
 
+table {
+  margin-bottom: 0px !important;
+}
+
 table.response td {
   border-color: #fff !important;
+}
+
+tr.blank-row td {
+  padding: 3px !important;
 }
 
 td.small {
