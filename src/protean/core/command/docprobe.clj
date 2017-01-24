@@ -92,6 +92,7 @@
        :sample-response (if-let [s (first (:body-examples v))] (slurp-file s tree) "N/A")
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-body-schema-id (str "schema-" (name rsp-code))
+       :#rsp-body-schema-id (str "#schema-" (name rsp-code))
        :rsp-body-schema-title (if schema (fname schema) "N/A")
        :rsp-body-schema (if schema (slurp-file schema tree) "N/A")}))))
 
