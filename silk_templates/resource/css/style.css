@@ -25,7 +25,10 @@
   display: block;
   color: #716b7a;
   padding: 5px 10px;
-  word-wrap: break-word;
+  word-wrap: auto;
+  -webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	hyphens: auto;
 }
 .bs-sidebar .nav > li > a:hover,
 .bs-sidebar .nav > li > a:focus {
@@ -66,7 +69,7 @@
     width: inherit;
     padding-left: 0px;
     padding-right: 30px;
-    max-width: 400px;
+    max-width: 370px;
   }
 
   .bs-sidebar.affix {
@@ -102,8 +105,16 @@ pre.text {
   max-height: 100%;
 }
 
+table {
+  margin-bottom: 0px !important;
+}
+
 table.response td {
   border-color: #fff !important;
+}
+
+tr.blank-row td {
+  padding: 3px !important;
 }
 
 td.small {
