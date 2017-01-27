@@ -32,6 +32,7 @@
 ;;;;;;;;;;;;;;;;
 
 (def txt "text/plain")
+(def html "text/html")
 (def xml "text/xml")
 (def jsn-simple "application/json")
 (def jsn (str jsn-simple "; charset=utf-8"))
@@ -47,6 +48,7 @@
   (cond
     (.endsWith url ".json") jsn
     (.endsWith url ".xml") xml
+    (.endsWith url ".html") html
     (.endsWith url ".txt") txt
     :else bin))
 
