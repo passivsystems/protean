@@ -4,7 +4,6 @@
             [clojure.main :as m]
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
-            [me.raynes.laser :as l]
             [protean.config :as c]
             [protean.core.codex.document :as d]
             [protean.core.protocol.http :as h]
