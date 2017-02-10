@@ -64,25 +64,31 @@
 ;; =============================================================================
 
 (defn- doc-params [params]
-  (vec (for [[k v] params]
-    {:title k
-     :type (:type v "Undefined")
-     :regx (cond
-             (:regx v) (str "Custom type defined by regx: " (:regx v))
-             (:type v) (str "Standard type: " (name (:type v)))
-             :else     "The type was not defined")
-     :doc (:doc v "")
-     :attr (stg/join " " (:attr v))})))
+  (if (nil? params)
+    [{:title "N/A" :type "" :regx "" :doc "" :attr ""}]
+    (vec (for [[k v] params]
+      {:title k
+       :type (:type v "Undefined")
+       :regx (cond
+               (:regx v) (str "Custom type defined by regx: " (:regx v))
+               (:type v) (str "Standard type: " (name (:type v)))
+               :else     "The type was not defined")
+       :doc (:doc v "")
+       :attr (stg/join " " (:attr v))}))))
 
 (defn- doc-hdrs [hdrs]
-  (vec (for [[k v] hdrs] {:title k :value v})))
+  (if (nil? hdrs)
+    [{:title "N/A" :value ""}]
+    (vec (for [[k v] hdrs] {:title k :value v}))))
 
 (defn- doc-body-examples [id tree paths]
-  (vec (for [p paths]
-    {:id (str id "-" (fname p))
-     :#id (str "#" id "-" (fname p))
-     :title (fname p)
-     :value (slurp-file p tree)})))
+  (if (nil? paths)
+    [{:id (str id "-" "NA") :#id (str "#" id "-" "NA") :title "N/A" :value "N/A"}]
+    (vec (for [p paths]
+      {:id (str id "-" (fname p))
+       :#id (str "#" id "-" (fname p))
+       :title (fname p)
+       :value (slurp-file p tree)}))))
 
 (defn- doc-status-codes [tree method statuses]
   (vec (for [[rsp-code v] statuses]
