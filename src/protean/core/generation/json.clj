@@ -21,20 +21,17 @@
   (cond
     enum (rand-nth enum)
     (= "date-time" format) (tf/unparse (tf/formatters :date-time-no-ms) (tc/now)) ; TODO move generators from placeholder into generate, and generate a date-time
-    (= "email" format) "a@b.com"
-    (= "hostname" format) "xx.lcs.mit.edu"
-    (= "ipv6" format) "0:0:0:0:0:0:0:1"
+    (= "email" format) (str (g/generate "[a-zA-Z\\d][a-zA-Z\\d-]{1,13}[a-zA-Z\\d]")
+                            "@"
+                            ; this is hostname repeated:
+                            (g/generate "[a-zA-Z]{1,33}\\.[a-z]{2,4}"))
+    (= "hostname" format) (g/generate "[a-zA-Z]{1,33}\\.[a-z]{2,4}")
+    (= "ipv6" format) (g/generate "[a-f\\d]{4}(:[a-f\\d]{4}){7}")
+    (= "ipv4" format) (str/join "." (take 4 (repeatedly #(rand-int 256))))
     (= "uri" format) "http://www.ietf.org/rfc/rfc2396.txt"
     (= "uriref" format) "/rfc/rfc2396.txt"
-    ; (= "email" format) (str (g/generate "[a-zA-Z\\d][a-zA-Z\\d-]{1,13}[a-zA-Z\\d]")
-    ;                         "@"
-    ;                         ; this is hostname repeated:
-    ;                         (g/generate "[a-zA-Z]{1,33}\\.[a-z]{2,4}"))
-    ; (= "hostname" format) (g/generate "[a-zA-Z]{1,33}\\.[a-z]{2,4}")
-    ; (= "ipv6" format) (g/generate "[a-f\\d]{4}(:[a-f\\d]{4}){7}")
-    (= "ipv4" format) (str/join "." (take 4 (repeatedly #(rand-int 256))))
-    ; (= "uri" format) (g/generate "[a-zA-Z][a-zA-Z0-9\\+\\-\\.]*")
-    ; (= "uriref" format) (g/generate "[a-zA-Z][a-zA-Z0-9\\+\\-\\.]*")
+    ;(= "uri" format) (g/generate "[a-zA-Z][a-zA-Z0-9+-.]*")
+    ; (= "uriref" format) (g/generate "[a-zA-Z][a-zA-Z0-9+-.]*")
     pattern (g/generate pattern)
     :else (let [len (gen-int-between (or minLength 0) (or maxLength 20))]
              (g/rnd-str len "abcdefghijklmnopqrstuvwxyz"))))
