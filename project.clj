@@ -25,7 +25,7 @@
                  [org.silkyweb/silk "0.9.0"]
                  [me.rossputin/pew "0.1.0"]
                  [alandipert/enduro "1.2.0"]
-                 [org.databene/databene-benerator "0.9.8"]
+                 [com.gfredericks/test.chuck "0.2.7"]
                  [org.slf4j/slf4j-simple "1.7.7"]
                  [overtone/at-at "1.2.0"]
                  [com.github.fge/json-schema-validator "2.1.7"]
