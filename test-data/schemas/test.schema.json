@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "pet",
+  "description": "Pet representation",
+  "properties": {
+    "boolean": { "type": "boolean" },
+    "null": { "type": "null" },
+    "enum": { "type": "string", "enum": ["one", "two", "three"] },
+    "integer": { "type": "integer", "minimum": 1, "exclusiveMinimum": true, "maximum": 3, "exclusiveMaximum": true},
+    "number": { "type": "number", "minimum": 1, "exclusiveMinimum": true, "maximum": 3, "exclusiveMaximum": true},
+    "str": { "type": "string", "minLength": 2, "maxLength": 4 },
+    "str-datetime": { "type": "string", "format": "date-time" },
+    "str-email": { "type": "string", "format": "email" },
+    "str-hostname": { "type": "string", "format": "hostname" },
+    "str-ipv6": { "type": "string", "format": "ipv6" },
+    "str-ipv4": { "type": "string", "format": "ipv4" },
+    "str-uri": { "type": "string", "format": "uri" },
+    "str-uriref": { "type": "string", "format": "uriref" },
+    "_disabled": {"str-regex": { "type": "string", "pattern": "^/dev/[^/]+(/[^/]+)*$" }},
+    "array": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "platform": { "type": "string" },
+            "deviceToken": { "type": "string" },
+            "username": { "type": "string" }
+        },
+        "required": ["id", "platform", "deviceToken", "username"],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true
+    }
+  },
+  "required": ["boolean", "array"],
+  "additionalProperties": false
+}
