@@ -137,3 +137,9 @@ td.small {
 div.modal-footer {
   text-align: center;
 }
+
+
+section div.page-header {
+  padding-top: 40px;
+  margin-top: -40px;
+}
