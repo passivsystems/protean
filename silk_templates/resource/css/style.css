@@ -14,7 +14,7 @@
 .bs-sidenav {
   margin-top: 30px;
   margin-bottom: 30px;
-  padding-top:    10px;
+  padding-top: 10px;
   padding-bottom: 10px;
   background-color: #f7f5fa;
   border-radius: 5px;
@@ -51,34 +51,10 @@
   margin-bottom: 8px;
 }
 .bs-sidebar .nav .nav > li > a {
-  padding-top:    3px;
+  padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 30px;
   font-size: 90%;
-}
-
-.container-fluid {
-  max-width: 1600px;
-}
-
-/* Show and affix the side nav when space allows it */
-@media screen and (min-width: 992px) {
-  /* Widen the fixed sidebar */
-  .bs-sidebar.affix,
-  .bs-sidebar.affix-bottom {
-    width: inherit;
-    padding-left: 0px;
-    padding-right: 30px;
-    max-width: 370px;
-  }
-
-  .bs-sidebar.affix {
-    position: fixed;
-    top: 30px;
-  }
-  .bs-sidebar.affix-bottom {
-    position: relative;;
-  }
 }
 
 a.company-brand {
@@ -138,8 +114,35 @@ div.modal-footer {
   text-align: center;
 }
 
-
 section div.page-header {
   padding-top: 40px;
   margin-top: -40px;
+}
+
+/* Show and affix the side nav when space allows it */
+@media screen and (min-width: 992px) {
+  /* Widen the fixed sidebar */
+  .bs-sidebar.affix,
+  .bs-sidebar.affix-bottom {
+    width: inherit;
+    padding-left: 0px;
+    padding-right: 30px;
+    width: 33.333333%;
+  }
+
+  .bs-sidebar.affix {
+    position: fixed;
+    top: 30px;
+  }
+  .bs-sidebar.affix-bottom {
+    position: relative;;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  /* Widen the fixed sidebar */
+  .bs-sidebar.affix,
+  .bs-sidebar.affix-bottom {
+    width: 25%;
+  }
 }
