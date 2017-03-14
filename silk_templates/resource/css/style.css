@@ -106,7 +106,7 @@ pre {
 }
 
 .path {
-  word-break: break-all !important;  /* For Chrome and Safari */
+  word-break: break-word !important;  /* For Chrome and Safari */
 }
 
 pre.text {
