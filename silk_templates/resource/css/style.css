@@ -103,6 +103,7 @@ pre {
 
 .table-custom .cell {
   display: table-cell;
+  vertical-align: middle;
 }
 
 .path {
