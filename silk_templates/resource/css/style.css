@@ -97,6 +97,18 @@ pre {
   max-height: 400px;
 }
 
+.table-custom {
+  display: table;
+}
+
+.table-custom .cell {
+  display: table-cell;
+}
+
+.path {
+  word-break: break-all !important;  /* For Chrome and Safari */
+}
+
 pre.text {
   border: 0px;
   background-color: #fff;
