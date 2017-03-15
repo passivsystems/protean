@@ -34,7 +34,7 @@
                  [clj-time "0.9.0"]
                  [com.cemerick/pomegranate "0.3.0"]
                  [yaclot "0.1.5"]
-                 [json-path "0.2.0"]]
+                 [json-path "0.3.0"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-expectations "0.0.8"]]
   :aot :all
