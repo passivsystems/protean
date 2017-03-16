@@ -46,7 +46,7 @@
   "Returns all locations that correspond to a relative path, provided a codex-dir"
   [path codex-dir]
   (let [current-dir (dsk/pwd)
-        protean-home (env :protean-codex-dir)
+        protean-home (env :protean-home)
         locations [(str codex-dir "/" path)
                    (str current-dir "/" path)
                    (str protean-home "/" path)]]
