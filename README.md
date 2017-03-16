@@ -44,8 +44,7 @@ Protean ships with a sample petstore service codex, you can test the API docs cr
 
 ## Documentation
 
-Documentation is available on http://www.proteanic.org.  Below is a quickstart guide to help you with
-setting up services and getting information on how to curl them.
+Below is a quickstart guide to help you with setting up services and getting information on how to curl them.
 
 ### Creating API Documentation for a service
 

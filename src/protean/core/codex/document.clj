@@ -42,25 +42,32 @@
     (if (empty? v) target (assoc-in target in-ks v))
     target))
 
+(defn get-path-locations
+  "Returns all locations that correspond to a relative path, provided a codex-dir"
+  [path codex-dir]
+  (let [current-dir (dsk/pwd)
+        protean-home (env :protean-codex-dir)
+        locations [(str codex-dir "/" path)
+                   (str current-dir "/" path)
+                   (str protean-home "/" path)]]
+    locations))
+
 (defn to-path-dir
   "Resolves relative paths to absolute, provided a codex-dir"
   [path codex-dir]
-  (let [current-dir (dsk/pwd)
-        protean-home (env :protean-codex-dir)]
-    (if (dsk/as-relative path)
-      (let [locations [(str codex-dir "/" path)
-                       (str current-dir "/" path)
-                       (str protean-home "/" path)]
-            abs-path (first (filter dsk/exists? locations))]
-        (if abs-path
-          abs-path
-          (throw (Exception.
-            (str "Could not find relative path: '" path "', looked in " locations)))))
-      path)))
+  (if (dsk/as-relative path)
+    (let [locations (get-path-locations path codex-dir)
+          abs-path (first (filter dsk/exists? locations))]
+      (if abs-path
+        abs-path
+        (throw (Exception.
+          (str "Could not find relative path: '" path "', looked in " locations)))))
+    path))
 
 (defn to-path
   "Resolves relative paths to absolute, provided a tree"
   [path tree]
+  (println "to-path" path (get-in-tree tree [:codex-dir]))
   (to-path-dir path (get-in-tree tree [:codex-dir])))
 
 ;; =============================================================================

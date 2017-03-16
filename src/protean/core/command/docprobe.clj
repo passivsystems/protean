@@ -34,9 +34,15 @@
 
 (def data-dir (str silk-staging-dir "/data/protean-api"))
 
-(defn- prep-staging [silk-template]
-  (doseq [f (dsk/paths silk-template)]
-    (dsk/copy-recursive f silk-staging-dir)))
+(defn- prep-staging [path tree]
+  (let [codex-dir (d/get-in-tree tree [:codex-dir])
+        locations (reverse (d/get-path-locations path codex-dir))]
+    (if (empty? locations)
+      (throw (Exception.
+        (str "Could not find relative path: '" path "', looked in " locations))))
+    (doseq [silk-template locations
+            f (dsk/paths silk-template)]
+      (dsk/copy-recursive f silk-staging-dir))))
 
 (defn spit-to
   "Will make directory if does not exist before spitting to file."
@@ -127,47 +133,46 @@
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
-  (let [silk-template (d/to-path "silk_templates" (:tree entry))]
-    ; TODO review this
-    ;      we should prepare staging in config step, since build is executed
-    ;      multiple times for each entry.
-    ;      However to resolve the silk-template we need tree (for :codex-dir)
-    ;      an alternative is to store :codex-dir in corpus, but this assumes
-    ;      probes never run against entries from multiple codices
-    ;      (which certainly is the assumption for docprobe, which generates a single output doc)
-    (prep-staging silk-template)
-    {:entry entry
-     :engage (fn []
-      (let [{:keys [svc method tree path codex-order] :as e} entry
-            uri (p/uri "host" 1234 svc path)
-            safe-uri (fn [uri] (-> uri
-                                 (ph/replace-all-with #(str "_" % "_"))
-                                 (stg/replace #";" "")))
-            uri-path (-> (URI. (safe-uri uri)) (.getPath))
-            id (str (name method) (stg/replace uri-path #"/" "-"))
-            main (filter #(get-in % [:title]) tree)
-            schema (d/get-in-tree tree [:req :body-schema])
-            site {:site-name (d/get-in-tree main [:title])
-                  :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
-            full {:id id
-                  :#id (str "#" id )
-                  :path (str svc "/" path)
-                  :codex-order codex-order
-                  :curl (c/curly-entry-> (assoc-in e [:uri] uri))
-                  :doc (d/get-in-tree tree [:doc])
-                  :desc (if-let [d (d/get-in-tree tree [:description])] d "")
-                  :method (name method)
-                  :req-body-schema-id (str "schema-" id)
-                  :#req-body-schema-id (str "#schema-" id)
-                  :req-body-schema-title (if schema (fname schema) "N/A")
-                  :req-body-schema (if schema (slurp-file schema tree) "N/A")
-                  :req-params (doc-params (input-params tree uri))
-                  :req-headers (doc-hdrs (d/req-hdrs tree))
-                  :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
-                  :rsp-success-codes (doc-status-codes tree method (d/success-status tree))
-                  :rsp-error-codes (doc-status-codes tree method (d/error-status tree))}]
-        (spit-to (str data-dir "/global/site.edn") (pr-str site))
-        (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))}))
+  ; TODO review this
+  ;      we should prepare staging in config step, since build is executed
+  ;      multiple times for each entry.
+  ;      However to resolve the silk-template we need tree (for :codex-dir)
+  ;      an alternative is to store :codex-dir in corpus, but this assumes
+  ;      probes never run against entries from multiple codices
+  ;      (which certainly is the assumption for docprobe, which generates a single output doc)
+  (prep-staging "silk_templates" (:tree entry))
+  {:entry entry
+   :engage (fn []
+    (let [{:keys [svc method tree path codex-order] :as e} entry
+          uri (p/uri "host" 1234 svc path)
+          safe-uri (fn [uri] (-> uri
+                               (ph/replace-all-with #(str "_" % "_"))
+                               (stg/replace #";" "")))
+          uri-path (-> (URI. (safe-uri uri)) (.getPath))
+          id (str (name method) (stg/replace uri-path #"/" "-"))
+          main (filter #(get-in % [:title]) tree)
+          schema (d/get-in-tree tree [:req :body-schema])
+          site {:site-name (d/get-in-tree main [:title])
+                :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
+          full {:id id
+                :#id (str "#" id )
+                :path (str svc "/" path)
+                :codex-order codex-order
+                :curl (c/curly-entry-> (assoc-in e [:uri] uri))
+                :doc (d/get-in-tree tree [:doc])
+                :desc (if-let [d (d/get-in-tree tree [:description])] d "")
+                :method (name method)
+                :req-body-schema-id (str "schema-" id)
+                :#req-body-schema-id (str "#schema-" id)
+                :req-body-schema-title (if schema (fname schema) "N/A")
+                :req-body-schema (if schema (slurp-file schema tree) "N/A")
+                :req-params (doc-params (input-params tree uri))
+                :req-headers (doc-hdrs (d/req-hdrs tree))
+                :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
+                :rsp-success-codes (doc-status-codes tree method (d/success-status tree))
+                :rsp-error-codes (doc-status-codes tree method (d/error-status tree))}]
+      (spit-to (str data-dir "/global/site.edn") (pr-str site))
+      (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))})
 
 ;; =============================================================================
 ;; Probe dispatch
