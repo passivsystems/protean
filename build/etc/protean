@@ -1,4 +1,5 @@
 #!/bin/bash
 
+export PROTEAN_HOME=/usr/lib/protean
 export PROTEAN_CODEX_DIR=/usr/lib/protean
 java -Xmx64m -jar /usr/lib/protean/protean.jar "$@"

@@ -1,6 +1,7 @@
 (ns protean.core.codex.document
   "Codex data extraction and truthiness functionality."
   (:require [protean.core.protocol.http :as h]
+            [protean.config :as c]
             [me.rossputin.diskops :as dsk]
             [clojure.java.io :as io]
             [environ.core :refer [env]]))
@@ -46,7 +47,7 @@
   "Returns all locations that correspond to a relative path, provided a codex-dir"
   [path codex-dir]
   (let [current-dir (dsk/pwd)
-        protean-home (env :protean-home)
+        protean-home (c/protean-home)
         locations [(str codex-dir "/" path)
                    (str current-dir "/" path)
                    (str protean-home "/" path)]]
