@@ -68,7 +68,6 @@
 (defn to-path
   "Resolves relative paths to absolute, provided a tree"
   [path tree]
-  (println "to-path" path (get-in-tree tree [:codex-dir]))
   (to-path-dir path (get-in-tree tree [:codex-dir])))
 
 ;; =============================================================================
