@@ -169,8 +169,9 @@
                 :req-params (doc-params (input-params tree uri))
                 :req-headers (doc-hdrs (d/req-hdrs tree))
                 :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
-                :rsp-success-codes (doc-status-codes id tree method (d/success-status tree))
-                :rsp-error-codes (doc-status-codes id tree method (d/error-status tree))}]
+                :responses (vec (concat
+                            (map #(assoc % :class "success") (doc-status-codes id tree method (d/success-status tree)))
+                            (map #(assoc % :class "danger") (doc-status-codes id tree method (d/error-status tree)))))}]
       (spit-to (str data-dir "/global/site.edn") (pr-str site))
       (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))})
 
