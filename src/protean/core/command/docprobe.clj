@@ -96,14 +96,14 @@
        :title (fname p)
        :value (slurp-file p tree)}))))
 
-(defn- doc-status-codes [tree method statuses]
+(defn- doc-status-codes [id tree method statuses]
   (vec (for [[rsp-code v] statuses]
     (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
           default-doc (d/get-in-tree tree [method :rsp rsp-code :doc])]
       {:code (name rsp-code)
        :doc (or (:doc v) default-doc "N/A")
-       :sample-response (if-let [s (first (:body-examples v))] (slurp-file s tree) "N/A")
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
+       :rsp-body-examples (doc-body-examples id tree (:body-examples v))
        :rsp-body-schema-id (str "schema-" (name rsp-code))
        :#rsp-body-schema-id (str "#schema-" (name rsp-code))
        :rsp-body-schema-title (if schema (fname schema) "N/A")
@@ -169,8 +169,8 @@
                 :req-params (doc-params (input-params tree uri))
                 :req-headers (doc-hdrs (d/req-hdrs tree))
                 :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
-                :rsp-success-codes (doc-status-codes tree method (d/success-status tree))
-                :rsp-error-codes (doc-status-codes tree method (d/error-status tree))}]
+                :rsp-success-codes (doc-status-codes id tree method (d/success-status tree))
+                :rsp-error-codes (doc-status-codes id tree method (d/error-status tree))}]
       (spit-to (str data-dir "/global/site.edn") (pr-str site))
       (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))})
 
