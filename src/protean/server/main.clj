@@ -58,6 +58,7 @@
 (defroutes admin-routes
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
+  (GET    "/services/:id/analysis" [id] (pipe/service-analysis id c/host))
   (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
   (PUT    "/services" req (pipe/put-services req))
   (DELETE "/services/:id" [id] (pipe/del-service-handled id))

@@ -6,12 +6,14 @@
             [ring.util.codec :as cod]
             [protean.config :as c]
             [protean.core.codex.document :as d]
+            [protean.core.codex.placeholder :as ph]
             [protean.core.protocol.http :as h]
             [protean.core.transformation.sim :as sim]
             [protean.core.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
             [protean.core.codex.reader :as r]
             [protean.core.transformation.paths :as p]
+            [protean.core.transformation.request :as req]
             [clojure.pprint])
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
@@ -24,7 +26,7 @@
 ;; Helper functions and data
 ;; =============================================================================
 
-(def json {:headers {h/ctype h/jsn}})
+(def json {:headers {h/ctype h/jsn "Access-Control-Allow-Origin" "*"}})
 
 (def state (atom {}))
 (def paths (atom {}))
@@ -49,6 +51,23 @@
 (defn- body [req-body]
   (let [rbody (slurp req-body)] (if (not-empty rbody) (co/clj rbody) nil)))
 
+(defn- prepare-analysis [svc host]
+  (let [port (c/sim-port)
+        to-map (fn [path]
+            (let [endpoint (key path)
+                  methods (keys (val path))]
+             (for [method methods]
+               {:method method
+                 :uri (p/uri host port svc endpoint)
+                 :tree (get-in @paths [svc endpoint method])})))]
+    (mapcat to-map (get-in @paths [svc]))))
+
+(defn- seed-request [{:keys [tree method uri]}]
+  (let [template (req/prepare-request method uri tree :include-optional true)]
+    ; Note, placeholder generation will be different each time we request them
+    ; also may not be url friendly (though we will encode them)
+    (ph/swap template tree {})))
+
 
 ;; =============================================================================
 ;; Service pipelines
@@ -71,16 +90,12 @@
 ; TODO the result of this function is currently affected by collisions between codices - should use @paths instead
 (defn service [svc] (assoc json :body (co/js (get-in @state [svc]))))
 
+(defn service-analysis [svc host]
+  (let [analysed (prepare-analysis svc host)]
+    (assoc json :body (co/js (map #(seed-request %) analysed)))))
+
 (defn service-usage [svc host]
-  (let [port (c/sim-port)
-        to-map (fn [path]
-            (let [endpoint (key path)
-                  methods (keys (val path))]
-             (for [method methods]
-               {:method method
-                 :uri (p/uri host port svc endpoint)
-                 :tree (get-in @paths [svc endpoint method])})))
-        analysed (mapcat to-map (get-in @paths [svc]))]
+  (let [analysed (prepare-analysis svc host)]
     (assoc json :body (co/js (txc/curly-analysis-> analysed)))))
 
 (defn del-service [svc]
