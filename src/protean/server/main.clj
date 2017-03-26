@@ -3,6 +3,7 @@
   (:require [clojure.edn :as edn]
             [clojure.main :as m]
             [clojure.java.io :refer [file]]
+            [clojure.string :as s]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.multipart-params :as mp]
             [compojure.core :refer [defroutes ANY DELETE GET POST PUT]]
@@ -75,6 +76,12 @@
 ;; Server setup
 ;; =============================================================================
 
+(defn wrap-ignore-trailing-slash
+  "If the requested url has a trailing slash, remove it."
+  [handler]
+  (fn [request]
+    (handler (update-in request [:uri] s/replace #"(?<=.)/$" ""))))
+
 (defn- server [sim-port sim-max-threads admin-port admin-max-threads]
   (jetty/run-jetty
     (-> admin-routes mp/wrap-multipart-params)
@@ -82,7 +89,7 @@
       :join? false
       :max-threads (co/int admin-max-threads)})
   (jetty/run-jetty
-    (-> api-routes handler/api mp/wrap-multipart-params)
+    (-> api-routes handler/api mp/wrap-multipart-params wrap-ignore-trailing-slash)
     { :port (co/int sim-port)
       :join? false
       :max-threads (co/int sim-max-threads)}))
