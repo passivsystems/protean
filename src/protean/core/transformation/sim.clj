@@ -348,7 +348,14 @@
         endpoint (to-endpoint requested-endpoint paths svc)
         method (:request-method req)
         rules (get-in sims [svc endpoint method])
-        tree (get-in paths [svc endpoint method])
+        tree (if-let [x (get-in paths [svc endpoint method])]
+               x
+               (when (= method :options)
+                 (let [k (keys (get-in paths [svc endpoint]))
+                       m (map #(s/upper-case (name %)) k)
+                       h {"Content-Type" "text/html"
+                          "Access-Control-Allow-Methods" (s/join " "  m)}]
+                  [{:rsp {:200 {:headers h}}}])))
         request (sim-req req endpoint svc)
         corpus {}
         execute (execute-fn tree corpus requested-endpoint endpoint request)
