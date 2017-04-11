@@ -342,6 +342,17 @@
 
 (declare success)
 
+(defn- http-options [paths svc endpoint]
+  (let [e (get-in paths [svc endpoint])
+        m (map #(s/upper-case (name %)) (keys e))
+        h (keys (into {} (for [[k v] e] (d/req-hdrs v))))]
+    [{:rsp
+      {:200
+        {:headers {"Content-Type" "text/html"
+                  "Access-Control-Allow-Origin" "*"
+                  "Access-Control-Allow-Methods" (s/join ", "  m)
+                  "Access-Control-Allow-Headers" (s/join ", "  h)}}}}]))
+
 (defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
@@ -350,12 +361,7 @@
         rules (get-in sims [svc endpoint method])
         tree (if-let [x (get-in paths [svc endpoint method])]
                x
-               (when (= method :options)
-                 (let [k (keys (get-in paths [svc endpoint]))
-                       m (map #(s/upper-case (name %)) k)
-                       h {"Content-Type" "text/html"
-                          "Access-Control-Allow-Methods" (s/join " "  m)}]
-                  [{:rsp {:200 {:headers h}}}])))
+               (when (= method :options) (http-options paths svc endpoint)))
         request (sim-req req endpoint svc)
         corpus {}
         execute (execute-fn tree corpus requested-endpoint endpoint request)
