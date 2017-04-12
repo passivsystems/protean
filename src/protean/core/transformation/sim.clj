@@ -379,4 +379,4 @@
       (do
         (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
         (log-debug "responding with" response)
-        response))))
+        (merge-with merge {:headers {"Access-Control-Allow-Origin" "*"}} response)))))
