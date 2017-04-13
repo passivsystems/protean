@@ -1,5 +1,5 @@
 {
-  ; default status code per method
+  ; defaults for status codes (override/augment in your project)
   :get {:rsp {:200 {:doc "OK"} :204 {:doc "No Content"}}}
   :post {:rsp {:201 {:doc "Created"}}}
   :put {:rsp {:204 {:doc "No Content"}}}
