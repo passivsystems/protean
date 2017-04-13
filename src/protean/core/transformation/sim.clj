@@ -366,9 +366,9 @@
         corpus {}
         execute (execute-fn tree corpus requested-endpoint endpoint request)
         default-success (binding [*tree* tree *request* request *corpus* corpus]
-                          (if (d/get-in-tree tree [:validating])
-                            (validate (success))
-                            (success)))
+                          (if (false? (:validating sim-cfg))
+                            (success)
+                            (validate (success))))
         response (or (some identity (map execute rules)) default-success)]
     (log-info "sim cfg : " sim-cfg)
     (if (not tree)
