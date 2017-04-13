@@ -380,4 +380,7 @@
       (do
         (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
         (log-debug "responding with" response)
-        (if (false? (:cors sim-cfg)) response (merge-with merge {:headers {"Access-Control-Allow-Origin" "*"}} response))))))
+        (cond
+           (false? (:cors sim-cfg)) response
+           (map? response)          (merge-with merge {:headers {"Access-Control-Allow-Origin" "*"}} response)
+           :else                    {:headers {"Access-Control-Allow-Origin" "*"} :body response})))))
