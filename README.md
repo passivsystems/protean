@@ -28,7 +28,7 @@ This is a Clojure project which uses edn to simulate and document and integratio
 
 ## API stability
 
-Protean is still new and will be subject to some change until it hits the 1.0.0 release.  All efforts will be made to minimise change to the API (which is represented in the form of the *codex* - service definitions in EDN).  We expect to change the codex schema only to align it more closely to the datastructures used in Clojure Ring to represent requests and responses (so we share a common well understood language).  There are still a few minor discrepancies.
+Protean is still new and will be subject to some change until it hits the 1.0.0 release.  All efforts will be made to minimise change to the API (which is represented in the form of the *codex* - service definitions in EDN) and in the simulation API which is exposed to sim extensions.
 
 
 ## Usage
