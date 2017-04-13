@@ -1,0 +1,859 @@
+<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+    <meta name="description" content="Protean">
+    <meta name="author" content="Protean">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protean</title>
+    <link rel="stylesheet" type="text/css" href="resource/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="resource/css/pygments-manni.css">
+    <link rel="stylesheet" type="text/css" href="resource/css/protean.css">
+    <link rel="stylesheet" type="text/css" href="resource/css/bootstrap-prettify.css">
+    <link rel="stylesheet" type="text/css" href="resource/css/tipuesearch.css">
+    <link rel="stylesheet" type="text/css" href="resource/css/tipuedrop.css">
+    <script type="text/javascript" src="resource/js/jquery.min.js"></script>
+    <script type="text/javascript" src="resource/js/tipuesearch_set.js"></script>
+    <script type="text/javascript" src="resource/js/tipuesearch_content.js"></script>
+    <script type="text/javascript" src="resource/js/tipuesearch.min.js"></script>
+    <script type="text/javascript" src="resource/js/tipuedrop.min.js"></script>
+    <script type="text/javascript" src="resource/js/bootstrap.js"></script>
+    <script src="resource/js/prettify/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint();">
+    <div>
+    <div id="navbar-header" class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">
+            <img src="resource/img/logo-header.png" alt="Protean - evolving api's">
+          </a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <div>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="index.html">
+          <span>Home</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="getting-started.html">
+          <span>Getting Started</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="documentation.html">
+          <span>Documentation</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="tutorial.html">
+          <span>Tutorial</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="api-documentation.html">
+          <span>API Documentation</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="community.html">
+          <span>Community</span>
+        </a>
+      </li>
+    </ul>
+  
+
+</div>
+          <div class="pull-right">
+            <form action="search.html" class="navbar-form navbar-left" role="search">
+              <span>
+    <span class="label label-default">v0.9.0-beta.1</span>
+  
+
+</span>
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required="">
+              </div>
+              <button type="submit" class="btn btn-default" alt="Search" title="Search">
+                <span class="glyphicon glyphicon-search"></span>
+              </button>
+            </form>
+            <div style="margin-top:45px" id="tipue_drop_content"></div>
+            <script>
+              $(document).ready(function() {
+                 $('#tipue_search_input').tipuedrop();
+              });
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+
+</div>
+    <br><br><br><br>
+    <div class="container">
+      <div data-sw-view=""><div class="row">
+    <div class="col-md-4">
+      <div>
+  <div class="bs-sidebar" role="complementary" style="width:300px;">
+    <ul class="nav bs-sidenav">
+      <li>
+        <a href="">
+          <span>Simulation Request API</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Simulation Response API</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Simulation Payload Transport API</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Response Library</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Payload Transport Library</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+</div>
+    </div>
+    <div class="col-md-8" role="main">
+      <div class="page-header">
+        <h1>API Documentation</h1>
+      </div>
+
+      <h2>Simulation API</h2>
+      <p class="lead">
+        The simulation API is a stable protected set of functionality and comprises low level composable units of functionality.
+      </p>
+
+      <section data-sw-nav="Simulation Request API" id="sim-request" data-sw-content="">
+        <div class="page-header">
+          <h3>Request API</h3>
+        </div>
+        <p class="lead">Extracting information out of simulation requests</p>
+        <ul class="list-unstyled">
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(query-param &quot;my-param&quot;)</span>
+              </div>
+              <div class="panel-body">Get a specified query parameter out of the sim request</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">p</td>
+                    <td width="50%">specific parameter</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(path-param &quot;my-param&quot;)</span>
+              </div>
+              <div class="panel-body">Get a specified path parameter out of the sim request</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">p</td>
+                    <td width="50%">specific parameter</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(param :my-param)</span>
+              </div>
+              <div class="panel-body">Get a specified parameter out of the sim request</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">p</td>
+                    <td width="50%">specific parameter</td>
+                    <td width="30%">keyword</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(form-param &quot;my-param&quot;)</span>
+              </div>
+              <div class="panel-body">Get a specified form parameter out of the sim request</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">p</td>
+                    <td width="50%">specific parameter</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(body-param &quot;my-param&quot;)</span>
+              </div>
+              <div class="panel-body">Get a specified body parameter out of the sim request</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">p</td>
+                    <td width="50%">specific parameter</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(route-param route-params)</span>
+              </div>
+              <div class="panel-body">Get the last route parameter out of the sim request</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">route-params</td>
+                    <td width="50%">route params datastructure</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(header &quot;my-header&quot;)</span>
+              </div>
+              <div class="panel-body">Get a specified header out of the sim request</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">h</td>
+                    <td width="50%">specific header</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(valid-inputs?)</span>
+              </div>
+              <div class="panel-body">Check if request is well formed according to codex specification.  Used with an <code>if</code> or <code>when</code> form.</div>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(validate (respond 200))</span>
+              </div>
+              <div class="panel-body">Same sa <code>valid-inputs?</code> but creates a 400 error where validation fails.</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">response</td>
+                    <td width="50%">a bespoke sim ext response structure</td>
+                    <td width="30%">Composite response form</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section data-sw-nav="Simulation Response API" id="sim-response" data-sw-content="">
+        <div class="page-header">
+          <h3>Response API</h3>
+        </div>
+        <p class="lead">Forming synchronous simulation responses</p>
+
+        <p>
+          The most flexible (and low level) way to create responses in a sim extension is to create Ring responses.
+          An example is listed below.
+        </p>
+
+        <pre class="prettyprint">
+{
+  :status 200
+  :headers {&quot;Content-Type&quot; &quot;application/json&quot;}
+  :body &quot;json string&quot;
+}
+        </pre>
+
+        <p>
+          Or an example of reading a file to specify the body content:
+        </p>
+
+        <pre class="prettyprint">
+{
+  :status 200
+  :headers {&quot;Content-Type&quot; &quot;application/json&quot;}
+  :body (slurp &quot;path/file.json&quot;)
+}
+        </pre>
+
+        <ul class="list-unstyled doc-list">
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(success)</span>
+              </div>
+              <div class="panel-body">Gets a random success response for this endpoint from the codex</div>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(error)</span>
+              </div>
+              <div class="panel-body">Gets a random error response for this endpoint from the codex</div>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(error 500)</span>
+              </div>
+              <div class="panel-body">Gets a specified error response for this endpoint from the codex</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific error status code</td>
+                    <td width="30%">Int</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(respond 200)</span>
+              </div>
+              <div class="panel-body">Create a response with a specific status header</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific status code</td>
+                    <td width="30%">Int</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(respond 200 :body-url &quot;my-file.json&quot;)</span>
+              </div>
+              <div class="panel-body">Create a response with a specific status header and body.  Content type is inferred from file extension.</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific status code</td>
+                    <td width="30%">Int</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">body-url</td>
+                    <td width="50%">path to file</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(qslurp &quot;my-file.json&quot;)</span>
+              </div>
+              <div class="panel-body">Read a supporting resource, converting relative path to absolute.</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">path</td>
+                    <td width="50%">path to resource (passed as relative in sim ext).</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section data-sw-nav="Simulation Payload Transport API" id="sim-payload-transport" data-sw-content="">
+        <div class="page-header">
+          <h3>Payload Transport API</h3>
+        </div>
+        <p class="lead">Sending synchronous and asynchronous payloads over different protocols.</p>
+
+        <p>
+          We often need to send route data to different destinations synchronously and asynhronously
+          as a result of receiving a request.  We provide one low level API mechanism for doing this
+          and several abstractions over this in the sim library.
+        </p>
+
+        <ul class="list-unstyled doc-list">
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(make-request :put &quot;http://host:port/path&quot; {:content-type &quot;application/json&quot;  :body &quot;something&quot;})</span>
+              </div>
+              <div class="panel-body">Sends a specified payload with a specified method to a given url</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">method</td>
+                    <td width="50%">HTTP method</td>
+                    <td width="30%">keyword</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <h2>Simulation Utility Library</h2>
+      <p class="lead">
+        The simulation utility library is a set of utility functions built on top of the API.  This functionality is intended
+        as an example for you to build your own functionality.  Library utilities provided out of the box are in <code>protean-utils.sim.edn</code>
+        in the codex/sim extension directory.
+      </p>
+
+      <section data-sw-nav="Response Library" id="library-response" data-sw-content="">
+        <div class="page-header">
+          <h3>Response Example Library</h3>
+        </div>
+        <p class="lead">Forming synchronous simulation responses</p>
+        <ul class="list-unstyled doc-list">
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(rsp 200)</span>
+              </div>
+              <div class="panel-body">Create a response with a specific status code.</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific status code</td>
+                    <td width="30%">Int</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(h-rsp 200 &quot;/items/12&quot;)</span>
+              </div>
+              <div class="panel-body">Create a response with a specific status code and location header.</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific status code</td>
+                    <td width="30%">Int</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">hdr</td>
+                    <td width="50%">location header</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(jsn 200 &quot;my response string&quot;)</span>
+              </div>
+              <div class="panel-body">Create a response with a specific status header, &quot;application/json&quot; content type and body</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific status code</td>
+                    <td width="30%">Int</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">body</td>
+                    <td width="50%">body content</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(txt 200 &quot;my response string&quot;)</span>
+              </div>
+              <div class="panel-body">Create a response with a specific status header, &quot;text/plain&quot; content type and body</div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">status</td>
+                    <td width="50%">specific status code</td>
+                    <td width="30%">Int</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">body</td>
+                    <td width="50%">body content</td>
+                    <td width="30%">String</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section data-sw-nav="Payload Transport Library" id="lib-payload-transport" data-sw-content="">
+        <div class="page-header">
+          <h3>Payload Transport Example Library</h3>
+        </div>
+
+        <ul class="list-unstyled doc-list">
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(post &quot;http://host:port/path&quot; &quot;something&quot;)</span>
+              </div>
+              <div class="panel-body">
+                <p>
+                  Posts a specified payload to a given uri
+                </p>
+                <p>
+                  Assumes content type is the same as requests content type.
+                </p>
+                <p>
+                  Optional headers parameter.
+                </p>
+              </div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">hdrs</td>
+                    <td width="50%">optional headers</td>
+                    <td width="30%">map</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(put &quot;http://host:port/path&quot; &quot;something&quot;)</span>
+              </div>
+              <div class="panel-body">
+                <p>
+                  Puts a specified payload to a given uri
+                </p>
+                <p>
+                  Assumes content type is the same as requests content type.
+                </p>
+                <p>
+                  Optional headers parameter.
+                </p>
+              </div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">hdrs</td>
+                    <td width="50%">optional headers</td>
+                    <td width="30%">map</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+          <li>
+            <div class="panel panel-info">
+              <div class="panel-heading">
+                <span class="glyphicon glyphicon-eye-open"></span><span class="function-hdr">(patch &quot;http://host:port/path&quot; &quot;something&quot;)</span>
+              </div>
+              <div class="panel-body">
+                <p>
+                  Patches a specified payload to a given uri
+                </p>
+                <p>
+                  Assumes content type is the same as requests content type.
+                </p>
+                <p>
+                  Optional headers parameter.
+                </p>
+              </div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td width="20%">url</td>
+                    <td width="50%">fully qualified url</td>
+                    <td width="30%">String</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">hdrs</td>
+                    <td width="50%">optional headers</td>
+                    <td width="30%">map</td>
+                  </tr>
+                  <tr>
+                    <td width="20%">payload</td>
+                    <td width="50%">datastructure defining headers etc</td>
+                    <td width="30%">map</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </div>
+  </div></div>
+      <script src="resource/js/application.js"></script>
+      <div>
+    <hr>
+    <footer>
+      <div class="pull-right">
+        <p>Code licensed under the
+        <a target="blank" href="http://www.apache.org/licenses/LICENSE-2.0">
+          Apache License v2.0
+        </a>.
+      </p><p>
+      </p><p>Documentation licensed under
+        <a target="blank" href="http://creativecommons.org/licenses/by/3.0/">
+          CC BY 3.0
+        </a>.
+      </p>
+      </div>
+    </footer>
+  
+
+</div>
+    </div>
+  
+
+</body></html>

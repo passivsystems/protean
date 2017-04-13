@@ -18,8 +18,8 @@
     <script type="text/javascript" src="resource/js/bootstrap.js"></script>
     <script src="resource/js/prettify/prettify.js"></script>
   </head>
-  <body class="silk-template-default silk-view-index" onload="prettyPrint();">
-    
+  <body onload="prettyPrint();">
+    <div>
     <div id="navbar-header" class="navbar navbar-default navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -33,40 +33,54 @@
           </a>
         </div>
         <div class="collapse navbar-collapse">
-          
+          <div>
     <ul class="nav navbar-nav">
       <li>
-        <a href="index.html" data-sw-href="path">
-          <span data-sw-text="title">Home</span>
+        <a href="index.html">
+          <span>Home</span>
         </a>
-      </li><li>
-        <a href="getting-started.html" data-sw-href="path">
-          <span data-sw-text="title">Getting Started</span>
+      </li>
+    
+      <li>
+        <a href="getting-started.html">
+          <span>Getting Started</span>
         </a>
-      </li><li>
-        <a href="tutorial.html" data-sw-href="path">
-          <span data-sw-text="title">Tutorial</span>
+      </li>
+    
+      <li>
+        <a href="documentation.html">
+          <span>Documentation</span>
         </a>
-      </li><li>
-        <a href="documentation.html" data-sw-href="path">
-          <span data-sw-text="title">Documentation</span>
+      </li>
+    
+      <li>
+        <a href="tutorial.html">
+          <span>Tutorial</span>
         </a>
-      </li><li>
-        <a href="community.html" data-sw-href="path">
-          <span data-sw-text="title">Community</span>
+      </li>
+    
+      <li>
+        <a href="api-documentation.html">
+          <span>API Documentation</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="community.html">
+          <span>Community</span>
         </a>
       </li>
     </ul>
   
 
-
+</div>
           <div class="pull-right">
             <form action="search.html" class="navbar-form navbar-left" role="search">
-              
+              <span>
     <span class="label label-default">v0.9.0-beta.1</span>
   
 
-
+</span>
               <div class="form-group">
                 <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required="">
               </div>
@@ -86,43 +100,45 @@
     </div>
   
 
-
+</div>
     <br><br><br><br>
     <div class="container">
-      
-    <div class="jumbotron">
+      <div data-sw-view=""><div class="jumbotron">
       <img src="resource/img/logo.png" alt="Protean - evolving api's">
-    </div>
-    <div class="row">
+    </div><div class="row">
       <div class="col-md-4">
-        
+        <div>
   <div class="bs-sidebar" role="complementary" style="width:300px;">
     <ul class="nav bs-sidenav">
       <li>
-        <a data-sw-href="#path" href="#overview">
-          <span data-sw-text="title">Overview</span>
+        <a href="">
+          <span>Overview</span>
         </a>
-      </li><li>
-        <a data-sw-href="#path" href="#features">
-          <span data-sw-text="title">Features</span>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Features</span>
         </a>
-      </li><li>
-        <a data-sw-href="#path" href="#examples">
-          <span data-sw-text="title">Examples</span>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Examples</span>
         </a>
       </li>
     </ul>
   </div>
 
 
-
+</div>
       </div>
       <div class="col-md-8" role="main">
         <div class="alert alert-info" role="alert">
           <p>
-            Linux and Mac only right now, Windows support is coming.
+            Linux and Mac only right now.
           </p>
-          <p>Download 0.9.0-beta.1</p>
+          <p>Download 0.9.0-beta.1 then look at <a href="getting-started.html" title="How to get started with Silk">Getting Started</a></p>
           <br>
           <ul class="list-inline">
             <li>
@@ -143,7 +159,10 @@
           </div>
 
           <p>
-            Evolve your RESTful API's and web services. Encode them, document them, simulate them and figure out how failure affects your architecture. No invasive changes to your code base.
+            Evolve your RESTful APIs and web services. Encode them, document them, simulate them, integration test them and figure out how failure affects your architecture. No invasive changes to your code base.  Browse HATEOAS APIs with <a href="https://github.com/rossputin/omnom">Omnom</a> - a HATEOAS API browsing webapp (pre-alpha).
+          </p>
+          <p>
+            This is a Clojure project which uses edn to simulate and document and integration test RESTful API's. Protean is used commercially to help speed development and test complex distributed systems.
           </p>
         </section>
 
@@ -153,11 +172,11 @@
           </div>
 
           <ul>
-            <li>Encode API's</li>
-            <li>Document API's</li>
+            <li>Encode APIs - build a specification</li>
+            <li>Document APIs using <a href="http://www.silkyweb.org" title="Silk Web Toolkit">Silk Web Toolkit</a></li>
             <li>Simulate API's</li>
             <li>Hotswap API behaviour on the fly over the network</li>
-            <li>Auto generate curl commands to test your API's</li>
+            <li>Auto generate curl commands to test your APIs</li>
             <li>Auto integration test your simulations</li>
           </ul>
         </section>
@@ -178,12 +197,9 @@
           </ul>
         </section>
       </div>
-    </div>
-  
-
-
+    </div></div>
       <script src="resource/js/application.js"></script>
-      
+      <div>
     <hr>
     <footer>
       <div class="pull-right">
@@ -201,7 +217,7 @@
     </footer>
   
 
-
+</div>
     </div>
   
 

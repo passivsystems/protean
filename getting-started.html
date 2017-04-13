@@ -18,8 +18,8 @@
     <script type="text/javascript" src="resource/js/bootstrap.js"></script>
     <script src="resource/js/prettify/prettify.js"></script>
   </head>
-  <body class="silk-template-default silk-view-getting-started" onload="prettyPrint();">
-    
+  <body onload="prettyPrint();">
+    <div>
     <div id="navbar-header" class="navbar navbar-default navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -33,40 +33,54 @@
           </a>
         </div>
         <div class="collapse navbar-collapse">
-          
+          <div>
     <ul class="nav navbar-nav">
       <li>
-        <a href="index.html" data-sw-href="path">
-          <span data-sw-text="title">Home</span>
+        <a href="index.html">
+          <span>Home</span>
         </a>
-      </li><li>
-        <a href="getting-started.html" data-sw-href="path">
-          <span data-sw-text="title">Getting Started</span>
+      </li>
+    
+      <li>
+        <a href="getting-started.html">
+          <span>Getting Started</span>
         </a>
-      </li><li>
-        <a href="tutorial.html" data-sw-href="path">
-          <span data-sw-text="title">Tutorial</span>
+      </li>
+    
+      <li>
+        <a href="documentation.html">
+          <span>Documentation</span>
         </a>
-      </li><li>
-        <a href="documentation.html" data-sw-href="path">
-          <span data-sw-text="title">Documentation</span>
+      </li>
+    
+      <li>
+        <a href="tutorial.html">
+          <span>Tutorial</span>
         </a>
-      </li><li>
-        <a href="community.html" data-sw-href="path">
-          <span data-sw-text="title">Community</span>
+      </li>
+    
+      <li>
+        <a href="api-documentation.html">
+          <span>API Documentation</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="community.html">
+          <span>Community</span>
         </a>
       </li>
     </ul>
   
 
-
+</div>
           <div class="pull-right">
             <form action="search.html" class="navbar-form navbar-left" role="search">
-              
+              <span>
     <span class="label label-default">v0.9.0-beta.1</span>
   
 
-
+</span>
               <div class="form-group">
                 <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required="">
               </div>
@@ -86,41 +100,48 @@
     </div>
   
 
-
+</div>
     <br><br><br><br>
     <div class="container">
-      
-  <div class="row">
+      <div data-sw-view=""><div class="row">
     <div class="col-md-4">
-      
+      <div>
   <div class="bs-sidebar" role="complementary" style="width:300px;">
     <ul class="nav bs-sidenav">
       <li>
-        <a data-sw-href="#path" href="#installing">
-          <span data-sw-text="title">Installing</span>
+        <a href="">
+          <span>Installing</span>
         </a>
-      </li><li>
-        <a data-sw-href="#path" href="#starting">
-          <span data-sw-text="title">Starting</span>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Starting</span>
         </a>
-      </li><li>
-        <a data-sw-href="#path" href="#apidocs">
-          <span data-sw-text="title">API Documentation</span>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>API Documentation</span>
         </a>
-      </li><li>
-        <a data-sw-href="#path" href="#simulation">
-          <span data-sw-text="title">Simulation</span>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Simulation</span>
         </a>
-      </li><li>
-        <a data-sw-href="#path" href="#integration-testing">
-          <span data-sw-text="title">Integration Testing</span>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Integration Testing</span>
         </a>
       </li>
     </ul>
   </div>
 
 
-
+</div>
     </div>
     <div class="col-md-8" role="main">
       <section data-sw-nav="Installing" id="installing" data-sw-content="">
@@ -162,6 +183,8 @@
           <li>PROTEAN_ADMIN_PORT - the port for managing sims (default 3001)</li>
           <li>PROTEAN_CODEX_DIR - the location for codex specifications (listed when you start the sim server)</li>
           <li>PROTEAN_LOG_LEVEL - (default info)</li>
+          <li>PROTEAN_LOG_DIR - (default current working directory)</li>
+          <li>PROTEAN_TARGET - the location for produced API docs etc (default relative target directory)</li>
         </ul>
       </section>
 
@@ -240,12 +263,9 @@
         </p>
       </section>
     </div>
-  </div>
-
-
-
+  </div></div>
       <script src="resource/js/application.js"></script>
-      
+      <div>
     <hr>
     <footer>
       <div class="pull-right">
@@ -263,7 +283,7 @@
     </footer>
   
 
-
+</div>
     </div>
   
 
