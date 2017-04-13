@@ -44,7 +44,7 @@ For an explanation on concepts and general documentation see [Documentation](htt
 
 ### Tutorial
 
-See the [Tutorial](http://passivsystems.github.io/protean/tutorial.html) for concepts and documentation.
+See the [Tutorial](http://passivsystems.github.io/protean/tutorial.html) for a progressive howto guide.
 
 
 ### API Documentation
