@@ -21,7 +21,4 @@
 
   ;; default content-type where body is present
   :default-content-type "application/json; charset=utf-8"
-
-  ;; validating status - for flexibility in sim extensions off by default
-  :validating true
 }
