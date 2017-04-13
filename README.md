@@ -37,10 +37,19 @@ Protean is still new and will be subject to some change until it hits the 1.0.0 
 
 If you want to leap right in and see the examples working see [Getting Started](http://passivsystems.github.io/protean/getting-started.html).
 
+### Documentation
+
+For an explanation on concepts and general documentation see [Documentation](http://passivsystems.github.io/protean/documentation.html).
+
 
 ### Tutorial
 
 See the [Tutorial](http://passivsystems.github.io/protean/tutorial.html) for concepts and documentation.
+
+
+### API Documentation
+
+For the latest version of the API documentation see [API Documentation](http://passivsystems.github.io/protean/api-documentation.html).
 
 
 ## Contributing
