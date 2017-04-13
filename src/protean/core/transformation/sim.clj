@@ -342,13 +342,26 @@
 
 (declare success)
 
+(defn- http-options [paths svc endpoint sim-cfg]
+  (let [e (get-in paths [svc endpoint])
+        m (map #(s/upper-case (name %)) (keys e))
+        h (keys (into {} (for [[k v] e] (d/req-hdrs v))))
+        hdrs {"Content-Type" "text/html"
+              "Access-Control-Allow-Methods" (s/join ", "  m)
+              "Access-Control-Allow-Headers" (s/join ", "  h)}
+        cors-hdrs (if (false? (:cors sim-cfg)) hdrs (assoc hdrs "Access-Control-Allow-Origin" "*"))]
+    [{:rsp {:200 {:headers cors-hdrs}}}]))
+
 (defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
         requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
         endpoint (to-endpoint requested-endpoint paths svc)
         method (:request-method req)
         rules (get-in sims [svc endpoint method])
-        tree (get-in paths [svc endpoint method])
+        sim-cfg (:sim-cfg sims)
+        tree (if-let [x (get-in paths [svc endpoint method])]
+               x
+               (when (= method :options) (http-options paths svc endpoint sim-cfg)))
         request (sim-req req endpoint svc)
         corpus {}
         execute (execute-fn tree corpus requested-endpoint endpoint request)
@@ -357,6 +370,7 @@
                             (validate (success))
                             (success)))
         response (or (some identity (map execute rules)) default-success)]
+    (log-info "sim cfg : " sim-cfg)
     (if (not tree)
       (do
         (log-warn "warning - no endpoint found for" [uri method])
@@ -366,4 +380,4 @@
       (do
         (log-debug "executed" (count rules) "rules for uri:" uri "(svc:" svc "endpoint:" endpoint "method:" method ")")
         (log-debug "responding with" response)
-        response))))
+        (if (false? (:cors sim-cfg)) response (merge-with merge {:headers {"Access-Control-Allow-Origin" "*"}} response))))))
