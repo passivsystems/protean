@@ -3,20 +3,20 @@
 [![Build Status](https://api.travis-ci.org/passivsystems/protean.svg)](https://travis-ci.org/passivsystems/protean)
 
 
-# About
+## Overview
 
-Evolve RESTful API's. Encode them, simulate them, document how to use them, test them and figure out how failure affects your architecture. No invasive changes to your code base.
+Evolve your RESTful APIs and web services. Encode them, document them, simulate them, integration test them and figure out how failure affects your architecture. No invasive changes to your code base.  Browse HATEOAS APIs with [Omnom](https://github.com/rossputin/omnom)
 
-* Automatic documentation generated for all configured projects - map your services
-* Customise API doc look and feel completely
-* Simulate API's with a portable concise JSON like language
+## Features
+
+* Encode APIs - build a specification
+* Document APIs using [Silk Web Toolkit](http://www.silkyweb.org)
+* Simulate APIs
 * Hotswap API behaviour on the fly over the network
-* Simulate error response status codes per project or per resource path
-* Configure probability of error per service or per resource path
-* Verify request structure; headers, query string params, body payload json keys, url encoded forms
 * Auto generate curl commands to test your API's
+* Auto integration test your simulations
 
-This is a Clojure project which uses edn to simulate and document RESTful API's. Protean is used commerically to help speed development and test complex distributed systems.
+This is a Clojure project which uses edn to simulate and document and integration test RESTful API's. Protean is used commercially to help speed development and test complex distributed systems.
 
 
 ## Release information
@@ -33,59 +33,14 @@ Protean is still new and will be subject to some change until it hits the 1.0.0 
 
 ## Usage
 
-### Overview
+### Getting Started
 
-Protean helps you to evolve RESTful API's.  We define our API's in a codex which is an edn file with a .cod.edn extension.
-There is a home for codex files which varies depending on how you installed the app.  Debian flavours of Linux use /usr/lib/protean,
-while OSX uses ~/bin.
-
-Protean ships with a sample petstore service codex, you can test the API docs creation and simulation capabilities with this.
+If you want to leap right in and see the examples working see [Getting Started](http://passivsystems.github.io/protean/getting-started.html).
 
 
-## Documentation
+### Tutorial
 
-Below is a quickstart guide to help you with setting up services and getting information on how to curl them.
-
-### Creating API Documentation for a service
-
-The following assumes a Debian Linux flavour install.
-
-Create API documentation for the sample petstore service codex with
-
-    protean doc -f /usr/lib/protean/sample-petstore.cod.edn
-
-view your API docs with
-
-    firefox /usr/lib/protean/silk_templates/site/index.html
-
-### Starting the simulation server
-
-Start the simulation server with
-
-    protean-server
-
-### How to query the petstore service
-
-Lists all services:
-
-    protean services
-
-Shows the service configuration for the petstore service.
-
-    protean service -n petstore
-
-Shows the curl commands that can be used for the petstore service.
-
-    protean service-usage -n petstore
-
-Please explore the CLI or documentation to learn more.
-
-### Setting up your services
-
-Create a file with a .cod.edn extension. See *sample-petstore.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
-* uploading with the basic Protean CLI
-    - protean add-services -f /path/to/service.cod.edn
-* drop the .cod.edn file in the root of your Protean directory and restart it
+See the [Tutorial](http://passivsystems.github.io/protean/tutorial.html) for concepts and documentation.
 
 
 ## Contributing
