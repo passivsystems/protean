@@ -5,7 +5,7 @@
 
 ## Overview
 
-Evolve your RESTful APIs and web services. Encode them, document them, simulate them, integration test them and figure out how failure affects your architecture. No invasive changes to your code base.  Browse HATEOAS APIs with [Omnom](https://github.com/rossputin/omnom)
+Evolve your RESTful APIs and web services. Encode them, document them, simulate them, integration test them and figure out how failure affects your architecture. No invasive changes to your code base.
 
 ## Features
 
@@ -15,6 +15,7 @@ Evolve your RESTful APIs and web services. Encode them, document them, simulate 
 * Hotswap API behaviour on the fly over the network
 * Auto generate curl commands to test your API's
 * Auto integration test your simulations
+* Browse HATEOAS APIs with [Omnom](https://github.com/rossputin/omnom) (pre-alpha)
 
 This is a Clojure project which uses edn to simulate and document and integration test RESTful API's. Protean is used commercially to help speed development and test complex distributed systems.
 
