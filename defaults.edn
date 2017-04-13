@@ -1,6 +1,6 @@
 {
   ; default status code per method
-  :get {:rsp {:200 {:doc "OK"}}}
+  :get {:rsp {:200 {:doc "OK"} :204 {:doc "No Content"}}}
   :post {:rsp {:201 {:doc "Created"}}}
   :put {:rsp {:204 {:doc "No Content"}}}
   :patch {:rsp {:204 {:doc "No Content"}}}
