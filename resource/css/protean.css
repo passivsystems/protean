@@ -5,6 +5,10 @@
  * sections of docs content.
  */
 
+ body {
+   font-size: 13pt;
+ }
+
 .doc-list > li {margin-bottom: 30px;}
 
 .function-hdr {margin-left: 10px;}

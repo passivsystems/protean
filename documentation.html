@@ -113,6 +113,24 @@
           <span>Overview</span>
         </a>
       </li>
+    
+      <li>
+        <a href="">
+          <span>Concepts</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Commands</span>
+        </a>
+      </li>
+    
+      <li>
+        <a href="">
+          <span>Environment Variables</span>
+        </a>
+      </li>
     </ul>
   </div>
 
@@ -124,18 +142,95 @@
           <h1>Documentation</h1>
         </div>
 
-        <section data-sw-nav="Overview" id="tut-overview" data-sw-content="">
+        <section data-sw-nav="Overview" id="overview" data-sw-content="">
           <div class="page-header">
             <h2>Overview</h2>
           </div>
-          <p class="lead">What does Protean do ?</p>
+          <h3>What does Protean do ?</h3>
 
           <p>
-            Protean helps you to evolve RESTful APIs.  We start by specifying an API using a codex which is an <a href="https://github.com/edn-format/edn" target="_blank">EDN</a> file with a .cod.edn extension.  There is a home for codex files which varies depending on how you installed the app.  Debian flavours of Linux use /usr/lib/protean,
-while OSX uses ~/bin.
-
-Protean ships with a sample petstore service codex, you can test the API docs creation and simulation capabilities with this.
+            Protean is a Clojure project which supports the design and evolution of RESTful APIs.  It lets you:
           </p>
+          <ul>
+            <li>Specify an API</li>
+            <li>Generate API documentation from the specification</li>
+            <li>Run a simulation of an API - derived from the specification</li>
+            <li>Run an integration test on an API - derived from the specification</li>
+            <li>Hotswap API simulation behaviour on the fly over the network</li>
+            <li>Autogenerate curl commands to interact with your API</li>
+          </ul>
+        </section>
+
+        <section data-sw-nav="Concepts" id="concepts" data-sw-content="">
+          <div class="page-header">
+            <h2>Concepts</h2>
+          </div>
+          <h3>How does Protean work ?</h3>
+
+          <p>
+            Protean includes a Server and a Client.
+          </p>
+
+          <h4>Building an API specification</h4>
+          <p>
+            Protean uses <a href="https://github.com/edn-format/edn" target="_blank">EDN</a> to build an API specification.  We call the specification a <span class="label label-info">Codex</span>.  A Codex is an EDN file with a <code>.cod.edn</code> extension.
+          </p>
+          <p>
+            Protean ships with a sample Pet Store Codex and several more full featured examples and tutorials.
+          </p>
+
+          <h4>Generating API documentation</h4>
+          <p>
+            As soon as we have a Codex we can generate API documentation.  The Protean Client uses <a href="http://www.silkyweb.org" title="Silk Web Toolkit" target="_blank">Silk Web Toolkit</a> to build the documentation for your API.
+          </p>
+          <p>
+            We can customise the API documentation by making changes to a directory called <span class="label label-info">silk_templates</span> which is in the same location as the Codex.
+          </p>
+
+          <h4>Running a simulation of your API</h4>
+          <p>
+            Once we have a Codex we can run an out of the box simulation derived from it using the Protean Server.  Drop the Codex into place and start the server up.
+          </p>
+          <p>
+            We can customise the simulation by creating a <span class="label label-info">Sim Extension</span>.  Place the Sim Extension in the same location as the Codex.  Protean provides a comprehensive API and the full power of Clojure to let you customise your API simulation any way you want.  A Sim Extension is an EDN file with a <code>.sim.edn</code> extension.
+          </p>
+        </section>
+
+        <section data-sw-nav="Commands" id="commands" data-sw-content="">
+          <div class="page-header">
+            <h2>Commands</h2>
+          </div>
+          <h3>A list of commands</h3>
+
+          <h4>Server</h4>
+          <ul>
+            <li><code>protean-server</code> - start the Protean Server</li>
+          </ul>
+
+          <h4>Client</h4>
+          <ul>
+            <li><code>protean doc -f /path/to/a-codex.cod.edn</code> - generate API documentation</li>
+            <li><code>protean services</code> - list all the APIs (services)</li>
+            <li><code>protean service -n an-api</code> - show API (service) configuration</li>
+            <li><code>protean service-usage -n an-api</code> - show curl commands for interacting with the API</li>
+
+          </ul>
+
+        </section>
+
+        <section data-sw-nav="Environment Variables" id="environment-variables" data-sw-content="">
+          <div class="page-header">
+            <h2>Environment Variables</h2>
+          </div>
+
+          <ul>
+            <li>PROTEAN_SIM_PORT - the port for hitting sim endpoints (default 3000)</li>
+            <li>PROTEAN_ADMIN_PORT - the port for managing sims (default 3001)</li>
+            <li>PROTEAN_CODEX_DIR - the location for codex specifications (listed when you start the sim server)</li>
+            <li>PROTEAN_LOG_LEVEL - (default info)</li>
+            <li>PROTEAN_LOG_DIR - (default current working directory)</li>
+            <li>PROTEAN_TARGET - the location for produced API docs etc (default relative target directory)</li>
+          </ul>
         </section>
       </div>
     </div></div>
