@@ -10,14 +10,31 @@ Linux
 DOCKER
 ------
 
+-> Build
+
 (assuming you are in the build directory)
 ./build-docker.tgz
 cd ../target/docker
 docker rmi -f protean-example
 docker build -t protean-example .
 
-Test your new Docker image with :
+
+-> Test
+
+Run Protean on your new Docker image with :
 docker run -it -p 3000:3000 -p 3001:3001 protean-example
+
+SSH into your Protean Docker image with:
+docker run -it protean-example /bin/bash
+
+Files are located in /home so:
+cd /home
+
+Run the Protean client and list apis (services) to see if the server is setup and working ok:
+./protean -H 172.17.0.1 services
+
+Run the Protean client to learn how to interact with one of the services:
+./protean -H 172.17.0.1 service-usage -n petstore
 
 
 TGZ
