@@ -34,6 +34,41 @@ Protean is still new and will be subject to some change until it hits the 1.0.0 
 
 ## Usage
 
+### Quick Start
+
+For those who want to get stuck in right now play with our sample Docker image.
+
+Install Docker for your platform.
+
+Start our sample Protean server:
+
+```
+docker run -it -p 3000:3000 -p 3001:3001 rossputin/protean-example
+```
+
+SSH into the Protean Docker image:
+
+```
+docker run -it rossputin/protean-example /bin/bash
+```
+
+Navigate to the /home directory where all the software is installed:
+
+```
+cd /home
+```
+
+Run the Protean client to learn how to interact with the sample Petstore service:
+
+```
+./protean -H 172.17.0.1 service-usage -n petstore
+```
+
+Use any of the curl commands or connect another way remembering to substitute the '172.17.0.1' host
+
+Read on below to learn more.
+
+
 ### Getting Started
 
 If you want to leap right in and see the examples working see [Getting Started](http://passivsystems.github.io/protean/getting-started.html).
@@ -51,6 +86,34 @@ See the [Tutorial](http://passivsystems.github.io/protean/tutorial.html) for a p
 ### API Documentation
 
 For the latest version of the API documentation see [API Documentation](http://passivsystems.github.io/protean/api-documentation.html).
+
+
+## Developers
+
+### Getting Started
+
+#### Running the server
+
+In the root directory run Protean server with:
+
+```
+lein run -m protean.server.main
+```
+
+#### Running the client
+
+To learn how to interact with the sample Petstore API in the root directory in another terminal run:
+
+```
+lein run service-usage -n petstore
+```
+
+Now enter one of the curl commands listed to interact with the API.
+
+
+### Building and distributing
+
+See the instructions in build/README.md.
 
 
 ## Contributing
