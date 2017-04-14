@@ -53,6 +53,34 @@ See the [Tutorial](http://passivsystems.github.io/protean/tutorial.html) for a p
 For the latest version of the API documentation see [API Documentation](http://passivsystems.github.io/protean/api-documentation.html).
 
 
+## Developers
+
+### Getting Started
+
+#### Running the server
+
+In the root directory run Protean server with:
+
+```
+lein run -m protean.server.main
+```
+
+#### Running the client
+
+To learn how to interact with the sample Petstore API in the root directory in another terminal run:
+
+```
+lein run service-usage -n petstore
+```
+
+Now enter one of the curl commands listed to interact with the API.
+
+
+### Building and distributing
+
+See the instructions in build/README.md.
+
+
 ## Contributing
 
 All contributions ideas/pull requests/bug reports are welcome, we hope you find it useful.

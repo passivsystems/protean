@@ -7,6 +7,19 @@ All builds assume that lein uberjar has been run and the uberjar exists in the t
 Linux
 =====
 
+DOCKER
+------
+
+(assuming you are in the build directory)
+./build-docker.tgz
+cd ../target/docker
+docker rmi -f protean-example
+docker build -t protean-example .
+
+Test your new Docker image with :
+docker run -it -p 3000:3000 -p 3001:3001 protean-example
+
+
 TGZ
 ---
 
