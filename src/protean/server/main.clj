@@ -51,12 +51,15 @@
       (pipe/load-sim f)))
   (d/custom-keys @pipe/sims))
 
+(defmacro version [] (System/getProperty "protean.version"))
+
 
 ;; =============================================================================
 ;; Routes
 ;; =============================================================================
 
 (defroutes admin-routes
+  (route/files "/public" {:root (c/public-dir)})
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
   (GET    "/services/:id/analysis" [id] (pipe/service-analysis id c/host))
@@ -66,7 +69,8 @@
   (GET    "/sims" [] (pipe/sims-names))
   (PUT    "/sims" req (pipe/put-sims req))
   (DELETE "/sims/:id" [id] (pipe/del-sim-handled id))
-  (GET    "/status" [] (pipe/status)))
+  (GET    "/status" [] (pipe/status))
+  (GET    "/version" [] (pipe/version (version))))
 
 (defroutes api-routes
   (ANY "*" req (pipe/api req)))
@@ -99,8 +103,6 @@
 ;; Application entry point
 ;; =============================================================================
 
-(defmacro version [] (System/getProperty "protean.version"))
-
 (defn start [codex-dir]
   (timbre/log-and-rethrow-errors
     (let [sim-port (c/sim-port)
@@ -119,6 +121,7 @@
 
       (info (str "Codices loaded : " (build-services c-dir)))
       (info (str "Sim extensions loaded : " (build-sims c-dir)))
+      (info (str "Public static resources can be served from : " (c/public-dir)))
       (server sim-port sim-max-threads admin-port admin-max-threads)
       (info (str "Protean has started \n"
                  "Sim Port:   " sim-port   " Max threads: " sim-max-threads "\n"

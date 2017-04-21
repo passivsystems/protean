@@ -21,6 +21,8 @@
 
 (defn codex-dir [] (or (env :protean-codex-dir) (d/pwd)))
 
+(defn public-dir [] (or (env :protean-asset-dir) "public"))
+
 (defn protean-home [] (or (env :protean-home) (d/pwd)))
 
 (defn log-dir [] (or (env :protean-log-dir) (d/pwd)))

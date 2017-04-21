@@ -142,3 +142,9 @@
 ;;;;;;;;;;;;;;;;;
 
 (defn status [] (assoc json :body (co/js {"status" "ok"})))
+
+
+;; service version
+;;;;;;;;;;;;;;;;;;
+
+(defn version [v] (assoc json :body (co/js {"version" v})))
