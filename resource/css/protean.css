@@ -9,6 +9,11 @@
    font-size: 13pt;
  }
 
+ h4, h5, h6 {
+   margin-top: 20px;
+   margin-bottom: 15px;
+ }
+
 .doc-list > li {margin-bottom: 30px;}
 
 .function-hdr {margin-left: 10px;}
