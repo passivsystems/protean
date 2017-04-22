@@ -61,10 +61,10 @@
       rsp-8 (s/sim-rsp (req :muppet "/sample/simple" nil body nil) cdx-1 {})]
   (expect 200 (:status rsp-1))
   (expect 200 (:status rsp-2))
-  (expect 1 (count (:headers rsp-2)))
+  (expect 2 (count (:headers rsp-2))) ;; account for CORS headers
   (expect 204 (:status rsp-3))
   (expect 201 (:status rsp-4))
-  (expect 1 (count (:headers rsp-4)))
+  (expect 2 (count (:headers rsp-4))) ;; account for CORS headers
   (expect 204 (:status rsp-5))
   (expect 204 (:status rsp-6))
   (expect 404 (:status rsp-7))
