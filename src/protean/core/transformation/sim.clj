@@ -38,7 +38,6 @@
 
 (defn- to-endpoint [requested-endpoint paths svc]
   (let [endpoints (keys (get-in paths [svc]))
-        muppet (do (println "to-endpoint endpoints : " endpoints) "flibble")
         filtered-ep (filter #(parse-endpoint requested-endpoint %) endpoints)]
     (if (next filtered-ep)
       (or (some #{requested-endpoint} filtered-ep) requested-endpoint nil)
