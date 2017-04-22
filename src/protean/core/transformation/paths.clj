@@ -45,7 +45,7 @@
     (map #(methods-range svc % codices) paths)))
 
 (defn- svc-paths [codices svc]
-  (let [paths-raw (d/custom-entries (get-in codices [svc]))
+  (let [paths-raw (get-in codices [svc])
         paths (map #(hash-map (first %) (last %)) paths-raw)]
     (map #(methods-range svc % codices) paths)))
 

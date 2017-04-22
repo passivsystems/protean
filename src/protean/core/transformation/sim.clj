@@ -38,6 +38,7 @@
 
 (defn- to-endpoint [requested-endpoint paths svc]
   (let [endpoints (keys (get-in paths [svc]))
+        muppet (do (println "to-endpoint endpoints : " endpoints) "flibble")
         filtered-ep (filter #(parse-endpoint requested-endpoint %) endpoints)]
     (if (next filtered-ep)
       (or (some #{requested-endpoint} filtered-ep) requested-endpoint nil)
@@ -354,7 +355,10 @@
 
 (defn sim-rsp [{:keys [uri] :as req} paths sims]
   (let [svc (second (s/split uri #"/"))
-        requested-endpoint (second (s/split uri (re-pattern (str "/" (name svc) "/"))))
+        req-ep-raw (s/split uri (re-pattern (str "/" (name svc) "/")))
+        requested-endpoint (if (> (count req-ep-raw) 1)
+          (second req-ep-raw)
+          "/")
         endpoint (to-endpoint requested-endpoint paths svc)
         method (:request-method req)
         rules (get-in sims [svc endpoint method])

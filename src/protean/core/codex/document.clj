@@ -10,10 +10,6 @@
   "returns only keys which are not keywords"
   [c] (seq (remove keyword? (keys c))))
 
-(defn custom-entries
-  "returns only entries where the keys are not keywords"
-  [c] (remove #(keyword? (key %)) c))
-
 (defn to-seq [codices svc path method]
   "creates a sequence (for now aka 'tree' - needs renaming) that can be
    traversed to resolve required references in scope"
