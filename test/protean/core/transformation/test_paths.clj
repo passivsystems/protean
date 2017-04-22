@@ -7,6 +7,10 @@
 ;; Testing computation of endpoints from codex
 ;; =============================================================================
 
+(let [paths (paths (d/read-edn "get-codex-root.edn") ["sample"])]
+  (expect ["sample" "sample"] (map #(:svc %) paths))
+  (expect ["/" "test"] (map #(:path %) paths)))
+
 (let [paths (paths (d/read-edn "get-codex-paths.edn") ["sample simple test"])]
   (expect ["sample" "sample"] (map #(:svc %) paths))
   (expect ["simple" "test"] (map #(:path %) paths)))
