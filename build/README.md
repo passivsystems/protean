@@ -13,7 +13,7 @@ DOCKER
 -> Build
 
 (assuming you are in the build directory)
-./build-docker.tgz
+./build-docker.sh
 cd ../target/docker
 docker rmi -f protean-example
 docker build -t protean-example .
