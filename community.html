@@ -4,26 +4,26 @@
     <meta name="author" content="Protean">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Protean</title>
-    <link rel="stylesheet" type="text/css" href="resource/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="resource/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="resource/css/pygments-manni.css">
-    <link rel="stylesheet" type="text/css" href="resource/css/protean.css">
     <link rel="stylesheet" type="text/css" href="resource/css/bootstrap-prettify.css">
     <link rel="stylesheet" type="text/css" href="resource/css/tipuesearch.css">
     <link rel="stylesheet" type="text/css" href="resource/css/tipuedrop.css">
+    <link rel="stylesheet" type="text/css" href="resource/css/style.css">
     <script type="text/javascript" src="resource/js/jquery.min.js"></script>
-    <script type="text/javascript" src="resource/js/tipuesearch_set.js"></script>
     <script type="text/javascript" src="resource/js/tipuesearch_content.js"></script>
     <script type="text/javascript" src="resource/js/tipuesearch.min.js"></script>
     <script type="text/javascript" src="resource/js/tipuedrop.min.js"></script>
-    <script type="text/javascript" src="resource/js/bootstrap.js"></script>
+    <script type="text/javascript" src="resource/js/bootstrap.min.js"></script>
     <script src="resource/js/prettify/prettify.js"></script>
   </head>
   <body onload="prettyPrint();">
     <div>
-    <div id="navbar-header" class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
+    <nav class="navbar navbar-default navbar-fixed-top">
+      <div class="container-fluid">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -33,76 +33,64 @@
           </a>
         </div>
         <div class="collapse navbar-collapse">
-          <div>
-    <ul class="nav navbar-nav">
-      <li>
-        <a href="index.html">
-          <span>Home</span>
-        </a>
-      </li>
-    
-      <li>
-        <a href="getting-started.html">
-          <span>Getting Started</span>
-        </a>
-      </li>
-    
-      <li>
-        <a href="documentation.html">
-          <span>Documentation</span>
-        </a>
-      </li>
-    
-      <li>
-        <a href="tutorial.html">
-          <span>Tutorial</span>
-        </a>
-      </li>
-    
-      <li>
-        <a href="api-documentation.html">
-          <span>API Documentation</span>
-        </a>
-      </li>
-    
-      <li>
-        <a href="community.html">
-          <span>Community</span>
-        </a>
-      </li>
-    </ul>
-  
-
-</div>
-          <div class="pull-right">
-            <form action="search.html" class="navbar-form navbar-left" role="search">
-              <span>
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="getting-started.html">
+                <span>Getting Started</span>
+              </a>
+            </li>
+          
+            <li>
+              <a href="documentation.html">
+                <span>Documentation</span>
+              </a>
+            </li>
+          
+            <li>
+              <a href="tutorial.html">
+                <span>Tutorial</span>
+              </a>
+            </li>
+          
+            <li>
+              <a href="api-documentation.html">
+                <span>API Documentation</span>
+              </a>
+            </li>
+          
+            <li>
+              <a href="community.html">
+                <span>Community</span>
+              </a>
+            </li>
+          </ul>
+          <form action="search.html" class="navbar-form navbar-right" role="search">
+            <span>
     <span class="label label-default">v0.9.0-beta.1</span>
   
 
 </span>
-              <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required="">
-              </div>
-              <button type="submit" class="btn btn-default" alt="Search" title="Search">
-                <span class="glyphicon glyphicon-search"></span>
-              </button>
-            </form>
-            <div style="margin-top:45px" id="tipue_drop_content"></div>
-            <script>
-              $(document).ready(function() {
-                 $('#tipue_search_input').tipuedrop();
-              });
-            </script>
-          </div>
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required="">
+            </div>
+            <button type="submit" class="btn btn-default" alt="Search" title="Search">
+              <span class="glyphicon glyphicon-search"></span>
+            </button>
+          </form>
+          <div style="margin-top:45px" id="tipue_drop_content"></div>
+          <script>
+            $(document).ready(function() {
+               $('#tipue_search_input').tipuedrop();
+            });
+          </script>
         </div>
       </div>
-    </div>
+    </nav>
   
 
 </div>
     <br><br><br><br>
-    <div class="container">
+    <div class="container-fluid">
       <div data-sw-view=""><div id="documentation" class="container">
       <div class="page-header">
         <h1>Community</h1>
@@ -160,6 +148,11 @@
 
 </div>
     </div>
+    <script>
+      $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+      });
+    </script>
   
 
 </body></html>
