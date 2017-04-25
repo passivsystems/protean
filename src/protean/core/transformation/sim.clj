@@ -348,7 +348,7 @@
         h (keys (into {} (for [[k v] e] (d/req-hdrs v))))
         hdrs {"Content-Type" "text/html"
               "Access-Control-Allow-Methods" (s/join ", "  m)
-              "Access-Control-Allow-Headers" (s/join ", "  h)}
+              "Access-Control-Allow-Headers" (s/join ", "  (conj h "Content-Type"))}
         cors-hdrs (if (false? (:cors sim-cfg)) hdrs (assoc hdrs "Access-Control-Allow-Origin" "*"))]
     [{:rsp {:200 {:headers cors-hdrs}}}]))
 
