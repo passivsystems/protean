@@ -79,7 +79,7 @@
                (:regx v) (str "Custom type defined by regx: " (:regx v))
                (:type v) (str "Standard type: " (name (:type v)))
                :else     "The type was not defined")
-       :doc (:doc v "")
+       :doc-md (:doc v "")
        :attr (stg/join " " (:attr v))}))))
 
 (defn- doc-hdrs [hdrs]
@@ -102,7 +102,7 @@
           default-doc (d/get-in-tree tree [method :rsp rsp-code :doc])
           examples (doc-body-examples id tree (:body-examples v))]
       {:code (name rsp-code)
-       :doc (or (:doc v) default-doc "N/A")
+       :doc-md (or (:doc v) default-doc "N/A")
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
        :rsp-body-examples (vec (drop 1 examples))
@@ -155,14 +155,13 @@
           main (filter #(get-in % [:title]) tree)
           schema (d/get-in-tree tree [:req :body-schema])
           site {:site-name (d/get-in-tree main [:title])
-                :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
+                :site-doc-md (if-let [d (d/get-in-tree main [:doc])] d "")}
           full {:id id
                 :#id (str "#" id )
                 :path (str svc "/" path)
                 :codex-order codex-order
                 :curl (c/curly-entry-> (assoc-in e [:uri] uri))
-                :doc (d/get-in-tree tree [:doc])
-                :desc-md (if-let [d (d/get-in-tree tree [:description])] d "")
+                :doc-md (d/get-in-tree tree [:doc])
                 :method (name method)
                 :req-body-schema-id (str "schema-" id)
                 :#req-body-schema-id (str "#schema-" id)
