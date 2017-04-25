@@ -162,7 +162,7 @@
                 :codex-order codex-order
                 :curl (c/curly-entry-> (assoc-in e [:uri] uri))
                 :doc (d/get-in-tree tree [:doc])
-                :desc (if-let [d (d/get-in-tree tree [:description])] d "")
+                :desc-md (if-let [d (d/get-in-tree tree [:description])] d "")
                 :method (name method)
                 :req-body-schema-id (str "schema-" id)
                 :#req-body-schema-id (str "#schema-" id)
