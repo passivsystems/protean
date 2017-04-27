@@ -158,7 +158,7 @@
                 :site-doc-md (if-let [d (d/get-in-tree main [:doc])] d "")}
           full {:id id
                 :#id (str "#" id )
-                :path (str svc "/" path)
+                :path (if (= path "/") (str svc) (str svc "/" path))
                 :codex-order codex-order
                 :curl (c/curly-entry-> (assoc-in e [:uri] uri))
                 :doc-md (d/get-in-tree tree [:doc])

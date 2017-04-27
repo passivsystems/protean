@@ -73,4 +73,6 @@
     res))
 
 (defn uri [host port svc path]
-  (str "http://" host ":" port "/" svc "/" path))
+  (if (= path "/")
+    (str "http://" host ":" port "/" svc)
+    (str "http://" host ":" port "/" svc "/" path)))
