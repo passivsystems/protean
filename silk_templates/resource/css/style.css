@@ -132,13 +132,16 @@ section div.page-header {
     padding-right: 30px;
     width: 33.333333%;
   }
-
   .bs-sidebar.affix {
     position: fixed;
     top: 30px;
   }
   .bs-sidebar.affix-bottom {
     position: relative;;
+  }
+  .bs-sidenav {
+    max-height: 90vh;
+    overflow-y: auto;
   }
 }
 
