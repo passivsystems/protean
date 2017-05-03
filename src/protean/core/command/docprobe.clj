@@ -99,10 +99,9 @@
 (defn- doc-status-codes [id tree method statuses]
   (vec (for [[rsp-code v] statuses]
     (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
-          default-doc (d/get-in-tree tree [method :rsp rsp-code :doc])
           examples (doc-body-examples id tree (:body-examples v))]
       {:code (name rsp-code)
-       :doc-md (or (:doc v) default-doc "N/A")
+       :doc-md (rsp-code h/status-docs "N/A")
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
        :rsp-body-examples (vec (drop 1 examples))
