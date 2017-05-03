@@ -1,12 +1,4 @@
 {
-  ; defaults for status codes (override/augment in your project)
-  :get {:rsp {:200 {:doc "OK"} :204 {:doc "No Content"}}}
-  :post {:rsp {:201 {:doc "Created"}}}
-  :put {:rsp {:204 {:doc "No Content"}}}
-  :patch {:rsp {:204 {:doc "No Content"}}}
-  :delete {:rsp {:204 {:doc "No Content"}}}
-  :head {:rsp {:200 {:doc "OK"}}}
-
   ;; an example :rsp {:headers {"X-Powered-By" "Protean"}}
 
   :types {
