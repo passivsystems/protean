@@ -1,4 +1,12 @@
 {
+  ; defaults for status codes (override/augment in your project)
+  ; :get {:rsp {:200 {} :204 {}}}
+  ; :post {:rsp {:201 {}}}
+  ; :put {:rsp {:204 {}}}
+  ; :patch {:rsp {:204 {}}}
+  ; :delete {:rsp {:204 {}}}
+  ; :head {:rsp {:200 {}}}
+
   ;; an example :rsp {:headers {"X-Powered-By" "Protean"}}
 
   :types {
