@@ -9,8 +9,6 @@
   :title "Pet Store Demo API Docs"
   :doc "A sample pet store is often created in RESTful toolkits to demonstrate capability."
 
-  :rsp {:headers {"Access-Control-Allow-Origin" "*"}}
-
   "petstore-demo" {
 
     :types {
@@ -80,7 +78,10 @@
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
-          :form-params {:required {"name" "${name}" "status" "${status}"}}
+          :form-params {
+            "name" ["${name}" :required]
+            "status" ["${status}" :required]
+          }
         }
         :rsp {
           :200 {:doc "Updated"}
@@ -123,7 +124,7 @@
       :post {
         :doc "uploads an image"
         :req {
-          :query-params {:required {"additionalMetadata" "${additionalMetadata}"}}
+          :query-params { "additionalMetadata" ["${additionalMetadata}" :required]}
           ;           {"file" {:type :File}} ; Binary?; Multipart?
         }
         :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
