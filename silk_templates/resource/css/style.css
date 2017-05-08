@@ -74,6 +74,22 @@ pre {
   max-height: 400px;
 }
 
+ul, ol {
+  margin-bottom: 10px !important; /* For markdown pargraph, list, pargraph styling */
+}
+
+ol.nav, ul.nav {
+  margin-bottom: 0px !important;
+}
+
+.nav ul, ol {
+  margin-bottom: 0px !important;
+}
+
+ul, ol {
+  margin-bottom: 10px !important;
+}
+
 .table-custom {
   display: table;
 }
