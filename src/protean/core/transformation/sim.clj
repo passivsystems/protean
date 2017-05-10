@@ -5,6 +5,7 @@
             [clojure.pprint]
             [clojure.main :as m]
             [clojure.java.io :refer [file]]
+            [cemerick.pomegranate :as pom]
             [me.rossputin.diskops :as dk]
             [protean.core.protocol.http :as h]
             [protean.core.protocol.protean :as p]
@@ -59,6 +60,12 @@
 (def ^:dynamic *tree*)
 (def ^:dynamic *request*)
 (def ^:dynamic *corpus*)
+
+(defn dependencies [xs]
+  (pom/add-dependencies
+    :coordinates xs
+    :repositories (merge cemerick.pomegranate.aether/maven-central
+                       {"clojars" "http://clojars.org/repo"})))
 
 
 ;; =============================================================================
