@@ -5,9 +5,9 @@
             [protean.core.codex.document :as d])
   (:import java.io.File))
 
-(defn- resource-order-sequence [tree service]
+(defn- resource-order-sequence [tree svc]
   (let [matched-path-ks (re-seq #"\"[A-Za-z0-9-\$\{\}/]+\" \{[\s]+" tree)
-        raw-paths (last (s/split (s/join "," matched-path-ks) #"sim"))]
+        raw-paths (last (s/split (s/join "," matched-path-ks) (re-pattern svc)))]
     (re-seq #"\"[A-Za-z0-9-\$\{\}/]+\"" raw-paths)))
 
 (defn- read-codex-part
