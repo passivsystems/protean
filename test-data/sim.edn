@@ -6,6 +6,15 @@
   :includes [ "defaults.edn" ]
 
   "sim" {
+    
+    :types {
+      :Status "(available|pending|sold)"
+      :PetId "[0-9a-zA-Z]{3,7}"
+    }
+    :vars {
+      "petId" {:type :PetId :doc "ID of pet" :gen false}
+      "status" {:type :Status :doc "Updated status of the pet"}
+    }
 
     "path1" {
       :get {
@@ -42,7 +51,18 @@
       }
     }
 
-    "wild/*" {
+    "complex-resource/${petId}" {
+      :get {
+        :rsp {
+          :body {
+            "k1" "v1"
+            "k2" "v2"
+          }
+        }
+      }
+    }
+
+    "complex-resource/${petId}/sub-resource/${status}" {
       :get {
         :rsp {
           :body {
