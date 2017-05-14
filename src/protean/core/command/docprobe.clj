@@ -73,14 +73,19 @@
   (if (nil? params)
     [{:title "N/A" :type "" :regx "" :doc "" :attr ""}]
     (vec (for [[k v] params]
+      (do
+        ; (println "key:" k)
+        ; (println "value:" v)
       {:title k
-       :type (:type v "Undefined")
+       :param-type (:ptype v)
+       :value-type (:type v "Undefined")
        :regx (cond
                (:regx v) (str "Custom type defined by regx: " (:regx v))
                (:type v) (str "Standard type: " (name (:type v)))
                :else     "The type was not defined")
        :doc-md (:doc v "")
        :attr (stg/join " " (:attr v))}))))
+       )
 
 (defn- doc-hdrs [hdrs]
   (if (nil? hdrs)
@@ -111,26 +116,28 @@
        :rsp-body-schema (if schema (slurp-file schema tree) "N/A")}))))
 
 (defn- input-params [tree uri]
-  (let [inputs (concat
-                 (list uri)
-                 (map val (d/qps tree true))
-                 (map val (d/fps tree true))
-                 (map val (d/get-in-tree tree [:req :body]))
-                 (->> (d/get-in-tree tree [:req :body-examples])
-                      (map #(d/to-path % tree))
-                      (map #(slurp %)))
-                 (map val (d/get-in-tree tree [:req :headers])))
-        extract-ph-names (fn [input] (map second (ph/holder? input)))
-        ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
-        get-attr (fn [varname]
-          (into [] (concat
-            (drop 1 (d/get-in-tree tree [:req :query-params varname]))
-            (drop 1 (d/get-in-tree tree [:req :form-params varname])))))
-        to-map (fn [varname]
-          {varname (-> (d/get-in-tree tree [:vars varname])
-                       (merge {:attr (get-attr varname)})
-                       (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))})]
-  (reduce merge (map to-map ph-names))))
+  (let [inputs {:path (list uri)
+                :header (map val (d/get-in-tree tree [:req :headers]))
+                :query (map val (d/qps tree true))
+                :form (map val (d/fps tree true))
+                :body (concat
+                        (map val (d/get-in-tree tree [:req :body]))
+                        (->> (d/get-in-tree tree [:req :body-examples])
+                             (map #(d/to-path % tree))
+                             (map #(slurp %))))}
+        raw (for [[k v] inputs]
+              (for [ph (seq (map second (ph/holder? v)))] {ph k}))
+        placeholders (into {} (filter identity (reduce concat raw)))]
+  (reduce merge
+    (for [[varname type] placeholders]
+      {varname
+        (-> (d/get-in-tree tree [:vars varname])
+            (merge {:attr (cond
+                            (= type :form)  (drop 1 (d/get-in-tree tree [:req :form-params  varname]))
+                            (= type :query) (drop 1 (d/get-in-tree tree [:req :query-params varname]))
+                            :else           nil)})
+            (merge {:ptype (stg/capitalize (name type))})
+            (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))}))))
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
