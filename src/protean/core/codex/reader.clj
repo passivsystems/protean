@@ -23,7 +23,8 @@
         read (edn/read-string file-content)
         tree (apply merge-with merge (map merge-includes read))]
     (if-let [svc (d/service tree)]
-      (let [xs (resource-order-sequence file-content svc)]
+      (let [xs-raw (resource-order-sequence file-content svc)
+            xs (map #(s/replace % (re-pattern "\"") "") xs-raw)]
         (merge {:ordered-resources xs} tree))
       tree)))
 
