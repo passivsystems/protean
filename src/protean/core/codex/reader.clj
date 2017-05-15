@@ -6,9 +6,9 @@
   (:import java.io.File))
 
 (defn- resource-order-sequence [tree svc]
-  (let [matched-path-ks (re-seq #"\"[A-Za-z0-9-\$\{\}/]+\" \{[\s]+" tree)
+  (let [matched-path-ks (re-seq #"\"[A-Za-z0-9-_~#\*;=\[\]\(\)\.\$\{\}/]+\"[\s]+\{[\s]*(?::put|:get|:patch|:post|:delete|:options)" tree)
         raw-paths (last (s/split (s/join "," matched-path-ks) (re-pattern svc)))]
-    (re-seq #"\"[A-Za-z0-9-\$\{\}/]+\"" raw-paths)))
+    (re-seq #"\"[A-Za-z0-9-_~#\*;=\[\]\(\)\.\$\{\}/]+\"" raw-paths)))
 
 (defn- read-codex-part
   "will read the codex eden file, merging with any referenced files"
