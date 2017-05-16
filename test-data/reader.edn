@@ -19,6 +19,8 @@
 
     ; test with plenty of whitespace
     "cpath-1" {
+      ; a single colon comment to stress the regex
+      ;; a double colon comment to stress the regex
       :get {
         :rsp {
           :200 {}
@@ -29,9 +31,20 @@
     ; test with no whitespace inside the value
     "bpath_2" {:put {:rsp {:200 {}}}}
 
-    "apath-3/subpath" {:post {:rsp {:201 {}}}}
+    "apath-3/subpath" {
+      :doc "a random doc to stress the regex"
+      :post {:rsp {:201 {}}}
+    }
 
-    "path4.html" {:patch {:rsp {:204 {}}}}
+    "path4.html" {
+      :types {
+        :LocalType "(local|type)"
+      }
+      :vars {
+        "localType" {:type :LocalType :doc "a local type" :gen false}
+      }
+      :patch {:rsp {:204 {}}}
+    }
 
     "path5/subpath" {:delete {:rsp {:204 {}}}}
 

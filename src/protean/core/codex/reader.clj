@@ -6,7 +6,7 @@
   (:import java.io.File))
 
 (defn- resource-order-sequence [tree svc]
-  (let [matched-path-ks (re-seq #"\"[A-Za-z0-9-_~#\*;=\[\]\(\)\.\$\{\}/]+\"[\s]+\{[\s]*(?::put|:get|:patch|:post|:delete|:options)" tree)
+  (let [matched-path-ks (re-seq #"\"[A-Za-z0-9-_~#\*;=\[\]\(\)\.\$\{\}/]+\"[\s]+\{(?!:type)" tree)
         raw-paths (last (s/split (s/join "," matched-path-ks) (re-pattern svc)))]
     (re-seq #"\"[A-Za-z0-9-_~#\*;=\[\]\(\)\.\$\{\}/]+\"" raw-paths)))
 
