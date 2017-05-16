@@ -1,0 +1,66 @@
+;; A codex demonstrating complex paths to test resource ordering
+;;
+;; URI spec compliant characters
+
+{
+  :includes [ "defaults.edn" ]
+
+  "reader" {
+
+    ; this block is here to test the regular expression out
+    :types {
+      :Status "(available|pending|sold)"
+      :PetId "[0-9a-zA-Z]{3,7}"
+    }
+    :vars {
+      "petId" {:type :PetId :doc "ID of pet" :gen false}
+      "status" {:type :Status :doc "Updated status of the pet"}
+    }
+
+    ; test with plenty of whitespace
+    "cpath-1" {
+      ; a single colon comment to stress the regex
+      ;; a double colon comment to stress the regex
+      :get {
+        :rsp {
+          :200 {}
+        }
+      }
+    }
+
+    ; test with no whitespace inside the value
+    "bpath_2" {:put {:rsp {:200 {}}}}
+
+    "apath-3/subpath" {
+      :doc "a random doc to stress the regex"
+      :post {:rsp {:201 {}}}
+    }
+
+    "path4.html" {
+      :types {
+        :LocalType "(local|type)"
+      }
+      :vars {
+        "localType" {:type :LocalType :doc "a local type" :gen false}
+      }
+      :patch {:rsp {:204 {}}}
+    }
+
+    "path5/subpath" {:delete {:rsp {:204 {}}}}
+
+    "path6~param1" {:get {:rsp {:200 {}}}}
+
+    "path7#param1" {:get {:rsp {:200 {}}}}
+
+    "path8*param1" {:get {:rsp {:200 {}}}}
+
+    "fpath9/${status}" {:post {:rsp {:201 {}}}}
+
+    "dpath10;more=1" {:patch {:rsp {:204 {}}}}
+
+    "epath11[blurb]" {:get {:rsp {:200 {}}}}
+
+    "path12(blurb)" {:get {:rsp {:200 {}}}}
+
+  }
+}

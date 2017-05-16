@@ -39,6 +39,8 @@
     (if (empty? v) target (assoc-in target in-ks v))
     target))
 
+(defn service [tree] (ffirst (filter #(= (type (key %)) String) tree)))
+
 (defn get-path-locations
   "Returns all locations that correspond to a relative path, provided a codex-dir"
   [path codex-dir]

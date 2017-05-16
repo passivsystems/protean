@@ -59,7 +59,7 @@
   [{:keys [host port locs commands seed] :as corpus} codices]
   (doseq [cmd commands]
     (pb/config cmd corpus)
-    (let [paths (sort-by (juxt :path :method) (p/paths codices locs)) ;; otherwise unsorted EDN map
+    (let [paths (sort-by #(.indexOf (:ordered-resources codices) (:path %)) (p/paths codices locs))
           probes (filter some? (doall (map-indexed (fn [idx itm] (build cmd corpus idx itm)) paths)))
           results (pb/dispatch cmd corpus probes)]
       (pb/analyse cmd corpus results))))

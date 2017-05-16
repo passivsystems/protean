@@ -1,8 +1,14 @@
 (ns protean.core.codex.reader
   (:require [clojure.edn :as edn]
+            [clojure.string :as s]
             [protean.config :as conf]
             [protean.core.codex.document :as d])
   (:import java.io.File))
+
+(defn- resource-order-sequence [tree svc]
+  (let [matched-path-ks (re-seq #"\"[A-Za-z0-9-_~#\*;=\[\]\(\)\.\$\{\}/]+\"[\s]+\{(?!:type)" tree)
+        raw-paths (last (s/split (s/join "," matched-path-ks) (re-pattern svc)))]
+    (re-seq #"\"[A-Za-z0-9-_~#\*;=\[\]\(\)\.\$\{\}/]+\"" raw-paths)))
 
 (defn- read-codex-part
   "will read the codex eden file, merging with any referenced files"
@@ -13,8 +19,14 @@
       (map? v) {k (apply merge-with merge (map merge-includes v))}
       :else {k v}))
   (let [afile (if (string? file) (d/to-path-dir file codex-dir) file)
-        read (edn/read-string (slurp afile))]
-    (apply merge-with merge (map merge-includes read))))
+        file-content (slurp afile)
+        read (edn/read-string file-content)
+        tree (apply merge-with merge (map merge-includes read))]
+    (if-let [svc (d/service tree)]
+      (let [xs-raw (resource-order-sequence file-content svc)
+            xs (map #(s/replace % (re-pattern "\"") "") xs-raw)]
+        (merge {:ordered-resources xs} tree))
+      tree)))
 
 (defn read-codex
   "will read the codex eden file, merging with any referenced files"
