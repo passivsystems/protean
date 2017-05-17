@@ -102,7 +102,7 @@
     (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
           examples (doc-body-examples id tree (:body-examples v))]
       {:code (name rsp-code)
-       :doc-md (rsp-code h/status-docs "N/A")
+       :doc-md (:doc v (rsp-code h/status-docs))
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
        :rsp-body-examples (vec (drop 1 examples))
