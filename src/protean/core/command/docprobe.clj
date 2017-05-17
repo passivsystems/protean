@@ -73,9 +73,6 @@
   (if (nil? params)
     [{:title "N/A" :type "" :regx "" :doc "" :attr ""}]
     (vec (for [[k v] params]
-      (do
-        ; (println "key:" k)
-        ; (println "value:" v)
       {:title k
        :param-type (:ptype v)
        :value-type (:type v "Undefined")
@@ -85,7 +82,6 @@
                :else     "The type was not defined")
        :doc-md (:doc v "")
        :attr (stg/join " " (:attr v))}))))
-       )
 
 (defn- doc-hdrs [hdrs]
   (if (nil? hdrs)
