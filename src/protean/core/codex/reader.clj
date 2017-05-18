@@ -2,7 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.string :as s]
             [protean.config :as conf]
-            [protean.core.codex.document :as d])
+            [protean.api.codex.document :as d])
   (:import java.io.File))
 
 (defn- resource-order-sequence [tree svc]

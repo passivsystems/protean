@@ -13,9 +13,9 @@
             [me.rossputin.diskops :as do]
             [protean.config :as c]
             [protean.server.pipeline :as pipe]
-            [protean.core.transformation.coerce :as co]
+            [protean.api.transformation.coerce :as co]
             [protean.core.codex.reader :as r]
-            [protean.core.codex.document :as d]
+            [protean.api.codex.document :as d]
             [clojure.pprint]
             [taoensso.timbre.appenders.core :as appenders])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])

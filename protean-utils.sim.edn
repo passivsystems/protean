@@ -2,7 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 (ns protean.sim.utils
-  (:require [protean.core.transformation.sim :refer :all]
+  (:require [protean.api.transformation.sim :refer :all]
             [taoensso.timbre :as l]))
 
 ;; =============================================================================

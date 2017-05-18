@@ -20,8 +20,8 @@
   "
   (:require [clojure.string :as s]
             [clojure.pprint]
-            [protean.core.codex.document :as d]
-            [protean.core.protocol.http :as h]))
+            [protean.api.codex.document :as d]
+            [protean.api.protocol.http :as h]))
 
 ;; =============================================================================
 ;; Helper functions

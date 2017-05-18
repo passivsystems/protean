@@ -6,11 +6,11 @@
             [ring.util.codec :as e]
             [cheshire.core :as jsn]
             [protean.config :as cnf]
-            [protean.core.codex.placeholder :as ph]
-            [protean.core.codex.document :as d]
-            [protean.core.transformation.coerce :as c]
-            [protean.core.protocol.http :as h]
-            [protean.core.protocol.protean :as p]
+            [protean.api.codex.placeholder :as ph]
+            [protean.api.codex.document :as d]
+            [protean.api.transformation.coerce :as c]
+            [protean.api.protocol.http :as h]
+            [protean.api.protocol.protean :as p]
             [protean.core.transformation.request :as r]))
 
 ;; =============================================================================

@@ -6,10 +6,10 @@
             [me.rossputin.diskops :as dsk]
             [silk.cli.api :as silk]
             [protean.config :as cfg]
-            [protean.core.codex.document :as d]
-            [protean.core.codex.placeholder :as ph]
-            [protean.core.protocol.http :as h]
-            [protean.core.transformation.coerce :as co]
+            [protean.api.codex.document :as d]
+            [protean.api.codex.placeholder :as ph]
+            [protean.api.protocol.http :as h]
+            [protean.api.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
             [protean.core.command.test :as t]
@@ -73,9 +73,6 @@
   (if (nil? params)
     [{:title "N/A" :type "" :regx "" :doc "" :attr ""}]
     (vec (for [[k v] params]
-      (do
-        ; (println "key:" k)
-        ; (println "value:" v)
       {:title k
        :param-type (:ptype v)
        :value-type (:type v "Undefined")
@@ -85,7 +82,6 @@
                :else     "The type was not defined")
        :doc-md (:doc v "")
        :attr (stg/join " " (:attr v))}))))
-       )
 
 (defn- doc-hdrs [hdrs]
   (if (nil? hdrs)
@@ -106,7 +102,7 @@
     (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
           examples (doc-body-examples id tree (:body-examples v))]
       {:code (name rsp-code)
-       :doc-md (rsp-code h/status-docs "N/A")
+       :doc-md (:doc v (rsp-code h/status-docs))
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
        :rsp-body-examples (vec (drop 1 examples))
