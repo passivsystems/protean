@@ -34,16 +34,10 @@
                  [clj-time "0.9.0"]
                  [com.cemerick/pomegranate "0.3.0"]
                  [yaclot "0.1.5"]
-                 [json-path "0.3.0"]]
+                 [json-path "0.3.0"]
+                 [protean-api "0.11.0-pre.6"]]
   :plugins [[lein-ring "0.9.7"]
-            [lein-expectations "0.0.8"]
-            [lein-codox "0.10.3"]]
-  :codox {:namespaces [protean.core.codex.document
-                       protean.core.protocol.http
-                       protean.core.generation.generate
-                       protean.core.generation.json
-                       protean.core.transformation.sim
-                       protean.core.transformation.coerce]}
+            [lein-expectations "0.0.8"]]
   :aot :all
   :uberjar-name ~(str (-> "project.clj" slurp read-string (nth 1)) "-" (-> "project.clj" slurp read-string (nth 2)) "-standalone.jar")
   :main protean.cli.main)

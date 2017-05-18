@@ -1,5 +1,5 @@
 (ns protean.textad1
-  (:require [protean.core.transformation.sim :refer :all]
+  (:require [protean.api.transformation.sim :refer :all]
             [clojure.string :refer [join]]
             [alandipert.enduro :as e]
             [simlib :as sl]))

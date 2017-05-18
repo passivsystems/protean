@@ -1,0 +1,20 @@
+;; Protean Sim Utilities
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+(ns protean.helloworld.json
+  (:require [protean.api.transformation.sim :refer :all]))
+
+(dependencies '[[protean-simlib "0.11.0-pre.6"]])
+(require '[protean.simlib :as sl])
+
+;; =============================================================================
+;; Hwllo world json API Endpoints
+;; =============================================================================
+
+{
+  "tutorial-7 {
+    "hello/world" {
+      :get [#(sl/jsn 200 "hello world")]
+    }
+  }
+}

@@ -4,7 +4,7 @@
             [clojure.string :as s]
             [clojure.java.io :refer [file]]
             [clojure.pprint :as pp]
-            [protean.core.transformation.coerce :as co]
+            [protean.api.transformation.coerce :as co]
             [protean.config :as c])
   (:import java.io.File java.util.Calendar java.text.SimpleDateFormat))
 

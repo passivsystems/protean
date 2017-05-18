@@ -1,12 +1,12 @@
 (ns protean.core.transformation.request
   "Building Ring requests."
   (:require [clojure.string :as s]
-    [protean.core.codex.document :as d]
-    [protean.core.protocol.http :as h]
-    [protean.core.protocol.protean :as pp]
-    [protean.core.transformation.coerce :as co]
+    [protean.api.codex.document :as d]
+    [protean.api.protocol.http :as h]
+    [protean.api.protocol.protean :as pp]
+    [protean.api.transformation.coerce :as co]
     [protean.core.transformation.paths :as p]
-    [protean.core.generation.json :as gen-jsn]
+    [protean.api.generation.json :as gen-jsn]
     [cheshire.core :as cc]))
 
 (defn- copy-> [payload kvs target-keys]

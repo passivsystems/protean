@@ -7,10 +7,10 @@
             [io.aviso.ansi :as aa]
             [protean.cli.interface :as i]
             [protean.config :as conf]
-            [protean.core.transformation.coerce :as c]
+            [protean.api.transformation.coerce :as c]
             [protean.core.command.bridge :as b]
             [protean.core.codex.reader :as r]
-            [protean.core.codex.document :as d]
+            [protean.api.codex.document :as d]
             [me.rossputin.diskops :as dsk]
             [protean.server.main :as ps])
   (:use protean.cli.simadmin)

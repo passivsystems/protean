@@ -1,8 +1,8 @@
 (ns protean.core.transformation.test-sim
-  (:require [protean.core.protocol.http :as h]
+  (:require [protean.api.protocol.http :as h]
             [protean.core.io.data :as d]
-            [protean.core.transformation.coerce :as c]
-            [protean.core.transformation.sim :as s]
+            [protean.api.transformation.coerce :as c]
+            [protean.api.transformation.sim :as s]
             [expectations :refer :all]
             [taoensso.timbre :as l]))
 
