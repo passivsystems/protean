@@ -70,32 +70,26 @@
 ;; =============================================================================
 
 (defn- doc-params [params]
-  (if (nil? params)
-    [{:title "N/A" :type "" :regx "" :doc "" :attr ""}]
-    (vec (for [[k v] params]
-      {:title k
-       :param-type (:ptype v)
-       :value-type (:type v "Undefined")
-       :regx (cond
-               (:regx v) (str "Custom type defined by regx: " (:regx v))
-               (:type v) (str "Standard type: " (name (:type v)))
-               :else     "The type was not defined")
-       :doc-md (:doc v "")
-       :attr (stg/join " " (:attr v))}))))
+  (vec (for [[k v] params]
+    {:title k
+     :param-type (:ptype v)
+     :value-type (:type v "Undefined")
+     :regx (cond
+             (:regx v) (str "Custom type defined by regx: " (:regx v))
+             (:type v) (str "Standard type: " (name (:type v)))
+             :else     "The type was not defined")
+     :doc-md (:doc v "")
+     :attr (stg/join " " (:attr v))})))
 
 (defn- doc-hdrs [hdrs]
-  (if (nil? hdrs)
-    [{:title "N/A" :value ""}]
-    (vec (for [[k v] hdrs] {:title k :value v}))))
+  (vec (for [[k v] hdrs] {:title k :value v})))
 
 (defn- doc-body-examples [id tree paths]
-  (if (nil? paths)
-    [{:id (str id "-" "NA") :#id (str "#" id "-" "NA") :title "N/A" :value "N/A"}]
-    (vec (for [p paths]
-      {:id (str id "-" (fname p))
-       :#id (str "#" id "-" (fname p))
-       :title (fname p)
-       :value (slurp-file p tree)}))))
+  (vec (for [p paths]
+    {:id (str id "-" (fname p))
+     :#id (str "#" id "-" (fname p))
+     :title (fname p)
+     :value (slurp-file p tree)})))
 
 (defn- doc-status-codes [id tree method statuses]
   (vec (for [[rsp-code v] statuses]
@@ -106,10 +100,10 @@
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
        :rsp-body-examples (vec (drop 1 examples))
-       :rsp-body-schema-id (str "schema-" (name rsp-code))
-       :#rsp-body-schema-id (str "#schema-" (name rsp-code))
-       :rsp-body-schema-title (if schema (fname schema) "N/A")
-       :rsp-body-schema (if schema (slurp-file schema tree) "N/A")}))))
+       :rsp-body-schema-id (when schema (str "schema-" (name rsp-code)))
+       :#rsp-body-schema-id (when schema (str "#schema-" (name rsp-code)))
+       :rsp-body-schema-title (when schema (fname schema))
+       :rsp-body-schema (when schema (slurp-file schema tree))}))))
 
 (defn- input-params [tree uri]
   (let [inputs {:path (list uri)
@@ -165,10 +159,10 @@
                 :curl (c/curly-entry-> (assoc-in e [:uri] uri))
                 :doc-md (d/get-in-tree tree [:doc])
                 :method (name method)
-                :req-body-schema-id (str "schema-" id)
-                :#req-body-schema-id (str "#schema-" id)
-                :req-body-schema-title (if schema (fname schema) "N/A")
-                :req-body-schema (if schema (slurp-file schema tree) "N/A")
+                :req-body-schema-id (when schema (str "schema-" id))
+                :#req-body-schema-id (when schema (str "#schema-" id))
+                :req-body-schema-title (when schema (fname schema))
+                :req-body-schema (when schema (slurp-file schema tree))
                 :req-params (doc-params (input-params tree uri))
                 :req-headers (doc-hdrs (d/req-hdrs tree))
                 :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
