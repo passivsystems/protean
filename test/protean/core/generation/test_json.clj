@@ -1,6 +1,6 @@
 (ns protean.core.generation.test-json
   (:require [cheshire.core :as cc]
-            [protean.core.generation.json :refer [gen]]
+            [protean.api.generation.json :refer [gen]]
             [expectations :refer :all]))
 
 (let [json (gen "test-data/schemas/pet.schema.json")]

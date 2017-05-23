@@ -1,4 +1,4 @@
-(defproject protean "0.11.0-pre.6"
+(defproject protean "0.11.0"
   :description "Take control of your RESTful API's, simulate, doc, test easily."
   :url "http://github.com/passivsystems/protean"
   :license {:name "Apache License v2.0"
@@ -22,7 +22,7 @@
                  [expectations "2.0.13"]
                  [lockedon/if-let "0.1.0"]
                  [me.rossputin/diskops "0.4.1"]
-                 [org.silkyweb/silk "0.9.0"]
+                 [org.silkyweb/silk "0.11.1"]
                  [me.rossputin/pew "0.1.0"]
                  [alandipert/enduro "1.2.0"]
                  [com.gfredericks/test.chuck "0.2.7"]
@@ -34,7 +34,8 @@
                  [clj-time "0.9.0"]
                  [com.cemerick/pomegranate "0.3.0"]
                  [yaclot "0.1.5"]
-                 [json-path "0.3.0"]]
+                 [json-path "0.3.0"]
+                 [protean-api "0.11.0"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-expectations "0.0.8"]]
   :aot :all

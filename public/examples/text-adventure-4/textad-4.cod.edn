@@ -9,31 +9,35 @@
 
     "register" {
       :put {
-        :doc "Register to play"
-        :description
-"Register to play the text adventure.
+        :doc
+"
+# Register to play
 
-Accepts a request parameter called name."
+Register to play the text adventure.
+
+Accepts a request parameter called name.
+"
         :req {:query-params {:required {"name" "${name}"}}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-4/look-ref.json"]
           }
-          :400 {:doc "Bad Request"}
+          :400 {}
         }
       }
     }
 
     "look" {
       :get {
-        :doc "See your current location"
-        :description
-"Look at your current location."
+        :doc
+"
+# See your current location
+
+Look at your current location.
+"
         :req {:query-params {:required {"name" "${name}"}}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-4/look-ref.json"]
           }
         }
@@ -45,9 +49,12 @@ Accepts a request parameter called name."
         :Direction "(north|south|west|east)"
       }
       :put {
-        :doc "Go somewhere in the game world"
-        :description
-"Will move you to a new location."
+        :doc
+"
+# Go somewhere in the game world
+
+Will move you to a new location.
+"
         :vars {"direction" {:type :Direction :doc "Direction to move in"}}
         :req {
           :query-params {
@@ -56,10 +63,9 @@ Accepts a request parameter called name."
         }
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-4/look-ref.json"]
           }
-          :404 {:doc "Not Found"}
+          :404 {}
         }
       }
     }
@@ -70,7 +76,6 @@ Accepts a request parameter called name."
         :req {:query-params {:required {"name" "${name}"}}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-4/inventory-ref.json"]
           }
         }
@@ -79,51 +84,57 @@ Accepts a request parameter called name."
 
     "pickup" {
       :put {
-        :doc "Pickup an item"
-        :description
-"Will pickup an item in the game world."
+        :doc
+"
+# Pickup an item
+
+Will pickup an item in the game world.
+"
         :vars {"item" {:type :String :doc "Item to pick up"}}
         :req {:query-params {:required {"name" "${name}" "item" "${item}"}}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-4/look-ref.json"]
           }
-          :404 {:doc "Not Found"}
+          :404 {}
         }
       }
     }
 
     "slap" {
       :put {
-        :doc "Slap an entity"
-        :description
-"Will slap an entity."
+        :doc
+"
+# Slap an entity
+
+Will slap an entity.
+"
         :vars {"target" {:type :String :doc "Entity to slap"}}
         :req {:query-params {:required {"name" "${name}" "target" "${target}"}}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-4/look-ref.json"]
           }
-          :404 {:doc "Not Found"}
+          :404 {}
         }
       }
     }
 
     "mug" {
       :put {
-        :doc "Mug an entity"
-        :description
-"Will mug an entity."
+        :doc
+"
+# Mug an entity
+
+Will mug an entity.
+"
         :vars {"target" {:type :String :doc "Entity to mug"}}
         :req {:query-params {:required {"name" "${name}" "target" "${target}"}}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-4/look-ref.json"]
           }
-          :404 {:doc "Not Found"}
+          :404 {}
         }
       }
     }

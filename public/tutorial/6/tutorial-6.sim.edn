@@ -1,5 +1,5 @@
 (ns protean.tutorial6
-  (:require [protean.core.transformation.sim :refer :all]))
+  (:require [protean.api.transformation.sim :refer :all]))
 
 (defn param2rsp [data-path]
   (if-let [rsp (rsp-body-file data-path (path-param "stateId") ".json")]

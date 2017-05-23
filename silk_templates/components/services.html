@@ -8,51 +8,47 @@
             <div data-sw-component="method-path">placeholder for method path</div>
           </h2>
         </div>
-        <h3 data-sw-text="doc">placeholder for doc</h3>
-        <pre class="text" data-sw-text="desc">placeholder for desc</pre>
-        <h4>Headers</h4>
+        <h4>Description</h4>
+        <div data-sw-text="doc-md">placeholder for doc</div>
         <div data-sw-component="request-headers">Placeholder for headers</div>
-
-        <h4>Parameters</h4>
-        <div data-sw-component="query-params">Placeholder for query params list</div>
-
-        <h4>Body Examples</h4>
+        <div data-sw-component="request-params">Placeholder for query params list</div>
         <div data-sw-component="request-body-examples">Placeholder for body examples</div>
-
-        <h4>Schema</h4>
         <div data-sw-component="request-schema">Placeholder for schema</div>
-
         <h4>Sample curl command</h4>
         <pre class="prettyprint" data-sw-text="curl">Placeholder for sample curl command</pre>
-
         <h4>Responses</h4>
-        <table class="table response">
-          <tbody>
-            <tr class="blank-row">
-              <td colspan="2"></td>
-            </tr>
-            <tr data-sw-class="responses.class">
-              <td class="small">Status</td>
-              <td data-sw-text="responses.code">N/A</td>
-            </tr>
-            <tr data-sw-class="responses.class">
-              <td class="small">Description</td>
-              <td data-sw-text="responses.doc">N/A</td>
-            </tr>
-            <tr data-sw-class="responses.class">
-              <td class="small">Headers</td>
-              <td data-sw-text="responses.headers">N/A</td>
-            </tr>
-            <tr data-sw-class="responses.class">
-              <td class="small">Sample responses</td>
-              <td data-sw-component="response-body-examples">Placeholder for response body examples</td>
-            </tr>
-            <tr data-sw-class="responses.class">
-              <td class="small">Response Schema</td>
-              <td data-sw-component="response-schema">Placeholder for response schema</td>
-            </tr>
-          </tbody>
-        </table>
+        <div data-sw-when="responses">
+          <table class="table response">
+            <tbody>
+              <tr class="blank-row">
+                <td colspan="2"></td>
+              </tr>
+              <tr data-sw-class="responses.class">
+                <td class="small">Status</td>
+                <td data-sw-text="responses.code">N/A</td>
+              </tr>
+              <tr data-sw-class="responses.class">
+                <td class="small">Description</td>
+                <td data-sw-text="responses.doc-md">N/A</td>
+              </tr>
+              <tr data-sw-class="responses.class">
+                <td class="small">Headers</td>
+                <td data-sw-text="responses.headers">N/A</td>
+              </tr>
+              <tr data-sw-class="responses.class">
+                <td class="small">Sample responses</td>
+                <td data-sw-component="response-body-examples">Placeholder for response body examples</td>
+              </tr>
+              <tr data-sw-class="responses.class">
+                <td class="small">Response Schema</td>
+                <td data-sw-component="response-schema">Placeholder for response schema</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div data-sw-when-not="responses">
+          N/A
+        </div>
       </section>
     </li>
   </ul>

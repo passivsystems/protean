@@ -49,8 +49,12 @@
       ;;; =====================================================================
 
       :get {
-        :doc "Get groups"
-        :description "Returns groups."
+        :doc
+"
+# Get groups
+
+Returns groups.
+"
         :req {
           :query-params {
             "sortBy"        ["${sortBy}"        :optional]
@@ -73,8 +77,12 @@
       ;;; =====================================================================
 
       :get {
-        :doc "Get users for given groupId"
-        :description "Returns users for given groupId (equivalent to gu/groups;groupId=${groupId}/users${;userFilter})."
+        :doc
+"
+# Get users for given groupId
+
+Returns users for given groupId (equivalent to gu/groups;groupId=${groupId}/users${;userFilter}).
+"
         :req {
           :query-params {
             "sortBy"        ["${sortBy}"        :optional]
@@ -97,8 +105,12 @@
       ;;; =====================================================================
 
       :get {
-        :doc "Get users for groups"
-        :description "Returns users associated with groups."
+        :doc
+"
+# Get users for groups
+
+Returns users associated with groups.
+"
         :req {
           :query-params {
             "sortBy"        ["${sortBy}"        :optional]

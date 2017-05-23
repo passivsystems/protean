@@ -3,89 +3,118 @@
 [![Build Status](https://api.travis-ci.org/passivsystems/protean.svg)](https://travis-ci.org/passivsystems/protean)
 
 
-# About
+## Overview
 
-Evolve RESTful API's. Encode them, simulate them, document how to use them, test them and figure out how failure affects your architecture. No invasive changes to your code base.
+Evolve your RESTful APIs and web services. Encode them, document them, simulate them, integration test them and figure out how failure affects your architecture. No invasive changes to your code base.
 
-* Automatic documentation generated for all configured projects - map your services
-* Customise API doc look and feel completely
-* Simulate API's with a portable concise JSON like language
+## Features
+
+* Encode APIs - build a specification
+* Document APIs using [Silk Web Toolkit](http://www.silkyweb.org)
+* Simulate APIs
 * Hotswap API behaviour on the fly over the network
-* Simulate error response status codes per project or per resource path
-* Configure probability of error per service or per resource path
-* Verify request structure; headers, query string params, body payload json keys, url encoded forms
 * Auto generate curl commands to test your API's
+* Auto integration test your simulations
+* Browse HATEOAS APIs with [Omnom](https://github.com/rossputin/omnom) the Eater of APIs (pre-alpha)
 
-This is a Clojure project which uses edn to simulate and document RESTful API's. Protean is used commerically to help speed development and test complex distributed systems.
+This is a Clojure project which uses edn to simulate and document and integration test RESTful API's. Protean is used commercially to help speed development and test complex distributed systems.
 
 
 ## Release information
 
-* Latest development release is 0.10.0
-    * [Code](https://github.com/passivsystems/protean/tree/0.10.0)
-    * [Download](https://github.com/passivsystems/protean/releases/download/0.10.0/protean-0.10.0.tgz)
+* Latest development release is 0.11.0
+    * [Code](https://github.com/passivsystems/protean/tree/0.11.0)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.11.0/protean-0.11.0.tgz)
+    * [Documentation](http://passivsystems.github.io/protean/)
 
 
 ## API stability
 
-Protean is still new and will be subject to some change until it hits the 1.0.0 release.  All efforts will be made to minimise change to the API (which is represented in the form of the *codex* - service definitions in EDN).  We expect to change the codex schema only to align it more closely to the datastructures used in Clojure Ring to represent requests and responses (so we share a common well understood language).  There are still a few minor discrepancies.
+Protean is still new and will be subject to some change until it hits the 1.0.0 release.  All efforts will be made to minimise change to the API (which is represented in the form of the *codex* - service definitions in EDN) and in the simulation API which is exposed to sim extensions.
 
 
 ## Usage
 
-### Overview
+### Quick Start
 
-Protean helps you to evolve RESTful API's.  We define our API's in a codex which is an edn file with a .cod.edn extension.
-There is a home for codex files which varies depending on how you installed the app.  Debian flavours of Linux use /usr/lib/protean,
-while OSX uses ~/bin.
+For those who want to get stuck in right now play with our sample Docker image.
 
-Protean ships with a sample petstore service codex, you can test the API docs creation and simulation capabilities with this.
+Install Docker for your platform.
+
+Start our sample Protean server:
+
+```
+docker run -it -p 3000:3000 -p 3001:3001 rossputin/protean-example
+```
+
+SSH into the Protean Docker image:
+
+```
+docker run -it rossputin/protean-example /bin/bash
+```
+
+Navigate to the /home directory where all the software is installed:
+
+```
+cd /home
+```
+
+Run the Protean client to learn how to interact with the sample Petstore service:
+
+```
+./protean -H 172.17.0.1 service-usage -n petstore
+```
+
+Use any of the curl commands or connect another way remembering to substitute the '172.17.0.1' host
+
+Read on below to learn more.
 
 
-## Documentation
+### Getting Started
 
-Below is a quickstart guide to help you with setting up services and getting information on how to curl them.
+If you want to leap right in and see the examples working see [Getting Started](http://passivsystems.github.io/protean/getting-started.html).
 
-### Creating API Documentation for a service
+### Documentation
 
-The following assumes a Debian Linux flavour install.
+For an explanation on concepts and general documentation see [Documentation](http://passivsystems.github.io/protean/documentation.html).
 
-Create API documentation for the sample petstore service codex with
 
-    protean doc -f /usr/lib/protean/sample-petstore.cod.edn
+### Tutorial
 
-view your API docs with
+See the [Tutorial](http://passivsystems.github.io/protean/tutorial.html) for a progressive howto guide.
 
-    firefox /usr/lib/protean/silk_templates/site/index.html
 
-### Starting the simulation server
+### API Documentation
 
-Start the simulation server with
+For the latest version of the API documentation see [API Documentation](http://passivsystems.github.io/protean/api-documentation.html).
 
-    protean-server
 
-### How to query the petstore service
+## Developers
 
-Lists all services:
+### Getting Started
 
-    protean services
+#### Running the server
 
-Shows the service configuration for the petstore service.
+In the root directory run Protean server with:
 
-    protean service -n petstore
+```
+lein run -m protean.server.main
+```
 
-Shows the curl commands that can be used for the petstore service.
+#### Running the client
 
-    protean service-usage -n petstore
+To learn how to interact with the sample Petstore API in the root directory in another terminal run:
 
-Please explore the CLI or documentation to learn more.
+```
+lein run service-usage -n petstore
+```
 
-### Setting up your services
+Now enter one of the curl commands listed to interact with the API.
 
-Create a file with a .cod.edn extension. See *sample-petstore.cod.edn* at the root of this repository. Once you are finished you can add your service *codex* by;
-* uploading with the basic Protean CLI
-    - protean add-services -f /path/to/service.cod.edn
-* drop the .cod.edn file in the root of your Protean directory and restart it
+
+### Building and distributing
+
+See the instructions in build/README.md.
 
 
 ## Contributing

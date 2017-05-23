@@ -20,8 +20,8 @@
   "
   (:require [clojure.string :as s]
             [clojure.pprint]
-            [protean.core.codex.document :as d]
-            [protean.core.protocol.http :as h]))
+            [protean.api.codex.document :as d]
+            [protean.api.protocol.http :as h]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -45,7 +45,7 @@
     (map #(methods-range svc % codices) paths)))
 
 (defn- svc-paths [codices svc]
-  (let [paths-raw (d/custom-entries (get-in codices [svc]))
+  (let [paths-raw (get-in codices [svc])
         paths (map #(hash-map (first %) (last %)) paths-raw)]
     (map #(methods-range svc % codices) paths)))
 
@@ -73,4 +73,6 @@
     res))
 
 (defn uri [host port svc path]
-  (str "http://" host ":" port "/" svc "/" path))
+  (if (= path "/")
+    (str "http://" host ":" port "/" svc)
+    (str "http://" host ":" port "/" svc "/" path)))

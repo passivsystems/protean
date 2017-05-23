@@ -1,8 +1,8 @@
 (ns protean.core.transformation.test-sim
-  (:require [protean.core.protocol.http :as h]
+  (:require [protean.api.protocol.http :as h]
             [protean.core.io.data :as d]
-            [protean.core.transformation.coerce :as c]
-            [protean.core.transformation.sim :as s]
+            [protean.api.transformation.coerce :as c]
+            [protean.api.transformation.sim :as s]
             [expectations :refer :all]
             [taoensso.timbre :as l]))
 
@@ -61,10 +61,10 @@
       rsp-8 (s/sim-rsp (req :muppet "/sample/simple" nil body nil) cdx-1 {})]
   (expect 200 (:status rsp-1))
   (expect 200 (:status rsp-2))
-  (expect 1 (count (:headers rsp-2)))
+  (expect 2 (count (:headers rsp-2))) ;; account for CORS headers
   (expect 204 (:status rsp-3))
   (expect 201 (:status rsp-4))
-  (expect 1 (count (:headers rsp-4)))
+  (expect 2 (count (:headers rsp-4))) ;; account for CORS headers
   (expect 204 (:status rsp-5))
   (expect 204 (:status rsp-6))
   (expect 404 (:status rsp-7))
@@ -126,61 +126,3 @@
 
 (let [rsp-1 (s/sim-rsp (req :get "/sample/simple" h/txt body nil) cdx-3 {})]
   (expect 400 (:status rsp-1)))
-
-;
-; (def sims (m/load-script "test-data/default.sim.edn"))
-;
-; (deftest post-wildcard-crazy-201
-;   (let [req (request :post "/sample/v/1/users/1/items/1/assets" h/txt body nil)
-;         cdx (d/read-edn "wildcard-crazy.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (:status rsp) 201))))
-;
-; ; should fail verification (yield 400) on json req body
-; (deftest post-rsp-jsn-body-400
-;   (let [req (request :post "/sample/simple" h/jsn (.getBytes "{\"k1\":\"v1\"}" "UTF-8") nil)
-;         cdx (d/read-edn "post-codex-400.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (:status rsp) 400))))
-;
-; (deftest multimethod-get
-;   (let [req (get-req "/sample/homes/1")
-;         cdx (d/read-edn "multi-method.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (:status rsp) 200))))
-;
-; (deftest multimethod-put
-;   (let [req (request :put "/sample/homes/1" h/frm body {})
-;         cdx (d/read-edn "multi-method.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (:status rsp) 204))))
-;
-; (deftest multimethod-head
-;   (let [req (request :head "/sample/homes/1" h/txt body nil)
-;         cdx (d/read-edn "multi-method.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (:status rsp) 405))))
-;
-; (deftest status-override
-;   (let [req (get-req "/sim/status-override")
-;         cdx (d/read-edn "sim.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (:status rsp) 204))))
-;
-; (deftest json-ctype
-;   (let [req (get-req "/sim/path1")
-;         cdx (d/read-edn "sim.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (.contains (get-in rsp [:headers h/ctype]) h/jsn) true))))
-;
-; (deftest txt-ctype
-;   (let [req (get-req "/sim/path-txt")
-;         cdx (d/read-edn "sim.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (.contains (get-in rsp [:headers h/ctype]) h/txt) true))))
-;
-; (deftest xml-ctype
-;   (let [req (get-req "/sim/path-xml")
-;         cdx (d/read-edn "sim.edn")
-;         rsp (sim-rsp-> req cdx sims)]
-;     (is (= (.contains (get-in rsp [:headers h/ctype]) h/xml) true))))

@@ -1,11 +1,11 @@
 {
-  ; default status code per method
-  :get {:rsp {:200 {:doc "OK"}}}
-  :post {:rsp {:201 {:doc "Created"}}}
-  :put {:rsp {:204 {:doc "No Content"}}}
-  :patch {:rsp {:204 {:doc "No Content"}}}
-  :delete {:rsp {:204 {:doc "No Content"}}}
-  :head {:rsp {:200 {:doc "OK"}}}
+  ; defaults for status codes (override/augment in your project)
+  ; :get {:rsp {:200 {} :204 {}}}
+  ; :post {:rsp {:201 {}}}
+  ; :put {:rsp {:204 {}}}
+  ; :patch {:rsp {:204 {}}}
+  ; :delete {:rsp {:204 {}}}
+  ; :head {:rsp {:200 {}}}
 
   ;; an example :rsp {:headers {"X-Powered-By" "Protean"}}
 
@@ -21,7 +21,4 @@
 
   ;; default content-type where body is present
   :default-content-type "application/json; charset=utf-8"
-
-  ;; validating status - for flexibility in sim extensions off by default
-  :validating true
 }

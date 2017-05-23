@@ -1,8 +1,10 @@
 (ns protean.textad3
-  (:require [protean.core.transformation.sim :refer :all]
+  (:require [protean.api.transformation.sim :refer :all]
             [clojure.string :refer [join]]
-            [alandipert.enduro :as e]
-            [simlib :as sl]))
+            [alandipert.enduro :as e]))
+
+(dependencies '[[protean-simlib "0.11.0"]])
+(require '[protean.simlib :as sl])
 
 (defn fmt [list] (join " " (map #(symbol (name %)) list)))
 

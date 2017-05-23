@@ -1,7 +1,7 @@
 (ns protean.cli.simadmin
   "Administration functions for manipulating simulations."
   (:require [clj-http.client :as clt]
-            [protean.core.transformation.coerce :as c]))
+            [protean.api.transformation.coerce :as c]))
 
 (defn services [{:keys [host port]}]
 	(let [rsp (clt/get (str "http://" host ":" port "/services"))]

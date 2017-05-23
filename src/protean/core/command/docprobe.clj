@@ -6,10 +6,10 @@
             [me.rossputin.diskops :as dsk]
             [silk.cli.api :as silk]
             [protean.config :as cfg]
-            [protean.core.codex.document :as d]
-            [protean.core.codex.placeholder :as ph]
-            [protean.core.protocol.http :as h]
-            [protean.core.transformation.coerce :as co]
+            [protean.api.codex.document :as d]
+            [protean.api.codex.placeholder :as ph]
+            [protean.api.protocol.http :as h]
+            [protean.api.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
             [protean.core.command.test :as t]
@@ -70,68 +70,64 @@
 ;; =============================================================================
 
 (defn- doc-params [params]
-  (if (nil? params)
-    [{:title "N/A" :type "" :regx "" :doc "" :attr ""}]
-    (vec (for [[k v] params]
-      {:title k
-       :type (:type v "Undefined")
-       :regx (cond
-               (:regx v) (str "Custom type defined by regx: " (:regx v))
-               (:type v) (str "Standard type: " (name (:type v)))
-               :else     "The type was not defined")
-       :doc (:doc v "")
-       :attr (stg/join " " (:attr v))}))))
+  (for [[k v] params]
+    {:title k
+     :param-type (:ptype v)
+     :value-type (:type v "Undefined")
+     :regx (cond
+             (:regx v) (str "Custom type defined by regx: " (:regx v))
+             (:type v) (str "Standard type: " (name (:type v)))
+             :else     "The type was not defined")
+     :doc-md (:doc v "")
+     :attr (stg/join " " (:attr v))}))
 
 (defn- doc-hdrs [hdrs]
-  (if (nil? hdrs)
-    [{:title "N/A" :value ""}]
-    (vec (for [[k v] hdrs] {:title k :value v}))))
+  (for [[k v] hdrs] {:title k :value v}))
 
 (defn- doc-body-examples [id tree paths]
-  (if (nil? paths)
-    [{:id (str id "-" "NA") :#id (str "#" id "-" "NA") :title "N/A" :value "N/A"}]
-    (vec (for [p paths]
-      {:id (str id "-" (fname p))
-       :#id (str "#" id "-" (fname p))
-       :title (fname p)
-       :value (slurp-file p tree)}))))
+  (for [p paths]
+    {:id (str id "-" (fname p))
+     :#id (str "#" id "-" (fname p))
+     :title (fname p)
+     :value (slurp-file p tree)}))
 
 (defn- doc-status-codes [id tree method statuses]
-  (vec (for [[rsp-code v] statuses]
+  (for [[rsp-code v] statuses]
     (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
-          default-doc (d/get-in-tree tree [method :rsp rsp-code :doc])
           examples (doc-body-examples id tree (:body-examples v))]
       {:code (name rsp-code)
-       :doc (or (:doc v) default-doc "N/A")
+       :doc-md (:doc v (rsp-code h/status-docs))
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
-       :rsp-body-examples (vec (drop 1 examples))
-       :rsp-body-schema-id (str "schema-" (name rsp-code))
-       :#rsp-body-schema-id (str "#schema-" (name rsp-code))
-       :rsp-body-schema-title (if schema (fname schema) "N/A")
-       :rsp-body-schema (if schema (slurp-file schema tree) "N/A")}))))
+       :rsp-body-examples (drop 1 examples)
+       :rsp-body-schema-id (when schema (str "schema-" (name rsp-code)))
+       :#rsp-body-schema-id (when schema (str "#schema-" (name rsp-code)))
+       :rsp-body-schema-title (when schema (fname schema))
+       :rsp-body-schema (when schema (slurp-file schema tree))})))
 
 (defn- input-params [tree uri]
-  (let [inputs (concat
-                 (list uri)
-                 (map val (d/qps tree true))
-                 (map val (d/fps tree true))
-                 (map val (d/get-in-tree tree [:req :body]))
-                 (->> (d/get-in-tree tree [:req :body-examples])
-                      (map #(d/to-path % tree))
-                      (map #(slurp %)))
-                 (map val (d/get-in-tree tree [:req :headers])))
-        extract-ph-names (fn [input] (map second (ph/holder? input)))
-        ph-names (filter identity (reduce concat (map extract-ph-names inputs)))
-        get-attr (fn [varname]
-          (into [] (concat
-            (drop 1 (d/get-in-tree tree [:req :query-params varname]))
-            (drop 1 (d/get-in-tree tree [:req :form-params varname])))))
-        to-map (fn [varname]
-          {varname (-> (d/get-in-tree tree [:vars varname])
-                       (merge {:attr (get-attr varname)})
-                       (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))})]
-  (reduce merge (map to-map ph-names))))
+  (let [inputs {:path (list uri)
+                :header (map val (d/get-in-tree tree [:req :headers]))
+                :query (map val (d/qps tree true))
+                :form (map val (d/fps tree true))
+                :body (concat
+                        (map val (d/get-in-tree tree [:req :body]))
+                        (->> (d/get-in-tree tree [:req :body-examples])
+                             (map #(d/to-path % tree))
+                             (map #(slurp %))))}
+        raw (for [[k v] inputs]
+              (for [ph (seq (map second (ph/holder? v)))] {ph k}))
+        placeholders (into {} (filter identity (reduce concat raw)))]
+  (reduce merge
+    (for [[varname type] placeholders]
+      {varname
+        (-> (d/get-in-tree tree [:vars varname])
+            (merge {:attr (cond
+                            (= type :form)  (drop 1 (d/get-in-tree tree [:req :form-params  varname]))
+                            (= type :query) (drop 1 (d/get-in-tree tree [:req :query-params varname]))
+                            :else           nil)})
+            (merge {:ptype (stg/capitalize (name type))})
+            (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))}))))
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
@@ -155,25 +151,24 @@
           main (filter #(get-in % [:title]) tree)
           schema (d/get-in-tree tree [:req :body-schema])
           site {:site-name (d/get-in-tree main [:title])
-                :site-doc (if-let [d (d/get-in-tree main [:doc])] d "")}
+                :site-doc-md (if-let [d (d/get-in-tree main [:doc])] d "")}
           full {:id id
                 :#id (str "#" id )
-                :path (str svc "/" path)
+                :path (if (= path "/") (str svc) (str svc "/" path))
                 :codex-order codex-order
                 :curl (c/curly-entry-> (assoc-in e [:uri] uri))
-                :doc (d/get-in-tree tree [:doc])
-                :desc (if-let [d (d/get-in-tree tree [:description])] d "")
+                :doc-md (d/get-in-tree tree [:doc])
                 :method (name method)
-                :req-body-schema-id (str "schema-" id)
-                :#req-body-schema-id (str "#schema-" id)
-                :req-body-schema-title (if schema (fname schema) "N/A")
-                :req-body-schema (if schema (slurp-file schema tree) "N/A")
+                :req-body-schema-id (when schema (str "schema-" id))
+                :#req-body-schema-id (when schema (str "#schema-" id))
+                :req-body-schema-title (when schema (fname schema))
+                :req-body-schema (when schema (slurp-file schema tree))
                 :req-params (doc-params (input-params tree uri))
                 :req-headers (doc-hdrs (d/req-hdrs tree))
                 :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
-                :responses (vec (concat
+                :responses (concat
                             (map #(assoc % :class "success") (doc-status-codes id tree method (d/success-status tree)))
-                            (map #(assoc % :class "danger") (doc-status-codes id tree method (d/error-status tree)))))}]
+                            (map #(assoc % :class "danger") (doc-status-codes id tree method (d/error-status tree))))}]
       (spit-to (str data-dir "/global/site.edn") (pr-str site))
       (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))})
 
