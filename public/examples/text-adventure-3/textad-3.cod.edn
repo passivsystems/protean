@@ -20,10 +20,9 @@ Accepts a request parameter called name.
         :req {:query-params {"name" ["${name}" :required]}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
-          :400 {:doc "Bad Request"}
+          :400 {}
         }
       }
     }
@@ -39,7 +38,6 @@ Look at your current location.
         :req {:query-params {"name" ["${name}" :required]}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
         }
@@ -66,10 +64,9 @@ Will move you to a new location.
         }
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
-          :404 {:doc "Not Found"}
+          :404 {}
         }
       }
     }
@@ -80,7 +77,6 @@ Will move you to a new location.
         :req {:query-params {"name" ["${name}" :required]}}
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-3/inventory-ref.json"]
           }
         }
@@ -106,10 +102,9 @@ Accepts a request parameter called item.
         }
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/examples/text-adventure-3/look-ref.json"]
           }
-          :404 {:doc "Not Found"}
+          :404 {}
         }
       }
     }
