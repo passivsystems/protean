@@ -39,25 +39,25 @@
                 <span>Getting Started</span>
               </a>
             </li>
-          
+
             <li>
               <a href="documentation.html">
                 <span>Documentation</span>
               </a>
             </li>
-          
+
             <li>
               <a href="tutorial.html">
                 <span>Tutorial</span>
               </a>
             </li>
-          
+
             <li>
               <a href="api-documentation.html">
                 <span>API Documentation</span>
               </a>
             </li>
-          
+
             <li>
               <a href="community.html">
                 <span>Community</span>
@@ -67,7 +67,7 @@
           <form action="search.html" class="navbar-form navbar-right" role="search">
             <span>
     <span class="label label-default">v0.9.0-beta.1</span>
-  
+
 
 </span>
             <div class="form-group">
@@ -86,7 +86,7 @@
         </div>
       </div>
     </nav>
-  
+
 
 </div>
     <br><br><br><br>
@@ -101,37 +101,37 @@
           <span>Overview</span>
         </a>
       </li>
-    
+
       <li>
         <a href="#tut-part-1">
           <span>Part 1 - encoding (basics)</span>
         </a>
       </li>
-    
+
       <li>
         <a href="#tut-part-2">
           <span>Part 2 - encoding (docs/types)</span>
         </a>
       </li>
-    
+
       <li>
         <a href="#tut-part-3">
           <span>Part 3 - encoding (response bodies)</span>
         </a>
       </li>
-    
+
       <li>
         <a href="#tut-part-4">
           <span>Part 4 - simulation (basics)</span>
         </a>
       </li>
-    
+
       <li>
         <a href="#tut-part-5">
           <span>Part 5 - simulation (errors)</span>
         </a>
       </li>
-    
+
       <li>
         <a href="#tut-part-6">
           <span>Part 6 - simulation (responses)</span>
@@ -176,11 +176,11 @@
 
       <pre class="prettyprint">
 {
-  :includes [&quot;defaults.edn&quot;]
+  :doc &quot;Demonstrates the simplest possible codex structure&quot;
 
   :title &quot;Tutorial 1&quot;
 
-  &quot;tutorial-1&quot; {&quot;play&quot; {:get {}}}
+  &quot;tutorial-1&quot; {&quot;play&quot; {:get {:rsp {:204 {}}}}}
 }
       </pre>
 
@@ -190,7 +190,6 @@
         <li>an endpoint <code>tutorial-1/play</code></li>
         <li>a <code>get</code> method</li>
         <li>a nice title for the api docs</li>
-        <li>some free preferences for response status codes in 'defaults.edn'</li>
       </ul>
 
       <h3><span class="glyphicon glyphicon-play"></span> Run it</h3>
@@ -207,7 +206,7 @@
         </li>
       </ol>
     </section>
-  
+
 
 </div>
 
@@ -227,17 +226,21 @@
   &quot;tutorial-2&quot; {
     &quot;play/${stateId}&quot; {
       :get {
-        :doc &quot;A single player REST adventure world&quot;
-        :description
-&quot;A simple text adventure world for one player.
+        :doc
+&quot;
+A single player REST adventure world
 
-Sample usage may be something like /tutorial-2/play/cave, indicating the player
-is in a cave.&quot;
+A simple text adventure world for one player.
+
+Sample usage may be something like `/tutorial-2/play/cave`, indicating the player
+is in a cave.
+&quot;
         :vars {
           &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
         }
         :rsp {
-          :404 {:doc &quot;Not Found&quot;}
+          :204 {}
+          :404 {}
         }
       }
     }
@@ -250,7 +253,7 @@ is in a cave.&quot;
       <ul>
         <li>a path parameter <code>stateId</code></li>
         <li>a simple doc string</li>
-        <li>a multiline description for providing semantic information</li>
+        <li>some free preferences for response status codes and types in 'defaults.edn'</li>
         <li>some variable information defining the type of the path parameter</li>
         <li>a 404 (Not Found) error response</li>
       </ul>
@@ -269,7 +272,7 @@ is in a cave.&quot;
         </li>
       </ol>
     </section>
-  
+
 
 </div>
 
@@ -289,24 +292,25 @@ is in a cave.&quot;
   &quot;tutorial-3&quot; {
     &quot;play/${stateId}&quot; {
       :get {
-        :doc &quot;A single player REST adventure world&quot;
-        :description
-    &quot;A simple text adventure world for one player.
+        :doc
+&quot;
+A single player REST adventure world
 
-    Sample usage may be something like /tutorial-3/play/cave, indicating the player
-    is in a cave.&quot;
+A simple text adventure world for one player.
+
+Sample usage may be something like /tutorial-3/play/cave, indicating the player
+is in a cave.
+&quot;
         :vars {
           &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
         }
         :rsp {
           :200 {
-            :doc &quot;OK&quot;
-            :body-example &quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;
+            :body-examples [&quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;]
           }
           :503 {
-            :doc &quot;Service Unavailable&quot;
             :headers {&quot;Content-Type&quot; &quot;application/problem+json&quot; &quot;Content-Language&quot; &quot;en&quot;}
-            :body-example &quot;test-data/content/tutorial/tutorial-3/lazy-server-gremlins.json&quot;
+            :body-examples [&quot;test-data/content/tutorial/tutorial-3/lazy-server-gremlins.json&quot;]
           }
         }
       }
@@ -342,7 +346,7 @@ is in a cave.&quot;
         </li>
       </ol>
     </section>
-  
+
 
 </div>
 
@@ -382,7 +386,7 @@ is in a cave.&quot;
 }
       </pre>
     </section>
-  
+
 
 </div>
 
@@ -410,24 +414,25 @@ is in a cave.&quot;
   &quot;tutorial-5&quot; {
     &quot;play/${stateId}&quot; {
       :get {
-        :doc &quot;A single player REST adventure world&quot;
-        :description
-    &quot;A simple text adventure world for one player.
+        :doc
+&quot;
+A single player REST adventure world
 
-    Sample usage may be something like /tutorial-5/play/cave, indicating the player
-    is in a cave.&quot;
+A simple text adventure world for one player.
+
+Sample usage may be something like `/tutorial-5/play/cave`, indicating the player
+is in a cave.
+&quot;
         :vars {
           &quot;stateId&quot; {:type :Int :doc &quot;ID for the state of the game&quot;}
         }
         :rsp {
           :200 {
-            :doc &quot;OK&quot;
-            :body-example &quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;
+            :body-examples [&quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;]
           }
           :503 {
-            :doc &quot;Service Unavailable&quot;
             :headers {&quot;Content-Type&quot; &quot;application/problem+json&quot; &quot;Content-Language&quot; &quot;en&quot;}
-            :body-example &quot;test-data/content/tutorial/tutorial-3/lazy-server-gremlins.json&quot;
+            :body-examples [&quot;test-data/content/tutorial/tutorial-3/lazy-server-gremlins.json&quot;]
           }
         }
       }
@@ -441,7 +446,7 @@ is in a cave.&quot;
       </p>
 
       <pre class="prettyprint">
-(refer 'protean.core.transformation.sim)
+(refer 'protean.api.transformation.sim)
 
 {
   &quot;tutorial-5&quot; {
@@ -493,7 +498,7 @@ is in a cave.&quot;
 }
       </pre>
     </section>
-  
+
 
 </div>
 
@@ -516,21 +521,23 @@ is in a cave.&quot;
         :StateId &quot;(cave|forest)&quot;
       }
       :get {
-        :doc &quot;A single player REST adventure world&quot;
-        :description
-        &quot;A simple text adventure world for one player.
+        :doc
+&quot;
+A single player REST adventure world
 
-        Sample usage may be something like /tutorial-6/play/cave, indicating the player
-        is in a cave.&quot;
+A simple text adventure world for one player.
+
+Sample usage may be something like `/tutorial-6/play/cave`, indicating the player
+is in a cave.
+&quot;
         :vars {
           &quot;stateId&quot; {:type :StateId :doc &quot;ID for the state of the game&quot;}
         }
         :rsp {
           :200 {
-            :doc &quot;OK&quot;
-            :body-example &quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;
+            :body-examples [&quot;test-data/content/tutorial/tutorial-3/200-ref.json&quot;]
           }
-          :404 {:doc &quot;Not Found&quot;}
+          :404 {}
         }
       }
     }
@@ -543,19 +550,17 @@ is in a cave.&quot;
     </p>
 
     <pre class="prettyprint">
-(refer 'protean.core.transformation.sim)
+(refer 'protean.api.transformation.sim)
 
-(defn param2rsp [{:keys [route-params]} data-path]
-  (if-let [rsp (rsp-body data-path (route-param route-params) &quot;.json&quot;)]
+(defn param2rsp [data-path]
+  (if-let [rsp (rsp-body-file data-path (path-param &quot;stateId&quot;) &quot;.json&quot;)]
     (slurp rsp)
-    {:status 404}))
+    (respond 404)))
 
 {
   &quot;tutorial-6&quot; {
     &quot;play/${stateId}&quot; {
-      :get [
-      (fn [] (param2rsp *request* &quot;public/tutorial/6&quot;))
-      ]
+      :get [#(param2rsp &quot;public/tutorial/6&quot;)]
     }
   }
 }
@@ -628,7 +633,7 @@ is in a cave.&quot;
       </p>
       </div>
     </footer>
-  
+
 
 </div>
     </div>
@@ -637,6 +642,6 @@ is in a cave.&quot;
         $('[data-toggle="tooltip"]').tooltip();
       });
     </script>
-  
+
 
 </body></html>
