@@ -3,10 +3,13 @@
 ;; Introduces the basics of encoding/documenting a RESTful API
 
 {
-  :includes ["defaults.edn"]
-
   :title "Tutorial 1"
   :doc "Demonstrates the simplest possible codex structure"
-
-  "tutorial-1" {"play" {:get {}}}
+  "tutorial-1" {
+    "play" {
+      :get {
+        :rsp {:204 {}}
+      }
+    }
+  }
 }

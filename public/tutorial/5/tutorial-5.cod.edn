@@ -9,11 +9,11 @@
       :get {
         :doc
 "
-# A single player REST adventure world
+A single player REST adventure world
 
 A simple text adventure world for one player.
 
-Sample usage may be something like /tutorial-5/play/cave, indicating the player
+Sample usage may be something like `/tutorial-5/play/cave`, indicating the player
 is in a cave.
 "
         :vars {
@@ -21,11 +21,9 @@ is in a cave.
         }
         :rsp {
           :200 {
-            :doc "OK"
             :body-examples ["public/tutorial/3/200-ref.json"]
           }
           :503 {
-            :doc "Service Unavailable"
             :headers {"Content-Type" "application/problem+json" "Content-Language" "en"}
             :body-examples ["public/tutorial/3/lazy-server-gremlins.json"]
           }
