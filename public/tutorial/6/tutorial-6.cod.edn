@@ -12,7 +12,7 @@
       :get {
         :doc
 "
-# A single player REST adventure world
+A single player REST adventure world
 
 A simple text adventure world for one player.
 
@@ -23,11 +23,8 @@ is in a cave.
           "stateId" {:type :StateId :doc "ID for the state of the game"}
         }
         :rsp {
-          :200 {
-            :doc "OK"
-            :body-examples ["public/tutorial/3/200-ref.json"]
-          }
-          :404 {:doc "Not Found"}
+          :200 {:body-examples ["public/tutorial/3/200-ref.json"]}
+          :404 {}
         }
       }
     }
