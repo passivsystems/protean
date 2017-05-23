@@ -22,9 +22,9 @@ This is a Clojure project which uses edn to simulate and document and integratio
 
 ## Release information
 
-* Latest development release is 0.10.0
-    * [Code](https://github.com/passivsystems/protean/tree/0.10.0)
-    * [Download](https://github.com/passivsystems/protean/releases/download/0.10.0/protean-0.10.0.tgz)
+* Latest development release is 0.11.0
+    * [Code](https://github.com/passivsystems/protean/tree/0.11.0)
+    * [Download](https://github.com/passivsystems/protean/releases/download/0.11.0/protean-0.11.0.tgz)
     * [Documentation](http://passivsystems.github.io/protean/)
 
 
