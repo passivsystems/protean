@@ -70,7 +70,7 @@
 ;; =============================================================================
 
 (defn- doc-params [params]
-  (vec (for [[k v] params]
+  (for [[k v] params]
     {:title k
      :param-type (:ptype v)
      :value-type (:type v "Undefined")
@@ -79,31 +79,31 @@
              (:type v) (str "Standard type: " (name (:type v)))
              :else     "The type was not defined")
      :doc-md (:doc v "")
-     :attr (stg/join " " (:attr v))})))
+     :attr (stg/join " " (:attr v))}))
 
 (defn- doc-hdrs [hdrs]
-  (vec (for [[k v] hdrs] {:title k :value v})))
+  (for [[k v] hdrs] {:title k :value v}))
 
 (defn- doc-body-examples [id tree paths]
-  (vec (for [p paths]
+  (for [p paths]
     {:id (str id "-" (fname p))
      :#id (str "#" id "-" (fname p))
      :title (fname p)
-     :value (slurp-file p tree)})))
+     :value (slurp-file p tree)}))
 
 (defn- doc-status-codes [id tree method statuses]
-  (vec (for [[rsp-code v] statuses]
+  (for [[rsp-code v] statuses]
     (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
           examples (doc-body-examples id tree (:body-examples v))]
       {:code (name rsp-code)
        :doc-md (:doc v (rsp-code h/status-docs))
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
-       :rsp-body-examples (vec (drop 1 examples))
+       :rsp-body-examples (drop 1 examples)
        :rsp-body-schema-id (when schema (str "schema-" (name rsp-code)))
        :#rsp-body-schema-id (when schema (str "#schema-" (name rsp-code)))
        :rsp-body-schema-title (when schema (fname schema))
-       :rsp-body-schema (when schema (slurp-file schema tree))}))))
+       :rsp-body-schema (when schema (slurp-file schema tree))})))
 
 (defn- input-params [tree uri]
   (let [inputs {:path (list uri)
@@ -166,9 +166,9 @@
                 :req-params (doc-params (input-params tree uri))
                 :req-headers (doc-hdrs (d/req-hdrs tree))
                 :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
-                :responses (vec (concat
+                :responses (concat
                             (map #(assoc % :class "success") (doc-status-codes id tree method (d/success-status tree)))
-                            (map #(assoc % :class "danger") (doc-status-codes id tree method (d/error-status tree)))))}]
+                            (map #(assoc % :class "danger") (doc-status-codes id tree method (d/error-status tree))))}]
       (spit-to (str data-dir "/global/site.edn") (pr-str site))
       (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))})
 
