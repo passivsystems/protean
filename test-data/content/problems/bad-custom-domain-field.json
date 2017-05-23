@@ -1,6 +1,0 @@
-{
-  "type": "http://proteanic.org/api/problems/examples/bad-custom-domain-field",
-  "title": "The request could not be understood by the server.",
-  "detail": "Custom field X is malformed please provide a correct value.",
-  "instance": "http://host.port/codex/simple/examples"
-}

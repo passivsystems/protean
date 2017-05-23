@@ -28,37 +28,37 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">
+          <a class="navbar-brand company-brand" href="index.html">
             <img src="resource/img/logo-header.png" alt="Protean - evolving api's">
           </a>
         </div>
         <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li>
+          <ul id="header-page-links" class="nav navbar-nav">
+            <li class="lol">
               <a href="getting-started.html">
                 <span>Getting Started</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="documentation.html">
                 <span>Documentation</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="tutorial.html">
                 <span>Tutorial</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="api-documentation.html">
                 <span>API Documentation</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="community.html">
                 <span>Community</span>
               </a>
@@ -66,7 +66,7 @@
           </ul>
           <form action="search.html" class="navbar-form navbar-right" role="search">
             <span>
-    <span class="label label-default">v0.9.0-beta.1</span>
+    <span class="label label-default">v0.11.0</span>
   
 
 </span>
@@ -78,14 +78,27 @@
             </button>
           </form>
           <div style="margin-top:45px" id="tipue_drop_content"></div>
-          <script>
-            $(document).ready(function() {
-               $('#tipue_search_input').tipuedrop();
-            });
-          </script>
         </div>
       </div>
     </nav>
+    <script>
+      $(document).ready(function() {
+         $('#tipue_search_input').tipuedrop();
+
+         var pathname = window.location.pathname;
+         if (pathname.endsWith("/")) {
+           pathname = pathname + "index.html"
+         }
+
+         $('#header-page-links li').each(function() {
+           var li = $(this);
+           var a = li.find("a:first");
+           if (pathname.endsWith("/" + a.attr('href'))) {
+             li.addClass('active');
+           }
+         });
+      });
+    </script>
   
 
 </div>
@@ -93,6 +106,28 @@
     <div class="container-fluid">
       <div data-sw-view=""><div class="jumbotron">
       <img src="resource/img/logo.png" alt="Protean - evolving api's">
+      <ul class="list-inline">
+        <li>
+          <a class="btn btn-primary" href="https://github.com/passivsystems/protean/releases/download/0.11.0/protean_0.11.0_all.deb">
+            Debian Package
+          </a>
+        </li>
+        <li>
+          <a class="btn btn-primary" href="https://github.com/passivsystems/protean/releases/download/0.11.0/protean-osx.tgz">
+            OSX Archive
+          </a>
+        </li>
+        <li>
+          <a class="btn btn-primary" href="https://github.com/passivsystems/protean/tree/0.11.0/install">
+            OSX Brogrammer Script
+          </a>
+        </li>
+        <li>
+          <a class="btn btn-primary" href="https://github.com/passivsystems/protean/tree/0.11.0">
+            Github Code
+          </a>
+        </li>
+      </ul>
     </div><div class="row">
       <div class="col-lg-3 col-md-4">
         <div>
@@ -122,34 +157,10 @@
 </div>
       </div>
       <div class="col-lg-9 col-md-8" role="main">
-        <div class="alert alert-info" role="alert">
-          <p>
-            Linux and Mac only right now.
-          </p>
-          <p>Download 0.9.0-beta.1 then look at <a href="getting-started.html" title="How to get started with Silk">Getting Started</a></p>
-          <br>
-          <ul class="list-inline">
-            <li>
-              <a href="https://github.com/passivsystems/protean/releases/download/0.9.0-beta.1/protean_0.9.0-beta.1_all.deb"><button type="button" class="btn btn-primary">Debian Package</button></a>
-            </li>
-            <li>
-              <a href="https://github.com/passivsystems/protean/releases/download/0.9.0-beta.1/protean-osx.tgz"><button type="button" class="btn btn-primary">OSX Archive</button></a>
-            </li>
-            <li>
-              <a href="https://github.com/passivsystems/protean/tree/0.9.0-beta.1/install"><button type="button" class="btn btn-primary">OSX Brogrammer Script</button></a>
-            </li>
-            <li>
-              <a href="https://github.com/passivsystems/protean/tree/0.9.0-beta.1"><button type="button" class="btn btn-primary">Github Code</button></a>
-            </li>
-
-          </ul>
-        </div>
-
         <section data-sw-nav="Overview" id="overview" data-sw-content="">
           <div class="page-header">
             <h2>Overview</h2>
           </div>
-
           <p>
             Evolve your RESTful APIs and web services. Encode them, document them, simulate them, integration test them and figure out how failure affects your architecture. No invasive changes to your code base.
           </p>

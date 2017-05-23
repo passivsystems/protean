@@ -1,9 +1,0 @@
-(refer 'protean.core.transformation.sim)
-
-{
-  "tutorial-5" {
-    "play/${stateId}" {
-      :get [#(error)]
-    }
-  }
-}

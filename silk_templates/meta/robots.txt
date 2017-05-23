@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /resource/css/
-Disallow: /resource/images/
-Disallow: /resource/js/

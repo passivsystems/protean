@@ -28,37 +28,37 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">
+          <a class="navbar-brand company-brand" href="index.html">
             <img src="resource/img/logo-header.png" alt="Protean - evolving api's">
           </a>
         </div>
         <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li>
+          <ul id="header-page-links" class="nav navbar-nav">
+            <li class="lol">
               <a href="getting-started.html">
                 <span>Getting Started</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="documentation.html">
                 <span>Documentation</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="tutorial.html">
                 <span>Tutorial</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="api-documentation.html">
                 <span>API Documentation</span>
               </a>
             </li>
           
-            <li>
+            <li class="lol">
               <a href="community.html">
                 <span>Community</span>
               </a>
@@ -66,7 +66,7 @@
           </ul>
           <form action="search.html" class="navbar-form navbar-right" role="search">
             <span>
-    <span class="label label-default">v0.9.0-beta.1</span>
+    <span class="label label-default">v0.11.0</span>
   
 
 </span>
@@ -78,20 +78,35 @@
             </button>
           </form>
           <div style="margin-top:45px" id="tipue_drop_content"></div>
-          <script>
-            $(document).ready(function() {
-               $('#tipue_search_input').tipuedrop();
-            });
-          </script>
         </div>
       </div>
     </nav>
+    <script>
+      $(document).ready(function() {
+         $('#tipue_search_input').tipuedrop();
+
+         var pathname = window.location.pathname;
+         if (pathname.endsWith("/")) {
+           pathname = pathname + "index.html"
+         }
+
+         $('#header-page-links li').each(function() {
+           var li = $(this);
+           var a = li.find("a:first");
+           if (pathname.endsWith("/" + a.attr('href'))) {
+             li.addClass('active');
+           }
+         });
+      });
+    </script>
   
 
 </div>
     <br><br><br><br>
     <div class="container-fluid">
-      <div data-sw-view=""><div class="row">
+      <div data-sw-view=""><div class="jumbotron">
+    <h1>Getting Started</h1>
+  </div><div class="row">
     <div class="col-lg-3 col-md-4">
       <div>
   <div class="bs-sidebar" role="complementary">
@@ -103,8 +118,8 @@
       </li>
     
       <li>
-        <a href="#starting">
-          <span>Starting</span>
+        <a href="#sample">
+          <span>Sample API - The Pet Store</span>
         </a>
       </li>
     
@@ -146,7 +161,7 @@
         <h3>Linux</h3>
         <p>
           There is a tried and tested .deb for Debian/Ubuntu flavours of Linux at
-          : https://github.com/passivsystems/protean/releases/download/0.9.0-pre.7/protean_0.9.0_all.deb
+          : https://github.com/passivsystems/protean/releases/download/0.11.0/protean_0.11.0_all.deb
         </p>
 
         <h3>Mac OSX</h3>
@@ -158,7 +173,7 @@
         </p>
       </section>
 
-      <section data-sw-nav="Starting" id="starting" data-sw-content="">
+      <section data-sw-nav="Sample API - The Pet Store" id="sample" data-sw-content="">
         <div class="page-header">
           <h2>Sample API - The Pet Store</h2>
         </div>

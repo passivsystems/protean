@@ -59,10 +59,7 @@
 }
 
 a.company-brand {
-  float:right;
-  padding:10px;
-  font-size: 25px;
-  color:#ff6600;
+  padding: 6px 15px;
 }
 
 pre {
