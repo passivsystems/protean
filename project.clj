@@ -35,7 +35,7 @@
                  [com.cemerick/pomegranate "0.3.0"]
                  [yaclot "0.1.5"]
                  [json-path "0.3.0"]
-                 [protean-api "0.11.0-alpha.1"]]
+                 [protean-api "0.11.0"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-expectations "0.0.8"]]
   :aot :all

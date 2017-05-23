@@ -17,7 +17,6 @@ cp -r $ROOT_DIR/silk_templates $ROOT_DIR/target/tgz
 cp -r $ROOT_DIR/public $ROOT_DIR/target/tgz
 cp -r $ROOT_DIR/test-data $ROOT_DIR/target/tgz
 cp $ROOT_DIR/defaults.edn $ROOT_DIR/target/tgz
-cp $ROOT_DIR/simlib.clj.sample $ROOT_DIR/target/tgz/simlib.clj
 cp $ROOT_DIR/sample-petstore.cod.edn $ROOT_DIR/target/tgz
 cp $ROOT_DIR/protean-utils.cod.edn $ROOT_DIR/target/tgz
 cp $ROOT_DIR/protean-utils.sim.edn $ROOT_DIR/target/tgz

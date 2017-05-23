@@ -20,7 +20,6 @@ then
 
     cp $ROOT_DIR/target/*standalone* $ROOT_DIR/target/deb/usr/lib/protean/protean.jar
     cp $ROOT_DIR/defaults.edn $ROOT_DIR/target/deb/usr/lib/protean/defaults.edn
-    cp $ROOT_DIR/simlib.clj.sample $ROOT_DIR/target/deb/usr/lib/protean/simlib.clj
     cp $ROOT_DIR/sample-petstore.cod.edn $ROOT_DIR/target/deb/usr/lib/protean/sample-petstore.cod.edn
     cp $ROOT_DIR/protean-utils.cod.edn $ROOT_DIR/target/deb/usr/lib/protean/protean-utils.cod.edn
     cp $ROOT_DIR/protean-utils.sim.edn $ROOT_DIR/target/deb/usr/lib/protean/protean-utils.sim.edn
