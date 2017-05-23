@@ -68,7 +68,6 @@ Update an existing pet
         }
         :rsp {
           :201 {
-            :doc "Created"
             :headers {"Location" "/pet/${petId}"}
           }
           :405 {:doc "Validation exception"}
@@ -98,7 +97,6 @@ Update an existing pet
 
         :rsp {
           :200 {
-            :body         {"name" "${name}" "status" "${status}"}
             :body-schema  "test-data/schemas/pet.schema.json"
             :body-examples ["test-data/content/doc/responses/simple/pet.json"]
           }
