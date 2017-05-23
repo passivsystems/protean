@@ -3,15 +3,12 @@
 ;; We call Protean Project/Service configurations codices
 ;; The sample codex illustrates much if not all of what is possible
 ;; with Protean
-;;
 
 {
   :includes [ "defaults.edn" ]
 
   :title "Pet Store API Docs"
   :doc "A sample pet store is often created in RESTful toolkits to demonstrate capability."
-
-  :rsp {:headers {"Access-Control-Allow-Origin" "*"}}
 
   "petstore" {
 
@@ -26,6 +23,7 @@
     }
 
     "api/pet" {
+
       :get {
         :doc "Finds all pets, or pets filtered by status or tags"
         :req {
@@ -34,15 +32,15 @@
             "tags"   ["${tags}"   :optional]
           }
         }
-        :vars {"tags" {:type :String :doc "Tags to filter by" :examples ["dog"]}}
+        :vars {"tags" {:type :String :doc "Tags to filter by"}}
       }
 
       :put {
         :doc
 "
-# Update an existing pet
+# Full description for update an existing pet
 
-Full description for update an existing pet
+Update an existing pet
 "
         :rsp {
           :200 {
@@ -69,15 +67,16 @@ Full description for update an existing pet
         }
         :rsp {
           :201 {
-            :doc "Created"
             :headers {"Location" "/pet/${petId}"}
           }
           :405 {:doc "Validation exception"}
         }
       }
+
     }
 
     "api/pet/${petId}" {
+
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
@@ -94,6 +93,7 @@ Full description for update an existing pet
 
       :get {
         :doc "Find a pet by ID"
+
         :rsp {
           :200 {
             :body-schema  "test-data/schemas/pet.schema.json"
@@ -118,16 +118,16 @@ Full description for update an existing pet
         :doc "Partial updates to a pet"
         :rsp {:404 {:doc "Invalid ID supplied"}}
       }
+
     }
 
     "api/uploadImage" {
       :post {
         :doc "uploads an image"
         :req {
-          :query-params {
-            "additionalMetadata" ["${additionalMetadata}" :required]
-;           "file" [:File ; Binary?; Multipart?]
-        }}
+          :query-params { "additionalMetadata" ["${additionalMetadata}" :required]}
+          ;           {"file" {:type :File}} ; Binary?; Multipart?
+        }
         :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
       }
     }
