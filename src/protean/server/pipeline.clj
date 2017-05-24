@@ -11,7 +11,7 @@
             [protean.api.transformation.sim :as sim]
             [protean.api.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
-            [protean.core.codex.reader :as r]
+            [protean.api.codex.reader :as r]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.request :as req]
             [clojure.pprint])

@@ -9,7 +9,7 @@
             [protean.config :as conf]
             [protean.api.transformation.coerce :as c]
             [protean.core.command.bridge :as b]
-            [protean.core.codex.reader :as r]
+            [protean.api.codex.reader :as r]
             [protean.api.codex.document :as d]
             [me.rossputin.diskops :as dsk]
             [protean.server.main :as ps])

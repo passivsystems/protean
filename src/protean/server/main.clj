@@ -14,7 +14,7 @@
             [protean.config :as c]
             [protean.server.pipeline :as pipe]
             [protean.api.transformation.coerce :as co]
-            [protean.core.codex.reader :as r]
+            [protean.api.codex.reader :as r]
             [protean.api.codex.document :as d]
             [clojure.pprint]
             [taoensso.timbre.appenders.core :as appenders])
