@@ -22,7 +22,6 @@
                  [lockedon/if-let "0.1.0"]
                  [me.rossputin/diskops "0.6.0"]
                  [org.silkyweb/silk "0.11.1"]
-                 [me.rossputin/pew "0.1.0"]
                  [alandipert/enduro "1.2.0"]
                  [org.slf4j/slf4j-simple "1.7.25"]
                  [aysylu/loom "1.0.0"]
