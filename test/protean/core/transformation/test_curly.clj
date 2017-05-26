@@ -8,80 +8,41 @@
 ;; =============================================================================
 
 (let [analysed '(
-  {
-   :method :get
+  {:method :get
    :uri "http://localhost:3000/sample/simple"
    :tree [nil
           {:get nil}
           {"simple" {:get nil}} {:rsp {:200 {:doc "OK"}}}
-          {"sample" {"simple" {:get nil}} :get {:rsp {:200 {:doc "OK"}}}}]
-  }
-  )
-       [cmd options uri] (split (first (curly-analysis-> analysed)) #" ")]
+          {"sample" {"simple" {:get nil}} :get {:rsp {:200 {:doc "OK"}}}}]})
+     [cmd options uri] (split (first (curly-analysis-> analysed)) #" ")]
   (expect "curl" cmd)
   (expect "-i" options)
   (expect true (.endsWith uri "/sample/simple'")))
 
 (let [analysed '(
-  {
-  :method :get
-  :uri "http://localhost:3000/curly/query-params"
-  :tree [
-    {
-      :rsp {
-        :200 {
-          :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
-        }
-      }
-      :req {:query-params {"blurb" ["${blurb}" :required]}}
-      :vars {"blurb" {:doc "A sample request param", :type :String}}
-    }
-    {
-      :get {
-        :rsp {
-          :200 {
-            :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
-          }
-        }
-        :req {:query-params {"blurb" ["${blurb}" :required]}}
-        :vars {"blurb" {:doc "A sample request param", :type :String}}
-      }
-    }
-    {
-      "query-params" {
-        :get {
-          :rsp {
-            :200 {
-              :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
-            }
-          }
-          :req {:query-params {"blurb" ["${blurb}" :required]}}
-          :vars {"blurb" {:doc "A sample request param", :type :String}}
-        }
-      }
-    }
-    {
-      :rsp {:200 {:doc OK}}
-    }
-    {
-      "curly" {
-        "query-params" {
-          :get {
-            :rsp {
-              :200 {
-                :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
-              }
-            }
-            :req {:query-params {"blurb" ["${blurb}" :required]}}
-            :vars {"blurb" {:doc "A sample request param", :type :String}}
-          }
-        }
-      }
-      :types {:String "[a-zA-Z0-9]+"}
-      :get {:rsp {:200 {:doc "OK"}}}
-    }
-  ]
-   })
+  {:method :get
+   :uri "http://localhost:3000/curly/query-params"
+   :tree [{:rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+           :req {:query-params {"blurb" ["${blurb}" :required]}}
+           :vars {"blurb" {:doc "A sample request param", :type :String}}}
+          {:get {
+             :rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+             :req {:query-params {"blurb" ["${blurb}" :required]}}
+             :vars {"blurb" {:doc "A sample request param", :type :String}}}}
+          {"query-params" {
+             :get {
+               :rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+               :req {:query-params {"blurb" ["${blurb}" :required]}}
+               :vars {"blurb" {:doc "A sample request param", :type :String}}}}}
+               :get {
+          {:rsp {:200 {:doc OK}}}
+          {"curly" {
+             "query-params" {
+                 :rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+                 :req {:query-params {"blurb" ["${blurb}" :required]}}
+                 :vars {"blurb" {:doc "A sample request param", :type :String}}}}}
+                 :types {:String "[a-zA-Z0-9]+"}
+                 :get {:rsp {:200 {:doc "OK"}}}}]})
       [cmd options uri] (split (first (curly-analysis-> analysed)) #" ")]
   (expect "curl" cmd)
   (expect "-i" options)
