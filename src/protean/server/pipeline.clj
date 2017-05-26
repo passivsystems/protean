@@ -18,8 +18,7 @@
   (:use [clojure.string :only [join split upper-case]]
         [clojure.set :only [intersection]]
         [clojure.java.io :refer [file]]
-        [taoensso.timbre :as timbre :only (trace debug info warn error)]
-        [me.rossputin.pew])
+        [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.IOException))
 
 ;; =============================================================================

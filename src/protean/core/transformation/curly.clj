@@ -4,7 +4,6 @@
   (:require [clojure.string :as s]
             [clojure.set :as st]
             [ring.util.codec :as e]
-            [cheshire.core :as jsn]
             [protean.config :as cnf]
             [protean.api.codex.placeholder :as ph]
             [protean.api.codex.document :as d]

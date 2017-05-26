@@ -2,7 +2,7 @@
   "A basic command line interface for Protean."
   (:require [clojure.string :as s]
             [clojure.edn :as edn]
-            [clojure.java.io :refer [file]]
+            [clojure.java.io :as io]
             [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
             [protean.cli.interface :as i]
@@ -12,9 +12,8 @@
             [protean.api.codex.reader :as r]
             [protean.api.codex.document :as d]
             [me.rossputin.diskops :as dsk]
-            [protean.server.main :as ps])
-  (:use protean.cli.simadmin)
-  (:import java.net.URI java.io.File)
+            [protean.server.main :as ps]
+            [protean.cli.simadmin :as admin])
   (:gen-class))
 
 ;; =============================================================================
@@ -113,14 +112,14 @@
   ; TODO fail if b has no commands?
   (let [b (sane-corpus (c/clj body))]
     (println (aa/bold-green "Exploring quadrant..."))
-    (let [codices (r/read-codex (File. file))]
+    (let [codices (r/read-codex (io/file file))]
       (b/visit b codices)
       (println (aa/bold-green "...finished exploring quadrant")))))
 
 (defn- doc
   "If no corpus is passed in to a visit doc command - guess sensible defaults"
   [{:keys [file]}]
-  (let [codices (r/read-codex (File. file))
+  (let [codices (r/read-codex (io/file file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
         b (c/js {:locs [svc] :commands [:doc]})
         options {:host nil :port nil :file file :body b}
@@ -135,7 +134,7 @@
 (defn- integration-test
   "If no corpus is passed in to a visit test command - guess sensible defaults"
   [{:keys [host port file body]}]
-  (let [codices (r/read-codex (File. file))
+  (let [codices (r/read-codex (io/file file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
         b (c/js (merge
             {:locs [svc] :commands [:test] :config {:test-level 1}}
@@ -165,10 +164,10 @@
       (and (= cmd i/del-svc) (not name)) (bomb summary)
       (and (= cmd i/add-sims) (not file)) (bomb summary)
       (and (= cmd i/del-sim) (not name)) (bomb summary)
-      (and (= cmd i/visit (i/visit? options))) (bomb summary)
-      (and (= cmd i/doc (i/doc? options))) (bomb summary)
-      (and (= cmd i/int-test (i/int-test? options))) (bomb summary)
-      (and (= cmd i/sim (i/sim? options))) (bomb summary))))
+      (and (= cmd i/visit) (i/visit? options)) (bomb summary)
+      (and (= cmd i/doc) (i/doc? options)) (bomb summary)
+      (and (= cmd i/int-test) (i/int-test? options)) (bomb summary)
+      (and (= cmd i/sim) (i/sim? options)) (bomb summary))))
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
@@ -176,14 +175,14 @@
     (handle-errors options arguments errors summary)
     (println "\n")
     (cond
-      (= cmd i/svcs) (services options)
-      (= cmd i/svc) (service options)
-      (= cmd i/svc-usg) (service-usage options)
-      (= cmd i/add-svcs) (add-services options)
-      (= cmd i/del-svc) (delete-service options)
-      (= cmd i/sims) (sims options)
-      (= cmd i/add-sims) (add-sims options)
-      (= cmd i/del-sim) (delete-sim options)
+      (= cmd i/svcs) (admin/services options)
+      (= cmd i/svc) (admin/service options)
+      (= cmd i/svc-usg) (admin/service-usage options)
+      (= cmd i/add-svcs) (admin/add-services options)
+      (= cmd i/del-svc) (admin/delete-service options)
+      (= cmd i/sims) (admin/sims options)
+      (= cmd i/add-sims) (admin/add-sims options)
+      (= cmd i/del-sim) (admin/delete-sim options)
       (= cmd i/visit) (visit options)
       (= cmd i/doc) (doc options)
       (= cmd i/int-test) (integration-test options)
