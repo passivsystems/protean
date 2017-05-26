@@ -8,44 +8,38 @@
 
   :title "Pet Store Demo API Docs"
   :doc "A sample pet store is often created in RESTful toolkits to demonstrate capability."
+  :types {
+    :Status "(available|pending|sold)"
+    :PetId "[0-9a-zA-Z]{3,7}"
+  }
+  :vars {
+    "petId" {:type :PetId :doc "ID of pet" :gen false}
+    "name" {:type :String :doc "Updated name of the pet" :examples ["tiddles"]}
+    "status" {:type :Status :doc "Updated status of the pet"}
+  }
 
   "petstore-demo" {
-
-    :types {
-      :Status "(available|pending|sold)"
-      :PetId "[0-9a-zA-Z]{3,7}"
-    }
-    :vars {
-      "petId" {:type :PetId :doc "ID of pet" :gen false}
-      "name" {:type :String :doc "Updated name of the pet" :examples ["tiddles"]}
-      "status" {:type :Status :doc "Updated status of the pet"}
-    }
-
     "api/pet" {
-
       :get {
         :doc "Finds all pets, or pets filtered by status or tags"
+        :vars {"tags" {:type :String :doc "Tags to filter by"}}
         :req {
           :query-params {
             "status" ["${status}" :optional]
             "tags"   ["${tags}"   :optional]
           }
         }
-        :vars {"tags" {:type :String :doc "Tags to filter by"}}
+        :rsp {
+          ;; no need for a header, it is derived from the body file
+          :200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}
+        }
       }
 
       :put {
-        :doc
-"
-# Full description for update an existing pet
-
-Update an existing pet
-"
+        :doc "Full description for update an existing pet"
         :rsp {
-          :200 {
-            ;; no need for a header, it is derived from the body file
-            :body-examples ["test-data/content/doc/responses/simple/200-ref.json"]
-          }
+          ;; no need for a header, it is derived from the body file
+          :200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}
           :400 {:doc "Pet not found"}
           :404 {:doc "Invalid ID supplied"}
           :405 {
@@ -65,17 +59,13 @@ Update an existing pet
           :body-examples ["test-data/content/doc/requests/new-pet.json"]
         }
         :rsp {
-          :201 {
-            :headers {"Location" "/pet/${petId}"}
-          }
+          :201 {:headers {"Location" "/pet/${petId}"}}
           :405 {:doc "Validation exception"}
         }
       }
-
     }
 
     "api/pet/${petId}" {
-
       :post {
         :doc "Updates a pet in the store with form data"
         :req {
@@ -92,7 +82,6 @@ Update an existing pet
 
       :get {
         :doc "Find a pet by ID"
-
         :rsp {
           :200 {
             :body-schema  "test-data/schemas/pet.schema.json"
@@ -110,14 +99,19 @@ Update an existing pet
 
       :delete {
         :doc "Deletes a pet"
-        :rsp {:404 {:doc "Invalid ID supplied"}}
+        :rsp {
+          :204 {}
+          :404 {:doc "Invalid ID supplied"}
+        }
       }
 
       :patch {
         :doc "Partial updates to a pet"
-        :rsp {:404 {:doc "Invalid ID supplied"}}
+        :rsp {
+          :204 {}
+          :404 {:doc "Invalid ID supplied"}
+        }
       }
-
     }
 
     "api/uploadImage" {
@@ -128,6 +122,10 @@ Update an existing pet
           ;           {"file" {:type :File}} ; Binary?; Multipart?
         }
         :vars {"additionalMetadata" {:type :String, :doc "Additional data to pass to server"}}
+        :rsp {
+          :204 {}
+          :400 {}
+        }
       }
     }
   }
