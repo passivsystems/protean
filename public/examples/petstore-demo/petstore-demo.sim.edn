@@ -14,7 +14,7 @@
         #(-> {:status 200 :headers {"Content-Type" "application/json"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
       ]
       :post [
-        #(validate {:status 201 :headers {"Location" "/pet/yyyy"}})
+        #(if-valid {:status 201 :headers {"Location" "/pet/yyyy"}})
       ]
     }
 
@@ -31,7 +31,7 @@
 
       :post [
         ;; synchronous response
-        #(validate (respond 200 :body-url "test-data/content/doc/responses/simple/200-ref.json"))
+        #(if-valid (respond 200 :body-url "test-data/content/doc/responses/simple/200-ref.json"))
 
         ;; synchronously forward request to another API, and log response
         ;;   sends to an endpoint in another protean sim extenstion (the echo endpoint)
