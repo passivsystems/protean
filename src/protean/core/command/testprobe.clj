@@ -173,10 +173,11 @@
   (let [{:keys [method svc path] :as entry} (:entry probe)]
     (str method " " svc " " path)))
 
-(defn- get-dependencies [corpus probes probe]
-  "Returns seq of vectors [input dependency]."
-  "All inputs that cannot be generated (or have been seeded)"
-  "form a dependency on endpoint that produces them as outputs"
+(defn- get-dependencies
+  "Returns seq of vectors [input dependency].
+   All inputs that cannot be generated (or have been seeded)
+   form a dependency on endpoint that produces them as outputs"
+  [corpus probes probe]
   (let [dependency-for (fn [input]
     (let [tree (get-in probe [:entry :tree])
           seed (get-in corpus [:seed input])
@@ -184,10 +185,9 @@
           dependencies (remove #{probe} (remove nil? (map find-dep probes)))
           can-gen (d/get-in-tree tree [:vars input :gen])]
       (when (and (not seed) (= false can-gen))
-        (if (empty? dependencies)
-            ; TODO should mark test status as fail..
-            (hlr "No endpoint available to provide" input "!"))
-          (map #(->[input %]) dependencies))))]
+        ; TODO should mark test status as fail..
+        (when (empty? dependencies) (hlr "No endpoint available to provide" input "!"))
+        (map #(do [input %]) dependencies))))]
   (mapcat dependency-for (:inputs probe))))
 
 
@@ -302,7 +302,7 @@
         print-inputs-outputs (fn [p]
           (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p)))]
       (if (empty? ordered-probes)
-        (map #(-> {:entry (:entry %) :request nil :response no-route-response}) probes)
+        (map #(do {:entry (:entry %) :request nil :response no-route-response}) probes)
         (do
           (println "\nexecuting probes in the following order:\n"
             (s/join "\n" (map print-inputs-outputs ordered-probes))
@@ -348,5 +348,5 @@
 
 (defmethod pb/analyse :test [_ corpus results]
   (let [assessed (map conj results (map assess results))]
-    (doall (map print-result assessed))
+    (doseq [a assessed] (print-result a))
     (j/write-report assessed)))
