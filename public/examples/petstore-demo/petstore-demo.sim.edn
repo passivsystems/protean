@@ -1,10 +1,14 @@
 (ns protean.petstore.demo
-  (:require [protean.api.transformation.sim :refer :all]
+  (:require [clojure.java.io :refer [file]]
+            [me.rossputin.diskops :as dk]
+            [protean.api.transformation.sim :refer :all]
             [protean.config :refer :all]))
 
 ;; Here we demonstrate much of what is possible with Protean, often resulting in errors !
 
 (def counter (atom 0))
+
+(dk/mkdirs (file (str (env :user-home) "/tmp")))
 
 {
   "petstore-demo" {
