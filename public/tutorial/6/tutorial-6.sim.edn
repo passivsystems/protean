@@ -1,8 +1,9 @@
 (ns protean.tutorial6
-  (:require [protean.api.transformation.sim :refer :all]))
+  (:require [me.rossputin.diskops :as dk]
+            [protean.api.transformation.sim :refer :all]))
 
 (defn param2rsp [data-path]
-  (if-let [rsp (file-with-path data-path (path-param "stateId") ".json")]
+  (if-let [rsp (dk/file-with-path data-path (path-param "stateId") ".json")]
     (slurp rsp)
     (respond 404)))
 
