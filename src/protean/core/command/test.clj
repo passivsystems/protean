@@ -7,7 +7,9 @@
 (defn test! [request]
   (let [the-request (assoc request
                       :url (:uri request)
-                      :throw-exceptions false)
+                      :throw-exceptions false
+                      :follow-redirects false
+                      :redirect-strategy :none)
         response (try
           (clt/request the-request)
           (catch Exception e {:error (.getMessage e)}))]
