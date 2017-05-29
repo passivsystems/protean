@@ -2,8 +2,7 @@
   "Launch tests and do some basic formatting of results.
 
    N.B. currently locked in with clj-http."
-  (:require [clj-http.client :as clt]
-            [protean.core.transformation.curly :as c]))
+  (:require [clj-http.client :as clt]))
 
 (defn test! [request]
   (let [the-request (assoc request
@@ -12,7 +11,4 @@
         response (try
           (clt/request the-request)
           (catch Exception e {:error (.getMessage e)}))]
-;    (println "test! evaluating:" the-request)
-;    (println "curl:" (c/curly-request-> the-request))
-;    (println "response" response)
     [request response]))
