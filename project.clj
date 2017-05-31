@@ -8,9 +8,9 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/core.incubator "0.1.4"]
                  [org.clojure/tools.cli "0.3.5"]
-                 [org.clojure/tools.namespace "0.2.10"]
-                 [ring/ring-jetty-adapter "1.3.2"]
-                 [ring/ring-core "1.3.2"]
+                 [org.clojure/tools.namespace "0.2.11"]
+                 [ring/ring-jetty-adapter "1.6.1"]
+                 [ring/ring-core "1.6.1"]
                  [ring/ring-codec "1.0.1"]
                  [compojure "1.6.0"]
                  [cheshire "5.7.1"]
@@ -30,7 +30,7 @@
                  [com.cemerick/pomegranate "0.3.1"]
                  [json-path "0.3.0"]
                  [protean-api "0.12.0-pre.1"]]
-  :plugins [[lein-ring "0.9.7"]
+  :plugins [[lein-ring "0.12.0"]
             [lein-expectations "0.0.8"]]
   :aot :all
   :uberjar-name ~(str (-> "project.clj" slurp read-string (nth 1)) "-" (-> "project.clj" slurp read-string (nth 2)) "-standalone.jar")
