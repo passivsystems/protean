@@ -4,11 +4,11 @@
             [clojure.main :as m]
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
+            [protean.core :as api-core]
             [protean.config :as c]
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
-            [protean.api.transformation.sim :as sim]
             [protean.api.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
             [protean.api.codex.reader :as r]
@@ -74,7 +74,7 @@
 
 (defn api [req]
   (log-request req)
-  (sim/sim-rsp req @paths @sims))
+  (api-core/sim-rsp req @paths @sims))
 
 
 ;; =============================================================================
