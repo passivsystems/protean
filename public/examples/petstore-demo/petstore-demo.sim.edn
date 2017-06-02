@@ -38,7 +38,7 @@
 
         ;; synchronously forward request to another API, and log response
         ;;   sends to an endpoint in another protean sim extenstion (the echo endpoint)
-        #(when (valid-inputs?)
+        #(when-valid
           (make-request :put (str "http://localhost:" (sim-port) "/protean-utils/echo") {
             :content-type (header "content-type") ; Note, headers in request are in lower-case (ring)
             :form-params (into {} (for [[k v] (:form-params *request*)] [(keyword k) v]))
