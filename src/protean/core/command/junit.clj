@@ -5,7 +5,7 @@
             [clojure.java.io :refer [file]]
             [clojure.pprint :as pp]
             [protean.api.transformation.coerce :as co]
-            [protean.config :as c])
+            [protean.config :as conf])
   (:import java.io.File java.util.Calendar java.text.SimpleDateFormat))
 
 (defn now-iso-8601 []
@@ -49,7 +49,7 @@
   (.mkdirs (file "target"))
   (let [file (str "target/TEST-" svc ".xml")
         tags (x/element :testsuite {:name svc
-                                    :hostname c/host
+                                    :hostname conf/host
                                     :tests (count results)
                                     :errors (count (errors results))
                                     :failures (count (failures results))

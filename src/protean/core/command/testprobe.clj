@@ -4,7 +4,7 @@
             [clojure.java.io :refer [file]]
             [clojure.set :as st]
             [io.aviso.ansi :as aa]
-            [protean.config :as cfg]
+            [protean.config :as conf]
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
@@ -64,7 +64,7 @@
   (let [examples (d/get-in-tree tree [:req :body-examples])
         body (d/get-in-tree tree [:req :body])]
     (if examples
-      (-> (first examples) (d/to-path tree) slurp s/trim)
+      (-> (d/to-path (conf/protean-home) (first examples) tree) slurp s/trim)
       body)))
 
 (defn- inputs [uri tree corpus]
@@ -277,7 +277,7 @@
 (defn- render-graph [graph graph-name]
   (try
     (if graph
-      (let [file-path (str (cfg/target-dir) "/" graph-name ".png")]
+      (let [file-path (str (conf/target-dir) "/" graph-name ".png")]
         (with-open [w (clojure.java.io/output-stream file-path)]
           (.write w ^bytes (li/render-to-bytes (second graph))))
         (println "traversal graph rendered to: " file-path)))
@@ -329,7 +329,7 @@
                       (v/validate-status expected-status response)
                       (v/validate-headers expected-hdrs response)
                       (v/validate-body response expected-ctype
-                      (d/to-path (:body-schema success) tree)
+                      (d/to-path (conf/protean-home) (:body-schema success) tree)
                       (:body success)))})))
 
 (defn- interpret-resp [type response error failures]

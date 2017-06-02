@@ -11,7 +11,7 @@
             [compojure.route :as route]
             [cemerick.pomegranate :as pom]
             [me.rossputin.diskops :as do]
-            [protean.config :as c]
+            [protean.config :as conf]
             [protean.server.pipeline :as pipe]
             [protean.api.transformation.coerce :as co]
             [protean.api.codex.reader :as r]
@@ -28,8 +28,8 @@
 
 (timbre/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
 (timbre/merge-config! {:appenders {:spit (appenders/spit-appender {:fname
-  (str (c/log-dir) "/protean.log")})}})
-(timbre/set-level! (c/log-level))
+  (str (conf/log-dir) "/protean.log")})}})
+(timbre/set-level! (conf/log-level))
 
 (defn- files [c-dir ext]
   (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
@@ -59,11 +59,11 @@
 ;; =============================================================================
 
 (defroutes admin-routes
-  (route/files "/public" {:root (c/public-dir)})
+  (route/files "/public" {:root (conf/public-dir)})
   (GET    "/services" [] (pipe/services))
   (GET    "/services/:id" [id] (pipe/service id))
-  (GET    "/services/:id/analysis" [id] (pipe/service-analysis id c/host))
-  (GET    "/services/:id/usage" [id] (pipe/service-usage id c/host))
+  (GET    "/services/:id/analysis" [id] (pipe/service-analysis id conf/host))
+  (GET    "/services/:id/usage" [id] (pipe/service-usage id conf/host))
   (PUT    "/services" req (pipe/put-services req))
   (DELETE "/services/:id" [id] (pipe/del-service-handled id))
   (GET    "/sims" [] (pipe/sims-names))
@@ -105,11 +105,11 @@
 
 (defn start [codex-dir]
   (timbre/log-and-rethrow-errors
-    (let [sim-port (c/sim-port)
-          sim-max-threads (c/sim-max-threads)
-          admin-port (c/admin-port)
-          admin-max-threads (c/admin-max-threads)
-          c-dir (or codex-dir (c/codex-dir))]
+    (let [sim-port (conf/sim-port)
+          sim-max-threads (conf/sim-max-threads)
+          admin-port (conf/admin-port)
+          admin-max-threads (conf/admin-max-threads)
+          c-dir (or codex-dir (conf/codex-dir))]
       (info "Starting protean - v" (version))
       (info "Codex directory : " c-dir)
 
@@ -121,7 +121,7 @@
 
       (info (str "Codices loaded : " (build-services c-dir)))
       (info (str "Sim extensions loaded : " (build-sims c-dir)))
-      (info (str "Public static resources can be served from : " (c/public-dir)))
+      (info (str "Public static resources can be served from : " (conf/public-dir)))
       (server sim-port sim-max-threads admin-port admin-max-threads)
       (info (str "Protean has started \n"
                  "Sim Port:   " sim-port   " Max threads: " sim-max-threads "\n"

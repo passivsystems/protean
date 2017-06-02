@@ -1,6 +1,7 @@
 (ns protean.core.transformation.request
   "Building Ring requests."
   (:require [clojure.string :as s]
+    [protean.config :as conf]
     [protean.api.codex.document :as d]
     [protean.api.protocol.http :as h]
     [protean.api.protocol.protean :as pp]
@@ -24,8 +25,8 @@
             (h/xml? ctype) co/xml
             :else co/js)
         body-val (cond
-          (and schema gen-from-schema) (gen-jsn/gen (d/to-path schema tree))
-          example (-> example (d/to-path tree) slurp s/trim)
+          (and schema gen-from-schema) (gen-jsn/gen (d/to-path (conf/protean-home) schema tree))
+          example (-> (d/to-path (conf/protean-home) example tree) slurp s/trim)
           :else (f body))]
     (assoc-in payload [:body] body-val)))
 
@@ -53,7 +54,7 @@
           (-> body cc/parse-string (dissoc field) cc/generate-string))]
     (if-let [schema (d/get-in-tree tree [:req :body-schema])]
       ; TODO this should work for required at all levels - here just top level
-      (for [required-field (:required (cc/parse-string (slurp (d/to-path schema tree)) true))]
+      (for [required-field (:required (cc/parse-string (slurp (d/to-path (conf/protean-home) schema tree)) true))]
         [(str "missing required json field: " required-field)
           (update-in request [:body] remove-json-field required-field)]))))
 

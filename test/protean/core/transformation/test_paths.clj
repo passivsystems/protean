@@ -1,11 +1,12 @@
 (ns protean.core.transformation.test-paths
   (:require [clojure.pprint]
             [clojure.java.io :refer [file]]
+            [protean.config :as conf]
             [protean.api.codex.reader :as r]
             [protean.core.transformation.paths :refer [paths]]
             [expectations :refer :all]))
 
-(defn read-edn [f] (r/read-codex (file (str "test-data/" f))))
+(defn read-edn [f] (r/read-codex (conf/protean-home) (file (str "test-data/" f))))
 
 ;; =============================================================================
 ;; Testing computation of endpoints from codex

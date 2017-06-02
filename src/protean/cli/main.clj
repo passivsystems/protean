@@ -112,14 +112,14 @@
   ; TODO fail if b has no commands?
   (let [b (sane-corpus (c/clj body))]
     (println (aa/bold-green "Exploring quadrant..."))
-    (let [codices (r/read-codex (io/file file))]
+    (let [codices (r/read-codex (conf/protean-home) (io/file file))]
       (b/visit b codices)
       (println (aa/bold-green "...finished exploring quadrant")))))
 
 (defn- doc
   "If no corpus is passed in to a visit doc command - guess sensible defaults"
   [{:keys [file]}]
-  (let [codices (r/read-codex (io/file file))
+  (let [codices (r/read-codex (conf/protean-home) (io/file file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
         b (c/js {:locs [svc] :commands [:doc]})
         options {:host nil :port nil :file file :body b}
@@ -130,11 +130,10 @@
     (println "Please see your docs, as demonstrated below.")
     (println (aa/bold-green (str cm " " abs-site-dir)) "\n")))
 
-
 (defn- integration-test
   "If no corpus is passed in to a visit test command - guess sensible defaults"
   [{:keys [host port file body]}]
-  (let [codices (r/read-codex (io/file file))
+  (let [codices (r/read-codex (conf/protean-home) (io/file file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
         b (c/js (merge
             {:locs [svc] :commands [:test] :config {:test-level 1}}

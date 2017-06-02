@@ -5,7 +5,7 @@
             [io.aviso.ansi :as aa]
             [me.rossputin.diskops :as dsk]
             [silk.cli.api :as silk]
-            [protean.config :as cfg]
+            [protean.config :as conf]
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
@@ -30,13 +30,13 @@
   (let [created (.mkdirs (file directory))]
     (when-not created (throw (Error. "Setup failed - permissions problem ?")))))
 
-(def silk-staging-dir (str (cfg/target-dir) "/silk_staging"))
+(def silk-staging-dir (str (conf/target-dir) "/silk_staging"))
 
 (def data-dir (str silk-staging-dir "/data/protean-api"))
 
 (defn- prep-staging [path tree]
   (let [codex-dir (d/get-in-tree tree [:codex-dir])
-        locations (reverse (d/get-path-locations path codex-dir))]
+        locations (reverse (d/get-path-locations (conf/protean-home) path codex-dir))]
     (if (empty? locations)
       (throw (Exception.
         (str "Could not find relative path: '" path "', looked in " locations))))
@@ -50,7 +50,7 @@
   (.mkdirs (file (.getParent (.getAbsoluteFile (File. target)))))
   (spit target content))
 
-(defn slurp-file [p tree] (slurp (d/to-path p tree)))
+(defn slurp-file [p tree] (slurp (d/to-path (conf/protean-home) p tree)))
 
 (defn fname [p]
   (subs p (+ (.lastIndexOf p (dsk/fs)) 1) (.lastIndexOf p ".")))
@@ -62,7 +62,7 @@
 (defmethod pb/config :doc [_ corpus]
   (hlg "building probes")
   (clean-dir silk-staging-dir)
-  (clean-dir (str (cfg/target-dir) "/site"))
+  (clean-dir (str (conf/target-dir) "/site"))
   (.mkdirs (file data-dir)))
 
 ;; =============================================================================
@@ -113,7 +113,7 @@
                 :body (concat
                         (map val (d/get-in-tree tree [:req :body]))
                         (->> (d/get-in-tree tree [:req :body-examples])
-                             (map #(d/to-path % tree))
+                             (map #(d/to-path (conf/protean-home) % tree))
                              (map #(slurp %))))}
         raw (for [[k v] inputs]
               (for [ph (seq (map second (ph/holder? v)))] {ph k}))
@@ -188,4 +188,4 @@
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
   (silk/spin-or-reload false silk-staging-dir false false)
-  (dsk/copy-recursive (str silk-staging-dir "/site") (cfg/target-dir)))
+  (dsk/copy-recursive (str silk-staging-dir "/site") (conf/target-dir)))

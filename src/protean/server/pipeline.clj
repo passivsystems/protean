@@ -5,7 +5,7 @@
             [clojure.java.io :refer [delete-file]]
             [ring.util.codec :as cod]
             [protean.core :as api-core]
-            [protean.config :as c]
+            [protean.config :as conf]
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
@@ -51,7 +51,7 @@
   (let [rbody (slurp req-body)] (if (not-empty rbody) (co/clj rbody) nil)))
 
 (defn- prepare-analysis [svc host]
-  (let [port (c/sim-port)
+  (let [port (conf/sim-port)
         to-map (fn [path]
             (let [endpoint (key path)
                   methods (keys (val path))]
@@ -74,7 +74,7 @@
 
 (defn api [req]
   (log-request req)
-  (api-core/sim-rsp req @paths @sims))
+  (api-core/sim-rsp (conf/protean-home) req @paths @sims))
 
 
 ;; =============================================================================
@@ -104,7 +104,7 @@
 (def del-service-handled (handler del-service handle-error))
 
 (defn load-codex [f]
-  (let [codex (r/read-codex f)
+  (let [codex (r/read-codex (conf/protean-home) f)
         locs (d/custom-keys codex)
         tpaths (p/paths codex locs)]
     (doseq [path tpaths]

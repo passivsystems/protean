@@ -4,7 +4,7 @@
   (:require [clojure.string :as s]
             [clojure.set :as st]
             [ring.util.codec :as e]
-            [protean.config :as cnf]
+            [protean.config :as conf]
             [protean.api.codex.placeholder :as ph]
             [protean.api.codex.document :as d]
             [protean.api.transformation.coerce :as c]
@@ -48,10 +48,10 @@
     (str payload query)))
 
 (defn curly-flatten-> [payload]
-  (if (cnf/curl-flatten?) (s/trim (s/replace payload #"\s+" " ")) payload))
+  (if (conf/curl-flatten?) (s/trim (s/replace payload #"\s+" " ")) payload))
 
 (defn curly-request-> [request]
-  (->> (str "curl " (cnf/curl-option))
+  (->> (str "curl " (conf/curl-option))
        (curly-method-> request)
        (curly-headers-> request)
        (curly-form-> request)

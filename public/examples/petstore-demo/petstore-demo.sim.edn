@@ -1,8 +1,7 @@
 (ns protean.petstore.demo
   (:require [clojure.java.io :refer [file]]
             [me.rossputin.diskops :as dk]
-            [protean.api.transformation.sim :refer :all]
-            [protean.config :refer :all]))
+            [protean.api.transformation.sim :refer :all]))
 
 ;; Here we demonstrate much of what is possible with Protean, often resulting in errors !
 
