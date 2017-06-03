@@ -61,12 +61,8 @@
                  :tree (get-in @paths [svc endpoint method])})))]
     (mapcat to-map (get-in @paths [svc]))))
 
-(defn- seed-request [{:keys [tree method uri]}]
-  (let [template (req/prepare-request method uri tree :include-optional true)]
-    ; Note, placeholder generation will be different each time we request them
-    ; also may not be url friendly (though we will encode them)
-    (ph/swap template tree {})))
-
+(defn- prep-request [{:keys [tree method uri]}]
+  (req/prepare-request method uri tree :include-optional true))
 
 ;; =============================================================================
 ;; Service pipelines
@@ -91,7 +87,7 @@
 
 (defn service-analysis [svc host]
   (let [analysed (prepare-analysis svc host)]
-    (assoc json :body (co/js (map #(seed-request %) analysed)))))
+    (assoc json :body (co/js (map #(prep-request %) analysed)))))
 
 (defn service-usage [svc host]
   (let [analysed (prepare-analysis svc host)]
