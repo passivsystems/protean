@@ -8,9 +8,9 @@
 
   "protean-utils" {
     "echo" {
-      :post {:doc "An echo endpoint for testing this SIM"}
-      :put {:doc "An echo endpoint for testing this SIM"}
-      :patch {:doc "An echo endpoint for testing this SIM"}
+      :post  {:doc "An echo endpoint" :rsp {:201 {} :400 {}}}
+      :put   {:doc "An echo endpoint" :rsp {:204 {} :400 {}}}
+      :patch {:doc "An echo endpoint" :rsp {:204 {} :400 {}}}
     }
   }
 }

@@ -9,8 +9,7 @@
 ;; Utility Functions
 ;; =============================================================================
 
-(defn util-rsp [] (do (success) (l/info ">>>> echo req : " *request*)))
-
+(defn echo [request] (l/info ">>>> echo req : " request))
 
 ;; =============================================================================
 ;; Utility Endpoints
@@ -19,11 +18,9 @@
 {
   "protean-utils" {
     "echo" {
-      :put [#(util-rsp)]
-
-      :post [#(util-rsp)]
-
-      :patch [#(util-rsp)]
+      :post  (fn [request responses] (echo request) (first (filter #(= (:status %) 201) responses)))
+      :put   (fn [request responses] (echo request) (first (filter #(= (:status %) 204) responses)))
+      :patch (fn [request responses] (echo request) (first (filter #(= (:status %) 204) responses)))
     }
   }
 }
