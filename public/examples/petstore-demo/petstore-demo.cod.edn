@@ -102,6 +102,7 @@
         :rsp {
           :204 {}
           :404 {:doc "Invalid ID supplied"}
+          :405 {:doc "Validation exception"}
         }
       }
 
@@ -110,6 +111,7 @@
         :rsp {
           :204 {}
           :404 {:doc "Invalid ID supplied"}
+          :405 {:doc "Validation exception"}
         }
       }
     }
