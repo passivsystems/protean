@@ -27,7 +27,7 @@
                  [clj-time "0.13.0"]
                  [com.cemerick/pomegranate "0.3.1"]
                  [json-path "0.3.0"]
-                 [protean-api "0.12.0-pre.1"]]
+                 [protean-api "0.12.0-alpha.1"]]
   :plugins [[lein-ring "0.12.0"]
             [lein-expectations "0.0.8"]]
   :aot :all
