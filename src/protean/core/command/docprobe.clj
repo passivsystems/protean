@@ -91,19 +91,24 @@
      :title (fname p)
      :value (slurp-file p tree)}))
 
+(defn- name-pun [k] (if k (name k) ""))
+
+; TODO: this conflates things - separate
 (defn- doc-status-codes [id tree method statuses]
   (for [[rsp-code v] statuses]
-    (let [schema (d/get-in-tree tree [:rsp rsp-code :body-schema])
-          examples (doc-body-examples id tree (:body-examples v))]
+    (let [schema (d/get-in-tree tree [:rsp :200 :body-schema])
+          examples (doc-body-examples id tree (:body-examples v))
+          success-body (re-matches #"[2]\d\d" (name-pun (ffirst statuses)))
+          add-schema (and success-body schema)]
       {:code (name rsp-code)
        :doc-md (:doc v (rsp-code h/status-docs))
        :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
        :rsp-first-body-example (first examples)
        :rsp-body-examples (drop 1 examples)
-       :rsp-body-schema-id (when schema (str "schema-" (name rsp-code)))
-       :#rsp-body-schema-id (when schema (str "#schema-" (name rsp-code)))
-       :rsp-body-schema-title (when schema (fname schema))
-       :rsp-body-schema (when schema (slurp-file schema tree))})))
+       :rsp-body-schema-id (when add-schema (str "schema-" (name rsp-code) "-" id))
+       :#rsp-body-schema-id (when add-schema (str "#schema-" (name rsp-code) "-" id))
+       :rsp-body-schema-title (when add-schema (fname schema))
+       :rsp-body-schema (when add-schema (slurp-file schema tree))})))
 
 (defn- input-params [tree uri]
   (let [inputs {:path (list uri)
