@@ -91,30 +91,21 @@
     (cond loc (do (e/swap! location assoc name (nth loc 2)) (look name))
           :else '(you cannot go that way -))))
 
+(defn s-qp [request id] (symbol (query-param request id)))
+
+(defn handle
+  [request result success-status error-status]
+  (cond
+    (and result (= success-status 204)) (respond request success-status)
+    result                              (respond request success-status res)
+    :else                               (respond request error-status)))
+
 {
   "textad-3" {
-    "register" {
-      :put #(if (register (symbol (query-param % "name")))
-             (respond % 204)
-             (respond % 409))
-    }
-    "look" {
-      :get #(if-let [lk (look (symbol (query-param % "name")))]
-             (respond % 200 lk)
-             (respond % 404))
-    }
-    "go" {
-      :put #(respond % 200 (go (symbol (query-param % "name"))
-                               (symbol (query-param % "direction"))))
-    }
-    "inventory" {
-      :get #(if-let [inv (inventory (symbol (query-param % "name")))]
-             (respond % 200 inv)
-             (respond % 404))
-    }
-    "pickup" {
-      :put #(respond % 200 (pickup (symbol (query-param % "name"))
-                                   (symbol (query-param % "item"))))
-    }
+    "register" {:put #(handle % (register (s-qp % "name")) 204 409)}
+    "look" {:get #(handle % (look (s-qp % "name")) 200 404)}
+    "go" {:put #(handle % (go (s-qp % "name") (s-qp % "direction")) 200 404)}
+    "inventory" {:get #(handle % (inventory (s-qp % "name")) 200 404)}
+    "pickup" {:put #(handle % (pickup (s-qp % "name") (s-qp % "item")) 200 404)}
   }
 }

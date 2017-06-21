@@ -115,42 +115,23 @@
         (fmt '(you got nothing you mug.. who is the mug now?)))
     :else (fmt '(you cannot mug like that -)))))
 
+(defn s-qp [request id] (symbol (query-param request id)))
+
+(defn handle
+  [request result success-status error-status]
+  (cond
+    (and result (= success-status 204)) (respond request success-status)
+    result                              (respond request success-status res)
+    :else                               (respond request error-status)))
+
 {
   "textad-4" {
-    "register" {
-      :put #(if (register (symbol (query-param % "name")))
-             (respond % 204)
-             (respond % 409))
-    }
-    "look" {
-      :get #(if-let [res (look (symbol (query-param % "name")))]
-             (respond % 200 res)
-             (respond % 404))
-    }
-    "go" {
-      :put #(respond % 200 (go (symbol (query-param % "name"))
-                               (symbol (query-param % "direction"))))
-    }
-    "inventory" {
-      :get #(if-let [res (inventory (symbol (query-param % "name")))]
-             (respond % 200 res)
-             (respond % 404))
-    }
-    "pickup" {
-      :put #(respond % 200 (pickup (symbol (query-param % "name"))
-                                   (symbol (query-param % "item"))))
-    }
-    "slap" {
-      :put #(if-let [res (slap (symbol (query-param % "name"))
-                               (symbol (query-param % "target")))]
-             (respond % 200 res)
-             (respond % 404))
-    }
-    "mug" {
-      :put #(if-let [res (mug (symbol (query-param % "name"))
-                              (symbol (query-param % "target")))]
-             (respond % 200 res)
-             (respond % 404))
-    }
+    "register" {:put #(handle % (register (s-qp % "name")) 204 409)}
+    "look" {:get #(handle % (look (s-qp % "name")) 200 404)}
+    "go" {:put #(handle % (go (s-qp % "name") (s-qp % "direction")) 200 404)}
+    "inventory" {:get #(handle % (inventory (s-qp % "name")) 200 404)}
+    "pickup" {:put #(handle % (pickup (s-qp % "name") (s-qp % "item")) 200 404)}
+    "slap" {:put #(handle % (slap (s-qp % "name") (s-qp % "item")) 200 404)}
+    "mug" {:put #(handle % (mug (s-qp % "name") (s-qp % "item")) 200 404)}
   }
 }
