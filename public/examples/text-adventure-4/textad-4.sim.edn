@@ -3,9 +3,6 @@
             [clojure.string :refer [join]]
             [alandipert.enduro :as e]))
 
-(dependencies '[[protean-simlib "0.12.0"]])
-(require '[protean.simlib :as sl])
-
 (defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
 (def world (e/file-atom
