@@ -1,9 +1,11 @@
-(refer 'protean.api.transformation.sim)
+(ns protean.petstore.demo
+  (:require [protean.api.transformation.document :as doc]
+            [protean.api.transformation.sim :refer :all]))
 
 {
   "tutorial-5" {
     "play/${stateId}" {
-      :get [#(error)]
+      :get #(rand-nth (doc/error-responses %))
     }
   }
 }

@@ -9,7 +9,7 @@
 ;; Utility Functions
 ;; =============================================================================
 
-(defn echo [request] (l/info ">>>> echo req : " request))
+(defn echo [req] (l/info ">>>> echo request: " req))
 
 ;; =============================================================================
 ;; Utility Endpoints
@@ -18,9 +18,9 @@
 {
   "protean-utils" {
     "echo" {
-      :post  (fn [request responses] (echo request) (first (filter #(= (:status %) 201) responses)))
-      :put   (fn [request responses] (echo request) (first (filter #(= (:status %) 204) responses)))
-      :patch (fn [request responses] (echo request) (first (filter #(= (:status %) 204) responses)))
+      :post (fn [req] (echo req) (respond req 201))
+      :put (fn [req] (echo req) (respond req 204))
+      :patch (fn [req] (echo req) (respond req 204))
     }
   }
 }
