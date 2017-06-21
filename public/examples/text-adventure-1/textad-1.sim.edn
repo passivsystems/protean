@@ -3,9 +3,6 @@
             [clojure.string :refer [join]]
             [alandipert.enduro :as e]))
 
-(dependencies '[[protean-simlib "0.12.0"]])
-(require '[protean.simlib :as sl])
-
 (defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
 (def world (e/file-atom
@@ -44,11 +41,9 @@
     (cond loc (do (e/reset! location (nth loc 2)) (look))
           :else '(you cannot go that way -))))
 
-(defn go-rest [] (let [dir (symbol (query-param "direction"))] (sl/jsn 200 (go dir))))
-
 {
   "textad-1" {
-    "look" {:get [#(sl/jsn 200 (look))]}
-    "go" {:put [#(go-rest)]}
+    "look" {:get #(respond % 200 (look))}
+    "go" {:put #(respond % 200 (go (symbol (query-param % "direction"))))}
   }
 }

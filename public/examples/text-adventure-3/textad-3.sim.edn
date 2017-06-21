@@ -3,9 +3,6 @@
             [clojure.string :refer [join]]
             [alandipert.enduro :as e]))
 
-(dependencies '[[protean-simlib "0.12.0"]])
-(require '[protean.simlib :as sl])
-
 (defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
 (def world (e/file-atom
@@ -69,11 +66,12 @@
     (remove #(= % name) (filter (comp #{loc} locs) (keys locs))))))
 
 (defn look [name]
-  (let [loc (name @location)]
-    (fmt (concat (describe-location loc @world)
-                 (describe-paths loc @world)
-                 (describe-entities name loc @location)
-                 (describe-floor loc @items @item-locations)))))
+  (when (contains? @entities name)
+    (let [loc (name @location)]
+      (fmt (concat (describe-location loc @world)
+                   (describe-paths loc @world)
+                   (describe-entities name loc @location)
+                   (describe-floor loc @items @item-locations))))))
 
 (defn pickup [name item]
   (cond (is-at? item (name @location) @item-locations)
@@ -83,7 +81,8 @@
     :else (fmt '(you cannot get that.))))
 
 (defn inventory [name]
-  (fmt (filter (fn [x] (is-at? x (symbol name) @item-locations)) @items)))
+  (when (contains? @entities name)
+    (fmt (filter (fn [x] (is-at? x (symbol name) @item-locations)) @items))))
 
 (defn have? [item] (some #{item} (inventory)))
 
@@ -92,26 +91,30 @@
     (cond loc (do (e/swap! location assoc name (nth loc 2)) (look name))
           :else '(you cannot go that way -))))
 
-(defn register-rest []
-  (let [nm (symbol (query-param "name"))] (if (register nm) {:status 204} {:status 409})))
-
-(defn look-rest []
-  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (sl/jsn 200 (look nm)) {:status 404})))
-
-(defn go-rest [] (sl/jsn 200 (go (symbol (query-param "name")) (symbol (query-param "direction")))))
-
-(defn pickup-rest [] (sl/jsn 200 (pickup (symbol (query-param "name")) (symbol (query-param "item")))))
-
-(defn inventory-rest []
-  (let [nm (symbol (get-in *request* [:query-params "name"]))]
-  (if (contains? @entities nm) (sl/jsn 200 (inventory nm)) {:status 404})))
-
 {
   "textad-3" {
-    "register" {:put [#(register-rest)]}
-    "look" {:get [#(look-rest)]}
-    "go" {:put [#(go-rest)]}
-    "inventory" {:get [#(inventory-rest)]}
-    "pickup" {:put [#(pickup-rest)]}
+    "register" {
+      :put #(if (register (symbol (query-param % "name")))
+             (respond % 204)
+             (respond % 409))
+    }
+    "look" {
+      :get #(if-let [lk (look (symbol (query-param % "name")))]
+             (respond % 200 lk)
+             (respond % 404))
+    }
+    "go" {
+      :put #(respond % 200 (go (symbol (query-param % "name"))
+                               (symbol (query-param % "direction"))))
+    }
+    "inventory" {
+      :get #(if-let [inv (inventory (symbol (query-param % "name")))]
+             (respond % 200 inv)
+             (respond % 404))
+    }
+    "pickup" {
+      :put #(respond % 200 (pickup (symbol (query-param % "name"))
+                                   (symbol (query-param % "item"))))
+    }
   }
 }
