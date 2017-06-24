@@ -6,7 +6,6 @@
     [protean.api.protocol.http :as h]
     [protean.api.protocol.protean :as pp]
     [protean.api.transformation.coerce :as co]
-    [protean.core.transformation.paths :as p]
     [protean.api.generation.json :as gen-jsn]
     [cheshire.core :as cc]))
 

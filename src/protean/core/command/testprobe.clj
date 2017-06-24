@@ -1,8 +1,6 @@
 (ns protean.core.command.testprobe
   "Building probes and handling persisting/presenting raw results."
   (:require [clojure.string :as s]
-            [clojure.java.io :refer [file]]
-            [clojure.set :as st]
             [io.aviso.ansi :as aa]
             [protean.config :as conf]
             [protean.api.codex.document :as d]
@@ -11,7 +9,6 @@
             [protean.api.protocol.protean :as pp]
             [protean.api.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
-            [protean.core.transformation.curly :as c]
             [protean.api.transformation.validation :as v]
             [protean.core.transformation.request :as r]
             [protean.core.command.test :as t]

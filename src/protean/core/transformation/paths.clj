@@ -19,7 +19,6 @@
     }
   "
   (:require [clojure.string :as s]
-            [clojure.pprint]
             [protean.api.codex.document :as d]
             [protean.api.protocol.http :as h]))
 

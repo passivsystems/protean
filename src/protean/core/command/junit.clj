@@ -1,9 +1,7 @@
 (ns protean.core.command.junit
   "Outputs to junit format."
   (:require [clojure.data.xml :as x]
-            [clojure.string :as s]
             [clojure.java.io :refer [file]]
-            [clojure.pprint :as pp]
             [protean.api.transformation.coerce :as co]
             [protean.config :as conf])
   (:import java.io.File java.util.Calendar java.text.SimpleDateFormat))

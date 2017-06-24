@@ -1,23 +1,16 @@
 (ns protean.server.pipeline
-  (:require [clojure.edn :as edn]
-            [clojure.core.incubator :as ib]
+  (:require [clojure.core.incubator :as ib]
             [clojure.main :as m]
-            [clojure.java.io :refer [delete-file]]
-            [ring.util.codec :as cod]
             [protean.core :as api-core]
             [protean.config :as conf]
             [protean.api.codex.document :as d]
-            [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
             [protean.api.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
             [protean.api.codex.reader :as r]
             [protean.core.transformation.paths :as p]
-            [protean.core.transformation.request :as req]
-            [clojure.pprint])
-  (:use [clojure.string :only [join split upper-case]]
-        [clojure.set :only [intersection]]
-        [clojure.java.io :refer [file]]
+            [protean.core.transformation.request :as req])
+  (:use [clojure.java.io :refer [file]]
         [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.IOException))
 

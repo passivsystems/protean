@@ -2,14 +2,9 @@
   "Uses output from the analysis transformations to generate a curl
    command structure."
   (:require [clojure.string :as s]
-            [clojure.set :as st]
             [ring.util.codec :as e]
             [protean.config :as conf]
             [protean.api.codex.placeholder :as ph]
-            [protean.api.codex.document :as d]
-            [protean.api.transformation.coerce :as c]
-            [protean.api.protocol.http :as h]
-            [protean.api.protocol.protean :as p]
             [protean.core.transformation.request :as r]))
 
 ;; =============================================================================

@@ -9,12 +9,10 @@
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
-            [protean.api.transformation.coerce :as co]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
-            [protean.core.command.test :as t]
             [protean.core.command.probe :as pb])
-  (:import java.io.File java.net.URI java.util.UUID))
+  (:import java.net.URI))
 
 ;; =============================================================================
 ;; Helper functions
@@ -47,7 +45,7 @@
 (defn spit-to
   "Will make directory if does not exist before spitting to file."
   [target content]
-  (.mkdirs (file (.getParent (.getAbsoluteFile (File. target)))))
+  (.mkdirs (file (.getParent (.getAbsoluteFile (file target)))))
   (spit target content))
 
 (defn slurp-file [p tree] (slurp (d/to-path (conf/protean-home) p tree)))

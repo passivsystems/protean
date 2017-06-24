@@ -1,7 +1,6 @@
 (ns protean.cli.main
   "A basic command line interface for Protean."
   (:require [clojure.string :as s]
-            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
@@ -10,7 +9,6 @@
             [protean.api.transformation.coerce :as c]
             [protean.core.command.bridge :as b]
             [protean.api.codex.reader :as r]
-            [protean.api.codex.document :as d]
             [me.rossputin.diskops :as dsk]
             [protean.server.main :as ps]
             [protean.cli.simadmin :as admin])
