@@ -40,3 +40,7 @@
 
 (defn curl-flatten? []
   (to-bool (or (env :protean-curl-flatten) "on")))
+
+(defn admin-server? [] (to-bool (or (env :protean-admin-server) "false")))
+
+(defn sim-server? [] (to-bool (or (env :protean-sim-server) "false")))

@@ -87,16 +87,22 @@
     (handler (update-in request [:uri] s/replace #"(?<=.)/$" ""))))
 
 (defn- server [sim-port sim-max-threads admin-port admin-max-threads]
-  (jetty/run-jetty
-    (-> admin-routes mp/wrap-multipart-params)
-    { :port (co/int admin-port)
-      :join? false
-      :max-threads (co/int admin-max-threads)})
-  (jetty/run-jetty
-    (-> api-routes handler/api mp/wrap-multipart-params wrap-ignore-trailing-slash)
-    { :port (co/int sim-port)
-      :join? false
-      :max-threads (co/int sim-max-threads)}))
+  (when-not (conf/sim-server?)
+    (jetty/run-jetty
+      (-> admin-routes mp/wrap-multipart-params)
+      { :port (co/int admin-port)
+        :join? false
+        :max-threads (co/int admin-max-threads)})
+    (info (str "Protean Admin Server has started \n"
+               "Admin Port: " admin-port " Max threads: " admin-max-threads)))
+  (when-not (conf/admin-server?)
+    (jetty/run-jetty
+      (-> api-routes handler/api mp/wrap-multipart-params wrap-ignore-trailing-slash)
+      { :port (co/int sim-port)
+        :join? false
+        :max-threads (co/int sim-max-threads)})
+    (info (str "Protean Sim Server has started \n"
+               "Sim Port: " sim-port " Max threads: " sim-max-threads))))
 
 
 ;; =============================================================================
@@ -122,9 +128,6 @@
       (info (str "Codices loaded : " (build-services c-dir)))
       (info (str "Sim extensions loaded : " (build-sims c-dir)))
       (info (str "Public static resources can be served from : " (conf/public-dir)))
-      (server sim-port sim-max-threads admin-port admin-max-threads)
-      (info (str "Protean has started \n"
-                 "Sim Port:   " sim-port   " Max threads: " sim-max-threads "\n"
-                 "Admin Port: " admin-port " Max threads: " admin-max-threads)))))
+      (server sim-port sim-max-threads admin-port admin-max-threads))))
 
 (defn -main [& args] (start nil))
