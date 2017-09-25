@@ -5,7 +5,7 @@
   margin: 10mm 5mm 10mm 5mm;
 }
 
-.navbar {
+.navbar, .btn-clipboard {
   display: none !important;
 }
 

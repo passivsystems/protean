@@ -8,7 +8,7 @@
     <title>API Documentation</title>
     <link rel="stylesheet" type="text/css" href="resource/css/bootstrap.min.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/pygments-manni.css"></link>
-    <link rel="stylesheet" type="text/css" href="resource/css/bootstrap-prettify.css"></link>
+    <link rel="stylesheet" type="text/css" href="resource/css/highlightjs-github.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/tipuesearch.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/tipuedrop.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/style.css"></link>
@@ -17,10 +17,11 @@
     <script type="text/javascript" src="resource/js/tipuesearch_content.js"></script>
     <script type="text/javascript" src="resource/js/tipuesearch.min.js"></script>
     <script type="text/javascript" src="resource/js/tipuedrop.min.js"></script>
+    <script type="text/javascript" src="resource/js/clipboard.min.js"></script>
+    <script type="text/javascript" src="resource/js/highlight.min.js"></script>
     <script type="text/javascript" src="resource/js/bootstrap.min.js"></script>
-    <script src="resource/js/prettify/prettify.js"></script>
   </head>
-  <body onload="prettyPrint();">
+  <body>
     <div data-sw-component="header">Placeholder for header</div>
     <div class="container-fluid">
       <div data-sw-view="">Placeholder for view</div>
@@ -28,8 +29,32 @@
       <div data-sw-component="footer">Placeholder for footer</div>
     </div>
     <script>
+      hljs.initHighlightingOnLoad();
+
       $(document).ready(function(){
         $('[data-toggle="tooltip"]').tooltip();
+        $('[data-toggle="popover"]').popover();
+      });
+
+      [].forEach.call(document.querySelectorAll('.snippet'), function(snippet) {
+        snippet.insertAdjacentHTML(
+          'beforebegin',
+          '<button class="btn btn-default btn-sm btn-clipboard" data-clipboard-snippet data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="Copied!" alt="Copy">' +
+            '<span class="glyphicon glyphicon-copy"></span>' +
+          '</button>'
+        );
+      });
+
+      var clipboardSnippets = new Clipboard('[data-clipboard-snippet]', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboardSnippets.on('success', function(e) {
+        e.clearSelection();
+      });
+      clipboardSnippets.on('error', function(e) {
+        alert("An error occurred while copying to clipboard.");
       });
     </script>
   </body>
