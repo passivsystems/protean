@@ -5,6 +5,14 @@
  * sections of docs content.
  */
 
+body {
+  margin: 70px auto 0px auto;
+}
+
+.jumbotron {
+  margin-bottom: 10px;
+}
+
 /* By default it's not affixed in mobile views, so undo that */
 .bs-sidebar.affix {
   position: static;
@@ -84,10 +92,6 @@ ol.nav, ul.nav {
 
 .nav ul, ol {
   margin-bottom: 0px !important;
-}
-
-ul, ol {
-  margin-bottom: 10px !important;
 }
 
 .table-custom {

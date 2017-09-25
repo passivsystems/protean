@@ -1,0 +1,39 @@
+@import url("bootstrap.min.css");
+
+@page {
+  size: A4;
+  margin: 10mm 5mm 10mm 5mm;
+}
+
+.navbar {
+  display: none !important;
+}
+
+body, section, article, .jumbotron, .bs-sidebar, ul, ol {
+  margin: 0mm !important;
+  padding: 0mm !important;
+}
+
+section {
+  page-break-before: always;
+}
+
+h1, .page-header {
+  margin: 0mm !important;
+  padding: 1mm 0mm 1mm 0mm !important;
+  border-bottom: 0.1mm solid #eee;
+}
+
+.label {
+  border: none;
+}
+
+.jumbotron p {
+  margin-top: 5mm;
+}
+
+/* Show body examples */
+div, span, p, pre {
+  max-height: none !important;;
+  overflow: visible !important;
+}
