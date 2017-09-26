@@ -84,12 +84,13 @@
 (defn- doc-hdrs [hdrs]
   (for [[k v] hdrs] {:title k :value v}))
 
-(defn- doc-body-examples [id tree paths]
-  (for [p paths]
-    {:id (str id "-" (fname p))
-     :#id (str "#" id "-" (fname p))
-     :title (fname p)
-     :value (slurp-file p tree)}))
+(defn- doc-body-examples [id type tree paths]
+  (defn handle [idx itm]
+    {:id (str id "-" type "-" idx)
+     :#id (str "#" id "-" type "-" idx)
+     :title (fname itm)
+     :value (slurp-file itm tree)})
+  (map-indexed handle paths))
 
 (defn- name-pun [k] (if k (name k) ""))
 
@@ -97,7 +98,7 @@
 (defn- doc-status-codes [id tree method statuses]
   (for [[rsp-code v] statuses]
     (let [schema (d/get-in-tree tree [:rsp :200 :body-schema])
-          examples (doc-body-examples id tree (:body-examples v))
+          examples (doc-body-examples id "rsp" tree (:body-examples v))
           success-body (re-matches #"[2]\d\d" (name-pun (ffirst statuses)))
           add-schema (and success-body schema)]
       {:code (name rsp-code)
@@ -148,11 +149,12 @@
    :engage (fn []
     (let [{:keys [svc method tree path codex-order] :as e} entry
           uri (p/uri "host" 1234 svc path)
-          safe-uri (fn [uri] (-> uri
-                               (ph/replace-all-with #(str "_" % "_"))
-                               (stg/replace #";" "")))
-          uri-path (-> (URI. (safe-uri uri)) (.getPath))
-          id (str (name method) (stg/replace uri-path #"/" "-"))
+          id (str (name method) (-> uri
+                                    (ph/replace-all-with #(str "_" % "_"))
+                                    (stg/replace #";" "")
+                                    (URI.)
+                                    (.getPath)
+                                    (stg/replace #"/" "-")))
           main (filter #(get-in % [:title]) tree)
           schema (d/get-in-tree tree [:req :body-schema])
           site {:site-name (d/get-in-tree main [:title])
@@ -170,7 +172,7 @@
                 :req-body-schema (when schema (slurp-file schema tree))
                 :req-params (doc-params (input-params tree uri))
                 :req-headers (doc-hdrs (d/req-hdrs tree))
-                :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
+                :req-body-examples (doc-body-examples id "req" tree (d/get-in-tree tree [:req :body-examples]))
                 :responses (concat
                             (map #(assoc % :class "success") (doc-status-codes id tree method (d/success-status tree)))
                             (map #(assoc % :class "danger") (doc-status-codes id tree method (d/error-status tree))))}]
