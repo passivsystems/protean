@@ -97,7 +97,7 @@
   [request result success-status error-status]
   (cond
     (and result (= success-status 204)) (respond request success-status)
-    result                              (respond request success-status res)
+    result                              (respond request success-status result)
     :else                               (respond request error-status)))
 
 {
