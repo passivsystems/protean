@@ -2,7 +2,6 @@
   (:require [clj-http.client :as client]
             [taoensso.timbre :as log]
             [protean.api.transformation.coerce :as coerce]
-            [protean.api.transformation.document :as doc]
             [protean.api.transformation.sim :refer :all]))
 
 ;; Here we demonstrate much of what is possible with Protean, often resulting in errors !
@@ -28,12 +27,12 @@
                 (respond % 200))
 
       ; select a random codex error response
-      :delete #(rand-nth (doc/error-responses %))
+      :delete #(rand-nth (error-responses %))
 
       ; 50% chance of a random codex error response
       :patch #(if (< (rand) 0.5)
-               (first (doc/success-responses %))
-               (rand-nth (doc/error-responses %)))
+               (first (success-responses %))
+               (rand-nth (error-responses %)))
 
       ;; Sends synchronous and asynchronous requests to another API and logs the response
       :post #(if-let [errors (validate %)]
@@ -41,16 +40,16 @@
               (let [url "http://localhost:3000/protean-utils/echo"
                     fps (:form-params %)
                     handle (fn [res] (log/info [(str "Response from " url) res]))]
-                (handle (client/post url {:form-params fps :content-type :json}))
-                (in 3000 (handle (client/post url {:form-params fps :content-type :json})))
+                (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false}))
+                (in 3000 (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false})))
                 (respond % 200 (slurp (find-path % "test-data/content/doc/responses/simple/200-ref.json")))))
     }
 
     "api/uploadImage" {
       ; alternative to error with probability - every nth access gives error based on server state
       :post #(if (= 0 (mod (swap! counter inc) 3))
-              (rand-nth (doc/error-responses %))
-              (first (doc/success-responses %)))
+              (rand-nth (error-responses %))
+              (first (success-responses %)))
     }
   }
 }

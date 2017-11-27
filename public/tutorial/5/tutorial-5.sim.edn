@@ -1,11 +1,10 @@
 (ns protean.petstore.demo
-  (:require [protean.api.transformation.document :as doc]
-            [protean.api.transformation.sim :refer :all]))
+  (:require [protean.api.transformation.sim :refer :all]))
 
 {
   "tutorial-5" {
     "play/${stateId}" {
-      :get #(rand-nth (doc/error-responses %))
+      :get #(rand-nth (error-responses %))
     }
   }
 }

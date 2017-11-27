@@ -3,8 +3,8 @@
 {
   "tutorial-6" {
     "play/${stateId}" {
-      :get (if-let [rsp (dk/find-file % (str "public/tutorial/6" (path-param "stateId") ".json"))]
-             (respond % 200 rsp)
+      :get #(if-let [f (find-path % (str "public/tutorial/6" (path-param "stateId") ".json"))]
+             (respond % 200 (slurp f))
              (respond % 404))
     }
   }
