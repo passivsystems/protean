@@ -119,7 +119,7 @@
   [{:keys [file]}]
   (let [codices (r/read-codex (conf/protean-home) (io/file file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js {:locs [svc] :commands [:doc]})
+        b (c/jsn {:locs [svc] :commands [:doc]})
         options {:host nil :port nil :file file :body b}
         cm (if (.contains (conf/os) "Mac") "open" "firefox")
         site-dir (str (conf/target-dir) "/site/index.html")
@@ -133,7 +133,7 @@
   [{:keys [host port file body]}]
   (let [codices (r/read-codex (conf/protean-home) (io/file file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js (merge
+        b (c/jsn (merge
             {:locs [svc] :commands [:test] :config {:test-level 1}}
             (c/clj body true)))
         options {:host host :port port :file file :body b}]

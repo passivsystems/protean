@@ -16,7 +16,7 @@
 
       ;; Change default validation error response to 405 and adds errors to body
       :post #(if-let [errors (validate %)]
-              (respond % 405 (coerce/pretty-js errors))
+              (respond % 405 errors)
               (respond % 201))
     }
 
@@ -36,7 +36,7 @@
 
       ;; Sends synchronous and asynchronous requests to another API and logs the response
       :post #(if-let [errors (validate %)]
-              (respond % 405 (coerce/pretty-js errors))
+              (respond % 405 errors)
               (let [url "http://localhost:3000/protean-utils/echo"
                     fps (:form-params %)
                     handle (fn [res] (log/info [(str "Response from " url) res]))]

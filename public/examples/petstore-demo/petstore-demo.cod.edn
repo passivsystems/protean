@@ -60,7 +60,7 @@
         }
         :rsp {
           :201 {:headers {"Location" "/pet/${petId}"}}
-          :405 {:doc "Validation exception"}
+          :405 {:doc "Validation exception" :headers {"Content-Type" "application/json; charset=utf-8" }}
         }
       }
     }

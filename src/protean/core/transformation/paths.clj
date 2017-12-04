@@ -68,7 +68,7 @@
   "Get all service paths or specified combinations of service/path | service."
   [codices locs]
   (let [res (locs-range codices locs)]
-    (if (empty? res) (println "WARNING locs" locs "did not resolve to any path"))
+    (when (empty? res) (println "WARNING locs" locs "did not resolve to any path"))
     res))
 
 (defn uri [host port svc path]
