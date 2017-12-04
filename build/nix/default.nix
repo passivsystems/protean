@@ -32,16 +32,21 @@ stdenv.mkDerivation rec {
     rm $out/lib/protean-server
 
     # create executables
-    echo "#!/bin/bash
+    cat > $out/bin/protean <<- EOF
+    #!/bin/bash
     export PROTEAN_HOME=$out/lib/protean
     export PROTEAN_CODEX_DIR=$out/lib/protean
     ${jre}/bin/java -Xmx64m -jar $out/lib/protean.jar \"\$@\"
-    " > $out/bin/protean
-    chmod +x $out/bin/protean
+    EOF
 
-    echo "#!/bin/bash
+    cat > $out/bin/protean-server <<- EOF
+    #!/bin/bash
     ${jre}/bin/java -cp $out/lib/protean.jar -Xmx32m protean.server.main
-    " > $out/bin/protean-server
+    EOF
+  '';
+
+  fixupPhase = ''
+    chmod +x $out/bin/protean
     chmod +x $out/bin/protean-server
   '';
 
