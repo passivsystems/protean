@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, jre }:
+{ stdenv, fetchurl, makeWrapper, jre }:
 
 let
   version = "0.11.0";
@@ -21,6 +21,8 @@ stdenv.mkDerivation rec {
     runHook postUnpack
   '';
 
+  buildInputs = [ makeWrapper ];
+
   # Phases: https://nixos.wiki/wiki/Create_and_debug_nix_packages#Using_nix-shell_for_package_development
   installPhase = ''
     echo "installPhase"
@@ -32,17 +34,13 @@ stdenv.mkDerivation rec {
     rm $out/lib/protean-server
 
     # create executables
-    cat > $out/bin/protean <<- EOF
-    #!/bin/bash
-    export PROTEAN_HOME=$out/lib/protean
-    export PROTEAN_CODEX_DIR=$out/lib/protean
-    ${jre}/bin/java -Xmx64m -jar $out/lib/protean.jar \"\$@\"
-    EOF
+    makeWrapper ${jre}/bin/java $out/bin/protean \
+      --add-flags "-Xmx64m -jar $out/lib/protean.jar" \
+      --set PROTEAN_HOME $out/lib/protean \
+      --set PROTEAN_CODEX_DIR $out/lib/protean
 
-    cat > $out/bin/protean-server <<- EOF
-    #!/bin/bash
-    ${jre}/bin/java -cp $out/lib/protean.jar -Xmx32m protean.server.main
-    EOF
+    makeWrapper ${jre}/bin/java $out/bin/protean-server \
+      --add-flags "-cp $out/lib/protean.jar -Xmx32m protean.server.main"
   '';
 
   fixupPhase = ''
