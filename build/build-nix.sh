@@ -14,7 +14,6 @@ TARGET_DIR=$ROOT_DIR/target/nix/protean-0.12.0-pre.1
 
 # Assumes that lein uberjar has been run and uberjar exists in target directory
 rm -rf $ROOT_DIR/target/nix
-mkdir -p $TARGET_DIR/bin
 mkdir -p $TARGET_DIR/lib
 
 cp $ROOT_DIR/target/*standalone* $TARGET_DIR/lib/protean.jar
@@ -27,11 +26,13 @@ rm -rf $ROOT_DIR/silk_templates/site/*
 cp -r $ROOT_DIR/silk_templates $TARGET_DIR/lib/silk_templates
 cp -r $ROOT_DIR/test-data $TARGET_DIR/lib/test-data
 cp -r $ROOT_DIR/public $TARGET_DIR/lib
-cp -r $ROOT_DIR/build/etc/protean $TARGET_DIR/bin
-cp -r $ROOT_DIR/build/etc/protean-server $TARGET_DIR/bin
 
 cd $ROOT_DIR/target/nix
 tar cvzf protean-0.12.0-pre.1.tgz *
 cd -
 
 nix-build --keep-failed --expr 'with import <nixpkgs> {}; callPackage ./nix/default.nix {}'
+
+# how to delete build after successful build?
+# currently: rm result; nix-store --gc
+# answer: nix-store --delete /nix/store/path
