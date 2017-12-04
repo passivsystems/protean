@@ -36,8 +36,8 @@ stdenv.mkDerivation rec {
     # create executables
     makeWrapper ${jre}/bin/java $out/bin/protean \
       --add-flags "-Xmx64m -jar $out/lib/protean.jar" \
-      --set PROTEAN_HOME $out/lib/protean \
-      --set PROTEAN_CODEX_DIR $out/lib/protean
+      --set PROTEAN_HOME $out/lib \
+      --set PROTEAN_CODEX_DIR $out/lib
 
     makeWrapper ${jre}/bin/java $out/bin/protean-server \
       --add-flags "-cp $out/lib/protean.jar -Xmx32m protean.server.main"
