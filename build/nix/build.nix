@@ -1,13 +1,21 @@
-{ stdenv, fetchgit, makeWrapper, leiningen, jre }:
+{ stdenv, fetchFromGitHub, makeWrapper, leiningen, jre }:
 
 let
   version = "0.11.0";
 in
 stdenv.mkDerivation rec {
   name = "protean-${version}";
-  src = fetchgit {
-    url = "https://github.com/passivsystems/protean.git";
-    rev = "fa0dfd10d0b2ce180c2b89cbeaab9f1c2c18ae6c";
+  #src = fetchgit {
+  #  url = "https://github.com/passivsystems/protean.git";
+  #  rev = "fa0dfd10d0b2ce180c2b89cbeaab9f1c2c18ae6c";
+  #  sha256 = "04jz5rfqcpw6zlnryqzkbv6bp3pxf763kq1p7lqvw5zfyqbn6vrc";
+  #};
+
+  # faster
+  src = fetchFromGitHub {
+    owner = "passivsystems";
+    repo = "protean";
+    rev = "${version}";
     sha256 = "04jz5rfqcpw6zlnryqzkbv6bp3pxf763kq1p7lqvw5zfyqbn6vrc";
   };
 
