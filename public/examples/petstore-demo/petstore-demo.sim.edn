@@ -9,6 +9,7 @@
 (def counter (atom 0))
 
 {
+  :sim-cfg {:validating false}
   "petstore-demo" {
     "api/pet" {
       ;; No validation
