@@ -118,19 +118,28 @@
                         (->> (d/get-in-tree tree [:req :body-examples])
                              (map #(d/to-path (conf/protean-home) % tree))
                              (map #(slurp %))))}
-        raw (for [[k v] inputs]
-              (for [ph (seq (map second (ph/holder? v)))] {ph k}))
-        placeholders (into {} (filter identity (reduce concat raw)))]
+        raw1 (for [[k v] inputs]
+               (for [ph (seq (map second (ph/holder? v)))] {ph k}))
+        raw2 (into {} (filter identity (reduce concat raw1)))
+        raw3 (for [[varname type] raw2]
+               (if-let [structs (:struct (d/get-in-tree tree [:vars varname]))]
+                 (for [[k _] structs] [(str varname "@@" k) (if (= type :path) :matrix type)])
+                 [[varname type]]))
+        placeholders (reduce merge (map #(into {} %) raw3))]
   (reduce merge
-    (for [[varname type] placeholders]
-      {varname
-        (-> (d/get-in-tree tree [:vars varname])
-            (merge {:attr (cond
-                            (= type :form)  (drop 1 (d/get-in-tree tree [:req :form-params  varname]))
-                            (= type :query) (drop 1 (d/get-in-tree tree [:req :query-params varname]))
-                            :else           nil)})
-            (merge {:ptype (stg/capitalize (name type))})
-            (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))}))))
+    (for [[k type] placeholders]
+      (let [keys (stg/split k #"@@")
+            structname (first keys)
+            varname (last keys)]
+        {(stg/join "." keys)
+          (-> (d/get-in-tree tree [:vars varname])
+              (merge {:attr (cond
+                              (= type :form)     (drop 1 (d/get-in-tree tree [:req :form-params varname]))
+                              (= type :query)    (drop 1 (d/get-in-tree tree [:req :query-params varname]))
+                              (> (count keys) 1) (drop 1 (d/get-in-tree tree [:vars structname :struct varname]))
+                              :else              nil)})
+              (merge {:ptype (stg/capitalize (name type))})
+              (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))})))))
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
@@ -166,7 +175,7 @@
                 :#req-body-schema-id (when schema (str "#schema-" id))
                 :req-body-schema-title (when schema (fname schema))
                 :req-body-schema (when schema (slurp-file schema tree))
-                :req-params (doc-params (input-params tree uri))
+                :req-params (sort-by (juxt :param-type :title) (doc-params (input-params tree uri)))
                 :req-headers (doc-hdrs (d/req-hdrs tree))
                 :req-body-examples (doc-body-examples id tree (d/get-in-tree tree [:req :body-examples]))
                 :responses (concat
