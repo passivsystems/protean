@@ -1,3 +1,9 @@
+#to test
+#build:
+# nix-build --keep-failed --expr 'with import <nixpkgs> {}; callPackage ./build/nix/from-src.nix {}'
+#remove:
+# nix-store --delete `readlink result` --ignore-liveness
+#
 { stdenv, fetchFromGitHub, makeWrapper, leiningen, jre }:
 
 let
@@ -31,7 +37,6 @@ stdenv.mkDerivation rec {
     ${leiningen}/bin/lein uberjar
   '';
 
-  # Phases: https://nixos.wiki/wiki/Create_and_debug_nix_packages#Using_nix-shell_for_package_development
   installPhase = ''
     echo "installPhase"
     mkdir -p $out/{lib,bin}

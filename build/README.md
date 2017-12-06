@@ -3,14 +3,11 @@ BUILD INSTRUCTIONS
 This file details builds across various deployment platforms.
 All builds assume that `lein uberjar` has been run and the uberjar exists in the target directory.
 
-=====
-Linux
-=====
+# Linux
 
-DOCKER
-------
+## DOCKER
 
--> Build
+### Build
 
 (assuming you are in the build directory)
 ```bash
@@ -20,7 +17,7 @@ docker rmi -f protean-example
 docker build -t protean-example .
 ```
 
--> Test
+### Test
 
 Run Protean on your new Docker image with:
 ```bash
@@ -48,8 +45,7 @@ Run the Protean client to learn how to interact with one of the services:
 ```
 
 
-TGZ
----
+## TGZ
 
 (assuming you are in the build directory)
 
@@ -59,8 +55,7 @@ TGZ
 ```
 
 
-RPM
----
+## RPM
 
 (assuming you are in the build directory)
 
@@ -70,8 +65,7 @@ RPM
 ```
 
 
-DEB
----
+## DEB
 
 (assuming you are in the build directory)
 
@@ -81,9 +75,7 @@ DEB
 ```
 
 
-===
-OSX
-===
+# OSX
 
 (assuming you are in the build directory)
 
@@ -92,8 +84,11 @@ OSX
 ./build-osx.sh 0.5.0
 ```
 
-===
-NIX
-===
+# NIX
 
 (assuming you are in the build directory)
+
+(substitute your version for the example below)
+```bash
+./build-nix.sh 0.5.0
+```
