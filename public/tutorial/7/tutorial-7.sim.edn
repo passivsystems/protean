@@ -8,13 +8,13 @@
 (require '[protean.simlib :as sl])
 
 ;; =============================================================================
-;; Hwllo world json API Endpoints
+;; Hello world json API Endpoints
 ;; =============================================================================
 
 {
-  "tutorial-7 {
+  "tutorial-7" {
     "hello/world" {
-      :get [#(sl/jsn 200 "hello world")]
+      :get #(sl/jsn 200 "hello world")
     }
   }
 }

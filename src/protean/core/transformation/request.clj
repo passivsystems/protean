@@ -6,7 +6,6 @@
     [protean.api.protocol.http :as h]
     [protean.api.protocol.protean :as pp]
     [protean.api.transformation.coerce :as co]
-    [protean.core.transformation.paths :as p]
     [protean.api.generation.json :as gen-jsn]
     [cheshire.core :as cc]))
 
@@ -23,7 +22,7 @@
         f (cond
             (h/txt? ctype) identity
             (h/xml? ctype) co/xml
-            :else co/js)
+            :else co/jsn)
         body-val (cond
           (and schema gen-from-schema) (gen-jsn/gen (d/to-path (conf/protean-home) schema tree))
           example (-> (d/to-path (conf/protean-home) example tree) slurp s/trim)

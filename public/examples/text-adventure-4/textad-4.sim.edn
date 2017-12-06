@@ -3,9 +3,6 @@
             [clojure.string :refer [join]]
             [alandipert.enduro :as e]))
 
-(dependencies '[[protean-simlib "0.12.0"]])
-(require '[protean.simlib :as sl])
-
 (defn fmt [list] (join " " (map #(symbol (name %)) list)))
 
 (def world (e/file-atom
@@ -69,11 +66,12 @@
     (remove #(= % name) (filter (comp #{loc} locs) (keys locs))))))
 
 (defn look [name]
-  (let [loc (name @location)]
-    (fmt (concat (describe-location loc @world)
-                 (describe-paths loc @world)
-                 (describe-entities name loc @location)
-                 (describe-floor loc @items @item-locations)))))
+  (when (contains? @entities name)
+    (let [loc (name @location)]
+      (fmt (concat (describe-location loc @world)
+                   (describe-paths loc @world)
+                   (describe-entities name loc @location)
+                   (describe-floor loc @items @item-locations))))))
 
 (defn pickup [name item]
   (cond (is-at? item (name @location) @item-locations)
@@ -83,7 +81,8 @@
     :else (fmt '(you cannot get that.))))
 
 (defn inventory-raw [name]
-  (filter (fn [x] (is-at? x (symbol name) @item-locations)) @items))
+  (when (contains? @entities name)
+    (filter (fn [x] (is-at? x (symbol name) @item-locations)) @items)))
 
 (defn inventory [name] (fmt (inventory-raw name)))
 
@@ -95,54 +94,41 @@
           :else '(you cannot go that way -))))
 
 (defn slap [name object]
-  (cond (= (name @location) (object @location))
-    (cond (= object 'Lumbergh) (fmt '(Lumbergh says yahhh, mmmm we are gonna need to go ahead and talk about that -))
-          (= object 'Milton) (fmt '(Milton mumbles about burning the building down -))
-          :else (fmt '(oooh, that was some good slapping -)))
-    :else (fmt '(you cannot slap like that -))))
+  (when (and (contains? @entities name) (contains? @entities object))
+    (cond (= (name @location) (object @location))
+      (cond (= object 'Lumbergh) (fmt '(Lumbergh says yahhh, mmmm we are gonna need to go ahead and talk about that -))
+            (= object 'Milton) (fmt '(Milton mumbles about burning the building down -))
+            :else (fmt '(oooh, that was some good slapping -)))
+      :else (fmt '(you cannot slap like that -)))))
 
 (defn mug [name object]
-  (cond (= (name @location) (object @location))
-    (if-let [items (seq (inventory-raw object))]
-      (do
-        (doseq [item items] (e/swap! item-locations assoc item (symbol name)))
-        (fmt '(you got items)))
-      (fmt '(you got nothing you mug.. who is the mug now?)))
-  :else (fmt '(you cannot mug like that -))))
+  (when (and (contains? @entities name) (contains? @entities object))
+    (cond
+      (= (name @location) (object @location))
+      (if-let [items (seq (inventory-raw object))]
+        (do
+          (doseq [item items] (e/swap! item-locations assoc item (symbol name)))
+          (fmt '(you got items)))
+        (fmt '(you got nothing you mug.. who is the mug now?)))
+    :else (fmt '(you cannot mug like that -)))))
 
-(defn register-rest []
-  (let [nm (symbol (query-param "name"))] (if (register nm) {:status 204} {:status 409})))
+(defn s-qp [request id] (symbol (query-param request id)))
 
-(defn look-rest []
-  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (sl/jsn 200 (look nm)) {:status 404})))
-
-(defn go-rest [] (sl/jsn 200 (go (symbol (query-param "name")) (symbol (query-param "direction")))))
-
-(defn pickup-rest [] (sl/jsn 200 (pickup (symbol (query-param "name")) (symbol (query-param "item")))))
-
-(defn inventory-rest []
-  (let [nm (symbol (query-param "name"))] (if (contains? @entities nm) (sl/jsn 200 (inventory nm)) {:status 404})))
-
-(defn slap-rest []
-  (let [nm (symbol (query-param "name")) target (symbol (query-param "target"))]
-    (if (and (contains? @entities nm) (contains? @entities target))
-      (sl/jsn 200 (slap nm target))
-      {:status 404})))
-
-(defn mug-rest []
-  (let [nm (symbol (query-param "name")) target (symbol (query-param "target"))]
-    (if (and (contains? @entities nm) (contains? @entities target))
-      (sl/jsn 200 (mug nm target))
-      {:status 404})))
+(defn handle
+  [request result success-status error-status]
+  (cond
+    (and result (= success-status 204)) (respond request success-status)
+    result                              (respond request success-status result)
+    :else                               (respond request error-status)))
 
 {
   "textad-4" {
-    "register" {:put [#(register-rest)]}
-    "look" {:get [#(look-rest)]}
-    "go" {:put [#(go-rest)]}
-    "inventory" {:get [#(inventory-rest)]}
-    "pickup" {:put [#(pickup-rest)]}
-    "slap" {:put [#(slap-rest)]}
-    "mug" {:put [#(mug-rest)]}
+    "register" {:put #(handle % (register (s-qp % "name")) 204 409)}
+    "look" {:get #(handle % (look (s-qp % "name")) 200 404)}
+    "go" {:put #(handle % (go (s-qp % "name") (s-qp % "direction")) 200 404)}
+    "inventory" {:get #(handle % (inventory (s-qp % "name")) 200 404)}
+    "pickup" {:put #(handle % (pickup (s-qp % "name") (s-qp % "item")) 200 404)}
+    "slap" {:put #(handle % (slap (s-qp % "name") (s-qp % "item")) 200 404)}
+    "mug" {:put #(handle % (mug (s-qp % "name") (s-qp % "item")) 200 404)}
   }
 }

@@ -1,8 +1,6 @@
 (ns protean.server.main
   "Entry point into the server component.  Config, server and routes."
-  (:require [clojure.edn :as edn]
-            [clojure.main :as m]
-            [clojure.java.io :refer [file]]
+  (:require [clojure.java.io :refer [file]]
             [clojure.string :as s]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.multipart-params :as mp]
@@ -14,7 +12,6 @@
             [protean.config :as conf]
             [protean.server.pipeline :as pipe]
             [protean.api.transformation.coerce :as co]
-            [protean.api.codex.reader :as r]
             [protean.api.codex.document :as d]
             [clojure.pprint]
             [taoensso.timbre.appenders.core :as appenders])

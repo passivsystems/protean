@@ -1,23 +1,16 @@
 (ns protean.server.pipeline
-  (:require [clojure.edn :as edn]
-            [clojure.core.incubator :as ib]
+  (:require [clojure.core.incubator :as ib]
             [clojure.main :as m]
-            [clojure.java.io :refer [delete-file]]
-            [ring.util.codec :as cod]
             [protean.core :as api-core]
             [protean.config :as conf]
             [protean.api.codex.document :as d]
-            [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
             [protean.api.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
             [protean.api.codex.reader :as r]
             [protean.core.transformation.paths :as p]
-            [protean.core.transformation.request :as req]
-            [clojure.pprint])
-  (:use [clojure.string :only [join split upper-case]]
-        [clojure.set :only [intersection]]
-        [clojure.java.io :refer [file]]
+            [protean.core.transformation.request :as req])
+  (:use [clojure.java.io :refer [file]]
         [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.IOException))
 
@@ -80,18 +73,18 @@
 ;; services
 ;;;;;;;;;;;
 
-(defn services [] (assoc json :body (co/js (sort (keys @paths)))))
+(defn services [] (assoc json :body (co/jsn (sort (keys @paths)))))
 
 ; TODO the result of this function is currently affected by collisions between codices - should use @paths instead
-(defn service [svc] (assoc json :body (co/js (get-in @state [svc]))))
+(defn service [svc] (assoc json :body (co/jsn (get-in @state [svc]))))
 
 (defn service-analysis [svc host]
   (let [analysed (prepare-analysis svc host)]
-    (assoc json :body (co/js (map #(prep-request %) analysed)))))
+    (assoc json :body (co/jsn (map #(prep-request %) analysed)))))
 
 (defn service-usage [svc host]
   (let [analysed (prepare-analysis svc host)]
-    (assoc json :body (co/js (txc/curly-analysis-> analysed)))))
+    (assoc json :body (co/jsn (txc/curly-analysis-> analysed)))))
 
 (defn del-service [svc]
   (reset! paths (ib/dissoc-in @paths [svc]))
@@ -115,7 +108,7 @@
 ;; sims
 ;;;;;;;;;;;
 
-(defn sims-names [] (assoc json :body (co/js (sort (d/custom-keys @sims)))))
+(defn sims-names [] (assoc json :body (co/jsn (sort (d/custom-keys @sims)))))
 
 (defn del-sim [svc]
   (reset! sims (ib/dissoc-in @sims [svc]))
@@ -136,10 +129,10 @@
 ;; service status
 ;;;;;;;;;;;;;;;;;
 
-(defn status [] (assoc json :body (co/js {"status" "ok"})))
+(defn status [] (assoc json :body (co/jsn {"status" "ok"})))
 
 
 ;; service version
 ;;;;;;;;;;;;;;;;;;
 
-(defn version [v] (assoc json :body (co/js {"version" v})))
+(defn version [v] (assoc json :body (co/jsn {"version" v})))
