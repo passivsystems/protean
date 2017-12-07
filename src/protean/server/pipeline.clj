@@ -3,7 +3,6 @@
             [clojure.main :as m]
             [protean.core :as api-core]
             [protean.config :as conf]
-            [protean.api.codex.document :as d]
             [protean.api.protocol.http :as h]
             [protean.api.transformation.coerce :as co]
             [protean.core.transformation.curly :as txc]
@@ -57,6 +56,10 @@
 (defn- prep-request [{:keys [tree method uri]}]
   (req/prepare-request method uri tree :include-optional true))
 
+(defn- custom-keys
+  "returns only keys which are not keywords"
+  [c] (seq (remove keyword? (keys c))))
+
 ;; =============================================================================
 ;; Service pipelines
 ;; =============================================================================
@@ -94,11 +97,12 @@
 
 (defn load-codex [f]
   (let [codex (r/read-codex (conf/protean-home) f)
-        locs (d/custom-keys codex)
+        locs (custom-keys codex)
         tpaths (p/paths codex locs)]
     (doseq [path tpaths]
       (swap! paths assoc-in [(:svc path) (:path path) (:method path)] (:tree path)))
-    (reset! state (merge @state codex))))
+    (reset! state (merge @state codex))
+    (first (custom-keys codex))))
 
 (defn put-services [req]
   (let [file ((:params req) "file")]
@@ -108,7 +112,7 @@
 ;; sims
 ;;;;;;;;;;;
 
-(defn sims-names [] (assoc json :body (co/jsn (sort (d/custom-keys @sims)))))
+(defn sims-names [] (assoc json :body (co/jsn (sort (custom-keys @sims)))))
 
 (defn del-sim [svc]
   (reset! sims (ib/dissoc-in @sims [svc]))
@@ -117,8 +121,10 @@
 (def del-sim-handled (handler del-sim handle-error))
 
 (defn load-sim [f]
-  (let [file-content (m/load-script (.getPath f))]
-    (reset! sims (merge @sims file-content))))
+  (let [sim (m/load-script (.getPath f))]
+    (reset! sims (merge @sims sim))
+    (str (first (custom-keys sim))
+         (when-let [cfg (:sim-cfg sim)] (str " (sim config: " cfg ")")))))
 
 (defn put-sims [req]
   (let [file ((:params req) "file")]
