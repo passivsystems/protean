@@ -1,6 +1,6 @@
 (ns protean.server.main
   "Entry point into the server component.  Config, server and routes."
-  (:require [clojure.java.io :refer [file]]
+  (:require [clojure.java.io :as io]
             [clojure.string :as s]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.multipart-params :as mp]
@@ -13,7 +13,8 @@
             [protean.server.pipeline :as pipe]
             [protean.api.transformation.coerce :as co]
             [clojure.pprint]
-            [taoensso.timbre.appenders.core :as appenders])
+            [taoensso.timbre.appenders.core :as appenders]
+            [hawk.core :as hawk])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File)
   (:gen-class))
@@ -28,7 +29,7 @@
 (timbre/set-level! (conf/log-level))
 
 (defn- files [c-dir ext]
-  (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
+  (-> (remove #(.isDirectory %) (.listFiles (io/file c-dir)))
       (do/filter-exts [ext])))
 
 (defmacro version [] (System/getProperty "protean.version"))
@@ -98,14 +99,35 @@
           ;; we currently support local clj artefacts and remote coords (e.g. clojars)
           ;; TODO: support local jar files in a directory
           _ (pom/add-classpath c-dir)
-          _ (pom/add-classpath (str (file c-dir "clj")))
+          _ (pom/add-classpath (str (io/file c-dir "clj")))
           cods (mapv pipe/load-codex (files c-dir "cod.edn"))
-          sims (mapv pipe/load-sim   (files c-dir "sim.edn"))]
+          sims (mapv pipe/load-sim   (files c-dir "sim.edn"))
+          cod? #(s/ends-with? (.getPath %) ".cod.edn")
+          sim? #(s/ends-with? (.getPath %) ".sim.edn")
+          clj? #(s/ends-with? (.getPath %) ".clj")
+          hnd (fn [ctx {f :file kind :kind}]
+                (when-let [msg (cond
+                    (and (.exists f) (cod? f)) (str "loaded codex: "  (.getName f) " - " (pipe/load-codex f))
+                    (and (.exists f) (sim? f)) (str "loaded sim: "    (.getName f) " - " (pipe/load-sim f))
+                    (and (.exists f) (clj? f)) (str "loaded clj: "    (.getName f) " - " (pom/add-classpath f))
+                    (cod? f)                   (str "removed codex: " (.getName f) " - " (pipe/unload-codex f))
+                    (sim? f)                   (str "removed sim: "   (.getName f) " - " (pipe/unload-sim f))
+                    ; (clj? f)                   (str "remove clj:"     (.getName f) (pom/remove-classpath f))
+                    :else                             nil)]
+                  (println msg "Watching for changes. Press enter to exit"))
+                ctx)]
       (info "Starting protean - v" (version))
       (info "Codex directory:" c-dir)
       (info "Codices loaded:" (s/join ", " cods))
       (info "Sim extensions loaded:" (s/join ", " sims))
       (info "Public static resources can be served from:" (conf/public-dir))
-      (server sim-port sim-max-threads admin-port admin-max-threads))))
+      (server sim-port sim-max-threads admin-port admin-max-threads)
+      (println "Watching for changes. Press enter to exit")
+      (hawk/watch! [{:paths [c-dir]
+                     :handler hnd}])
+      (loop [input (read-line)]
+        (when-not (= "\n" input)
+          (System/exit 0)
+          (recur (read-line)))))))
 
 (defn -main [& args] (start nil))

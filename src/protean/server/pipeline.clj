@@ -19,7 +19,8 @@
 
 (def json {:headers {h/ctype h/jsn "Access-Control-Allow-Origin" "*"}})
 
-(def state (atom {}))
+(def file-codices (atom nil))
+(def file-sims (atom nil))
 (def paths (atom {}))
 (def sims (atom {}))
 
@@ -38,6 +39,10 @@
     (catch IOException ioex
       (error (.getMessage ioex))
       {:status 500})))
+
+(defn- custom-keys
+  "returns only keys which are not keywords"
+  [c] (seq (remove keyword? (keys c))))
 
 (defn- body [req-body]
   (let [rbody (slurp req-body)] (if (not-empty rbody) (co/clj rbody) nil)))
@@ -78,8 +83,11 @@
 
 (defn services [] (assoc json :body (co/jsn (sort (keys @paths)))))
 
-; TODO the result of this function is currently affected by collisions between codices - should use @paths instead
-(defn service [svc] (assoc json :body (co/jsn (get-in @state [svc]))))
+; TODO the result of this function is currently affected by collisions between
+; file-codices - should use @paths instead
+(defn service
+  [svc]
+  (assoc json :body (co/jsn (first (filter #(% svc) (vals @file-codices))))))
 
 (defn service-analysis [svc host]
   (let [analysed (prepare-analysis svc host)]
@@ -95,13 +103,24 @@
 
 (def del-service-handled (handler del-service handle-error))
 
+(defn- reload-paths
+  []
+  (reset! paths {})
+  (doseq [codex (map #(first (vals %)) @file-codices)]
+    (doseq [{:keys [svc path method tree]} (p/paths codex (custom-keys codex))]
+      (swap! paths assoc-in [svc path method] tree))))
+
+(defn unload-codex [f]
+  (let [codex (first (remove nil? (map #(% (.getPath f)) @file-codices)))]
+    (reset! file-codices (remove #(% (.getPath f)) @file-codices))
+    (reload-paths)
+    (first (custom-keys codex))))
+
 (defn load-codex [f]
-  (let [codex (r/read-codex (conf/protean-home) f)
-        locs (custom-keys codex)
-        tpaths (p/paths codex locs)]
-    (doseq [path tpaths]
-      (swap! paths assoc-in [(:svc path) (:path path) (:method path)] (:tree path)))
-    (reset! state (merge @state codex))
+  (reset! file-codices (remove #(% (.getPath f)) @file-codices))
+  (let [codex (r/read-codex (conf/protean-home) f)]
+    (reset! file-codices (conj @file-codices {(.getPath f) codex}))
+    (reload-paths)
     (first (custom-keys codex))))
 
 (defn put-services [req]
@@ -120,9 +139,24 @@
 
 (def del-sim-handled (handler del-sim handle-error))
 
+(defn- reload-sims
+  []
+  (reset! sims {})
+  (doseq [sim (map #(first (vals %)) @file-sims)]
+    (reset! sims (merge @sims sim))))
+
+(defn unload-sim [f]
+  (let [sim (first (remove nil? (map #(% (.getPath f)) @file-sims)))]
+    (reset! file-sims (remove #(% (.getPath f)) @file-sims))
+    (reload-sims)
+    (str (first (custom-keys sim))
+         (when-let [cfg (:sim-cfg sim)] (str " (sim config: " cfg ")")))))
+
 (defn load-sim [f]
+  (reset! file-sims (remove #(% (.getPath f)) @file-sims))
   (let [sim (m/load-script (.getPath f))]
-    (reset! sims (merge @sims sim))
+    (reset! file-sims (conj @file-sims {(.getPath f) sim}))
+    (reload-sims)
     (str (first (custom-keys sim))
          (when-let [cfg (:sim-cfg sim)] (str " (sim config: " cfg ")")))))
 
