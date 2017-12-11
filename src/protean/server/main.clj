@@ -112,8 +112,7 @@
                     (and (.exists f) (clj? f)) (str "loaded clj: "    (.getName f) " - " (pom/add-classpath f))
                     (cod? f)                   (str "removed codex: " (.getName f) " - " (pipe/unload-codex f))
                     (sim? f)                   (str "removed sim: "   (.getName f) " - " (pipe/unload-sim f))
-                    ; (clj? f)                   (str "remove clj:"     (.getName f) (pom/remove-classpath f))
-                    :else                             nil)]
+                    :else                      nil)]
                   (println msg "Watching for changes. Press enter to exit"))
                 ctx)]
       (info "Starting protean - v" (version))
@@ -124,8 +123,7 @@
       (server sim-port sim-max-threads admin-port admin-max-threads)
       (when reload
         (println "Watching for changes. Press enter to exit")
-        (hawk/watch! [{:paths [c-dir]
-                       :handler hnd}])
+        (hawk/watch! [{:paths [c-dir] :handler hnd}])
         (loop [input (read-line)]
           (when-not (= "\n" input)
             (System/exit 0)
