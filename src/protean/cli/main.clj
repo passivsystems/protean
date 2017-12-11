@@ -46,6 +46,7 @@
    ["-d" "--directory DIRECTORY" "Project directory"]
    ["-b" "--body BODY" "JSON body"]
    ["-s" "--status-err STATUS-ERROR" "Error status code"]
+   ["-r" "--reload" "Reloads sim server on codex, sim or clj file change"]
    ["-h" "--help"]])
 
 (defn- usage-hud [options-summary]
@@ -139,7 +140,7 @@
         options {:host host :port port :file file :body b}]
     (visit options)))
 
-(defn- sim [{:keys [host port directory body]}] (ps/start directory))
+(defn- sim [{:keys [host port directory body reload]}] (ps/start directory reload))
 
 
 ;; =============================================================================

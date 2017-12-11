@@ -88,7 +88,7 @@
 ;; Application entry point
 ;; =============================================================================
 
-(defn start [codex-dir]
+(defn start [codex-dir reload]
   (timbre/log-and-rethrow-errors
     (let [sim-port (conf/sim-port)
           sim-max-threads (conf/sim-max-threads)
@@ -122,12 +122,13 @@
       (info "Sim extensions loaded:" (s/join ", " sims))
       (info "Public static resources can be served from:" (conf/public-dir))
       (server sim-port sim-max-threads admin-port admin-max-threads)
-      (println "Watching for changes. Press enter to exit")
-      (hawk/watch! [{:paths [c-dir]
-                     :handler hnd}])
-      (loop [input (read-line)]
-        (when-not (= "\n" input)
-          (System/exit 0)
-          (recur (read-line)))))))
+      (when reload
+        (println "Watching for changes. Press enter to exit")
+        (hawk/watch! [{:paths [c-dir]
+                       :handler hnd}])
+        (loop [input (read-line)]
+          (when-not (= "\n" input)
+            (System/exit 0)
+            (recur (read-line))))))))
 
-(defn -main [& args] (start nil))
+(defn -main [& args] (start nil nil))
