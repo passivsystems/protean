@@ -201,5 +201,5 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
-  (silk/spin-or-reload false silk-staging-dir false false)
+  (silk/spin silk-staging-dir)
   (dsk/copy-recursive (str silk-staging-dir "/site") (conf/target-dir)))
