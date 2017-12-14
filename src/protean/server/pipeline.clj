@@ -19,14 +19,10 @@
 
 (def json {:headers {h/ctype h/jsn "Access-Control-Allow-Origin" "*"}})
 
-(def file-codices (atom nil))
-(def file-sims (atom nil))
+(def file-codices (atom {}))
+(def file-sims (atom {}))
 (def paths (atom {}))
 (def sims (atom {}))
-
-(defn- log-request [{:keys [request-method uri query-params] :as req}]
-  (debug "request is : " req)
-  (info "method: " request-method ", uri: " uri ", query-params: " query-params))
 
 (defn handler
   [f & handlers]
@@ -70,7 +66,9 @@
 ;; =============================================================================
 
 (defn api [req]
-  (log-request req)
+  (debug "request is:" req)
+  (let [{:keys [request-method uri query-params]} req]
+    (info "method: " request-method ", uri: " uri ", query-params: " query-params))
   (api-core/sim-rsp (conf/protean-home) req @paths @sims))
 
 
@@ -106,20 +104,19 @@
 (defn- reload-paths
   []
   (reset! paths {})
-  (doseq [codex (map #(first (vals %)) @file-codices)]
+  (doseq [codex (vals @file-codices)]
     (doseq [{:keys [svc path method tree]} (p/paths codex (custom-keys codex))]
       (swap! paths assoc-in [svc path method] tree))))
 
 (defn unload-codex [f]
-  (let [codex (first (remove nil? (map #(% (.getPath f)) @file-codices)))]
-    (reset! file-codices (remove #(% (.getPath f)) @file-codices))
+  (let [codex (@file-codices (.getName f))]
+    (swap! file-codices dissoc (.getName f))
     (reload-paths)
     (first (custom-keys codex))))
 
 (defn load-codex [f]
-  (reset! file-codices (remove #(% (.getPath f)) @file-codices))
   (let [codex (r/read-codex (conf/protean-home) f)]
-    (reset! file-codices (conj @file-codices {(.getPath f) codex}))
+    (swap! file-codices assoc (.getName f) codex)
     (reload-paths)
     (first (custom-keys codex))))
 
@@ -142,20 +139,19 @@
 (defn- reload-sims
   []
   (reset! sims {})
-  (doseq [sim (map #(first (vals %)) @file-sims)]
+  (doseq [sim (vals @file-sims)]
     (reset! sims (merge @sims sim))))
 
 (defn unload-sim [f]
-  (let [sim (first (remove nil? (map #(% (.getPath f)) @file-sims)))]
-    (reset! file-sims (remove #(% (.getPath f)) @file-sims))
+  (let [sim (@file-sims (.getName f))]
+    (swap! file-sims dissoc (.getName f))
     (reload-sims)
     (str (first (custom-keys sim))
          (when-let [cfg (:sim-cfg sim)] (str " (sim config: " cfg ")")))))
 
 (defn load-sim [f]
-  (reset! file-sims (remove #(% (.getPath f)) @file-sims))
   (let [sim (m/load-script (.getPath f))]
-    (reset! file-sims (conj @file-sims {(.getPath f) sim}))
+    (swap! file-sims assoc (.getName f) sim)
     (reload-sims)
     (str (first (custom-keys sim))
          (when-let [cfg (:sim-cfg sim)] (str " (sim config: " cfg ")")))))
