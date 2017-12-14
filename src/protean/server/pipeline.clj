@@ -61,6 +61,10 @@
   "returns only keys which are not keywords"
   [c] (seq (remove keyword? (keys c))))
 
+(defn- sim-cfg
+  "returns a merge of the first two levels of sim config (global and svc)"
+   [sim svc] (merge (:sim-cfg sim) (get-in sim [svc :sim-cfg])))
+
 ;; =============================================================================
 ;; Service pipelines
 ;; =============================================================================
@@ -143,18 +147,18 @@
     (reset! sims (merge @sims sim))))
 
 (defn unload-sim [f]
-  (let [sim (@file-sims (.getName f))]
+  (let [sim (@file-sims (.getName f))
+        svc (first (custom-keys sim))]
     (swap! file-sims dissoc (.getName f))
     (reload-sims)
-    (str (first (custom-keys sim))
-         (when-let [cfg (:sim-cfg sim)] (str " (sim config: " cfg ")")))))
+    (str svc (when-let [c (sim-cfg sim svc)] (str " (sim config: " c ")")))))
 
 (defn load-sim [f]
-  (let [sim (m/load-script (.getPath f))]
+  (let [sim (m/load-script (.getPath f))
+        svc (first (custom-keys sim))]
     (swap! file-sims assoc (.getName f) sim)
     (reload-sims)
-    (str (first (custom-keys sim))
-         (when-let [cfg (:sim-cfg sim)] (str " (sim config: " cfg ")")))))
+    (str svc (when-let [c (sim-cfg sim svc)] (str " (sim config: " c ")")))))
 
 (defn put-sims [req]
   (let [file ((:params req) "file")]
