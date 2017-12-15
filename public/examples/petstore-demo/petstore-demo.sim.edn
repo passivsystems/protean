@@ -1,11 +1,17 @@
 (ns protean.petstore.demo
   (:require [clj-http.client :as client]
-            [taoensso.timbre :as log]
+            [taoensso.timbre :as timbre]
+            [taoensso.timbre.appenders.core :as appenders]
             [petstorelib :as lib]
             [protean.api.transformation.coerce :as coerce]
             [protean.api.transformation.sim :refer :all]))
 
-;; Here we demonstrate much of what is possible with Protean, often resulting in errors !
+(def log-cfg {:level :debug
+              :appenders {:spit (appenders/spit-appender {:fname "petstore.log"})}})
+
+(defn petstore-log
+  ([level a]        (timbre/log* log-cfg level a)) ;; first one may be exception
+  ([level a & args] (timbre/log* log-cfg level a (clojure.string/join " " args))))
 
 (def counter (atom 0))
 
@@ -25,7 +31,8 @@
     "api/pet/${petId}" {
       ; load shared petstorelib.clj file
       ; wait 2 seconds before responding
-      :get #(do (log/info lib/hello-world)
+      :get #(do (log/info lib/hello-world 1) ;; To protean.log
+                (petstore-log :info lib/hello-world 2) ;; To petstore.log
                 (Thread/sleep 2000)
                 (respond % 200))
 
