@@ -47,7 +47,6 @@ stdenv.mkDerivation rec {
     rm -rf ./silk_templates/site/*
     cp -r ./silk_templates $out/lib
     cp -r ./public $out/lib
-    cp -r ./test-data $out/lib
     cp ./defaults.edn $out/lib
     cp ./sample-petstore.cod.edn $out/lib
     cp ./protean-utils.cod.edn $out/lib
