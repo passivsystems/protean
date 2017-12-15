@@ -1,65 +1,58 @@
 (ns protean.petstore.demo
-  (:require [clojure.java.io :refer [file]]
-            [me.rossputin.diskops :as dk]
+  (:require [clj-http.client :as client]
+            [taoensso.timbre :as log]
+            [petstorelib :as lib]
+            [protean.api.transformation.coerce :as coerce]
             [protean.api.transformation.sim :refer :all]))
 
 ;; Here we demonstrate much of what is possible with Protean, often resulting in errors !
 
 (def counter (atom 0))
 
-(dk/mkdirs (file (str (env :user-home) "/tmp")))
-
 {
   "petstore-demo" {
-
+    :sim-cfg {:validating false} ; true by default
     "api/pet" {
-      :put [
-        #(-> {:status 200 :headers {"Content-Type" "application/json"} :body (slurp "test-data/content/doc/responses/simple/200-ref.json")})
-      ]
-      :post [
-        #(if-valid {:status 201 :headers {"Location" "/pet/yyyy"}})
-      ]
+      ;; No validation
+      :put #(respond % 200)
+
+      ;; Change default validation error response to 405 and adds errors to body
+      :post #(if-let [errors (validate %)]
+              (respond % 405 errors)
+              (respond % 201))
     }
 
     "api/pet/${petId}" {
-      :get [
-        #(do (log *request* (str (env :user-home) "/tmp/protean-requests.txt"))
-             (Thread/sleep 2000)
-             (success))
-      ]
+      ; load shared petstorelib.clj file
+      ; wait 2 seconds before responding
+      :get #(do (log/info lib/hello-world)
+                (Thread/sleep 2000)
+                (respond % 200))
 
-      :delete [#(error)] ; select a random codex error response
+      ; select a random codex error response
+      :delete #(rand-nth (error-responses %))
 
-      :patch [#(or (prob 0.5 (error)) (success))] ; 50% chance of a random codex error response
+      ; 50% chance of a random codex error response
+      :patch #(if (< (rand) 0.5)
+               (first (success-responses %))
+               (rand-nth (error-responses %)))
 
-      :post [
-        ;; synchronous response
-        #(if-valid (respond 200 :body-url "test-data/content/doc/responses/simple/200-ref.json"))
-
-        ;; synchronously forward request to another API, and log response
-        ;;   sends to an endpoint in another protean sim extenstion (the echo endpoint)
-        #(when-valid
-          (make-request :put (str "http://localhost:" (sim-port) "/protean-utils/echo") {
-            :content-type (header "content-type") ; Note, headers in request are in lower-case (ring)
-            :form-params (into {} (for [[k v] (:form-params *request*)] [(keyword k) v]))
-            :log (str (env :user-home) "/tmp/protean-responses.txt")}))
-
-        ;; asynchronously forward request to another API, and log response
-        ;;   sends to an endpoint in another protean sim extenstion (the echo endpoint)
-        ;; after delay (in ms)
-        #(in 3000
-          (make-request :put (str "http://localhost:" (sim-port) "/protean-utils/echo") {
-            :content-type (header "content-type") ; Note, headers in request are in lower-case (ring)
-            :form-params (into {} (for [[k v] (:form-params *request*)] [(keyword k) v]))
-            :log (str (env :user-home) "/tmp/protean-responses.txt")}))
-      ]
+      ;; Sends synchronous and asynchronous requests to another API and logs the response
+      :post #(if-let [errors (validate %)]
+              (respond % 405 errors)
+              (let [url "http://localhost:3000/protean-utils/echo"
+                    fps (:form-params %)
+                    handle (fn [res] (log/info [(str "Response from " url) res]))]
+                (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false}))
+                (in 3000 (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false})))
+                (respond % 200 (slurp (find-path % "public/data/content/doc/responses/simple/200-ref.json")))))
     }
 
     "api/uploadImage" {
-      :post [
-        ; alternative to error with probability - every nth access gives error - requires server state
-        #(if (= 0 (mod (swap! counter inc) 3)) (error))
-      ]
+      ; alternative to error with probability - every nth access gives error based on server state
+      :post #(if (= 0 (mod (swap! counter inc) 3))
+              (rand-nth (error-responses %))
+              (first (success-responses %)))
     }
   }
 }

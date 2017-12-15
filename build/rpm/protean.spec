@@ -29,7 +29,6 @@ cp -r public/ %{buildroot}/usr/lib/protean/public/
 rm -rf silk_templates/data/protean-api/*
 rm -rf silk_templates/site/*
 cp -r silk_templates/ %{buildroot}/usr/lib/protean/silk_templates/
-cp -r test-data/ %{buildroot}/usr/lib/protean/test-data/
 install -m755 build/etc/protean-server %{buildroot}/usr/bin
 install -m755 build/etc/protean %{buildroot}/usr/bin
 

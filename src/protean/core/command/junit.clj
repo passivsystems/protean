@@ -1,9 +1,7 @@
 (ns protean.core.command.junit
   "Outputs to junit format."
   (:require [clojure.data.xml :as x]
-            [clojure.string :as s]
             [clojure.java.io :refer [file]]
-            [clojure.pprint :as pp]
             [protean.api.transformation.coerce :as co]
             [protean.config :as conf])
   (:import java.io.File java.util.Calendar java.text.SimpleDateFormat))
@@ -36,9 +34,9 @@
         name (str (:method entry) " " (:svc entry) " " (:path entry))
         classname "classname"
         time "time ms"
-        out (str "Entry:" (co/pretty-js entry) "\n"
-                 "Request:" (co/pretty-js request) "\n"
-                 "Response:" (co/pretty-js response))]
+        out (str "Entry:" (co/pretty-jsn entry) "\n"
+                 "Request:" (co/pretty-jsn request) "\n"
+                 "Response:" (co/pretty-jsn response))]
     (x/element :testcase {:name name :classname classname :time time}
       (if error (error-to-xml error))
       (if (seq failures) (failure-to-xml failures))

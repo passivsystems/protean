@@ -6,7 +6,7 @@
             [protean.core.transformation.paths :refer [paths]]
             [expectations :refer :all]))
 
-(defn read-edn [f] (r/read-codex (conf/protean-home) (file (str "test-data/" f))))
+(defn read-edn [f] (r/read-codex (conf/protean-home) (file "test/resources" f)))
 
 ;; =============================================================================
 ;; Testing computation of endpoints from codex

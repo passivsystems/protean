@@ -15,7 +15,6 @@ rm -rf $ROOT_DIR/silk_templates/data/protean-api/*
 rm -rf $ROOT_DIR/silk_templates/site/*
 cp -r $ROOT_DIR/silk_templates $ROOT_DIR/target/docker
 cp -r $ROOT_DIR/public $ROOT_DIR/target/docker
-cp -r $ROOT_DIR/test-data $ROOT_DIR/target/docker
 cp $ROOT_DIR/defaults.edn $ROOT_DIR/target/docker
 cp $ROOT_DIR/sample-petstore.cod.edn $ROOT_DIR/target/docker
 cp $ROOT_DIR/protean-utils.cod.edn $ROOT_DIR/target/docker

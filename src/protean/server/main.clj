@@ -1,8 +1,6 @@
 (ns protean.server.main
   "Entry point into the server component.  Config, server and routes."
-  (:require [clojure.edn :as edn]
-            [clojure.main :as m]
-            [clojure.java.io :refer [file]]
+  (:require [clojure.java.io :as io]
             [clojure.string :as s]
             [ring.adapter.jetty :as jetty]
             [ring.middleware.multipart-params :as mp]
@@ -14,10 +12,9 @@
             [protean.config :as conf]
             [protean.server.pipeline :as pipe]
             [protean.api.transformation.coerce :as co]
-            [protean.api.codex.reader :as r]
-            [protean.api.codex.document :as d]
             [clojure.pprint]
-            [taoensso.timbre.appenders.core :as appenders])
+            [taoensso.timbre.appenders.core :as appenders]
+            [hawk.core :as hawk])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.File)
   (:gen-class))
@@ -32,24 +29,8 @@
 (timbre/set-level! (conf/log-level))
 
 (defn- files [c-dir ext]
-  (-> (remove #(.isDirectory %) (.listFiles (file c-dir)))
+  (-> (remove #(.isDirectory %) (.listFiles (io/file c-dir)))
       (do/filter-exts [ext])))
-
-(defn- build-services
-  "Load services from disk."
-  [c-dir]
-  (let [codex-fs (files c-dir "cod.edn")]
-    (doseq [f codex-fs]
-      (pipe/load-codex f)))
-  (d/custom-keys @pipe/state))
-
-(defn- build-sims
-  "Load sims from disk."
-  [c-dir]
-  (let [sim-fs (files c-dir "sim.edn")]
-    (doseq [f sim-fs]
-      (pipe/load-sim f)))
-  (d/custom-keys @pipe/sims))
 
 (defmacro version [] (System/getProperty "protean.version"))
 
@@ -93,41 +74,59 @@
       { :port (co/int admin-port)
         :join? false
         :max-threads (co/int admin-max-threads)})
-    (info (str "Protean Admin Server has started \n"
-               "Admin Port: " admin-port " Max threads: " admin-max-threads)))
+    (info "Protean Admin Server has started Admin Port:" admin-port "Max threads:" admin-max-threads))
   (when-not (conf/admin-server?)
     (jetty/run-jetty
       (-> api-routes handler/api mp/wrap-multipart-params wrap-ignore-trailing-slash)
       { :port (co/int sim-port)
         :join? false
         :max-threads (co/int sim-max-threads)})
-    (info (str "Protean Sim Server has started \n"
-               "Sim Port: " sim-port " Max threads: " sim-max-threads))))
+    (info "Protean Sim Server has started Sim Port:" sim-port "Max threads:" sim-max-threads)))
 
 
 ;; =============================================================================
 ;; Application entry point
 ;; =============================================================================
 
-(defn start [codex-dir]
+(defn start [codex-dir reload]
   (timbre/log-and-rethrow-errors
     (let [sim-port (conf/sim-port)
           sim-max-threads (conf/sim-max-threads)
           admin-port (conf/admin-port)
           admin-max-threads (conf/admin-max-threads)
-          c-dir (or codex-dir (conf/codex-dir))]
+          c-dir (or codex-dir (conf/codex-dir))
+          ;; configure classpath for this instance of protean
+          ;; we currently support local clj artefacts and remote coords (e.g. clojars)
+          ;; TODO: support local jar files in a directory
+          _ (pom/add-classpath c-dir)
+          _ (pom/add-classpath (str (io/file c-dir "clj")))
+          cods (mapv pipe/load-codex (files c-dir "cod.edn"))
+          sims (mapv pipe/load-sim   (files c-dir "sim.edn"))
+          cod? #(s/ends-with? (.getPath %) ".cod.edn")
+          sim? #(s/ends-with? (.getPath %) ".sim.edn")
+          clj? #(s/ends-with? (.getPath %) ".clj")
+          hnd (fn [ctx {f :file kind :kind}]
+                (when-let [msg (cond
+                    (and (.exists f) (cod? f)) (str "loaded codex: "  (.getName f) " - " (pipe/load-codex f))
+                    (and (.exists f) (sim? f)) (str "loaded sim: "    (.getName f) " - " (pipe/load-sim f))
+                    (and (.exists f) (clj? f)) (str "loaded clj: "    (.getName f) " - " (pom/add-classpath f))
+                    (cod? f)                   (str "removed codex: " (.getName f) " - " (pipe/unload-codex f))
+                    (sim? f)                   (str "removed sim: "   (.getName f) " - " (pipe/unload-sim f))
+                    :else                      nil)]
+                  (println msg "Watching for changes. Press enter to exit"))
+                ctx)]
       (info "Starting protean - v" (version))
-      (info "Codex directory : " c-dir)
+      (info "Codex directory:" c-dir)
+      (info "Codices loaded:" (s/join ", " cods))
+      (info "Sim extensions loaded:" (s/join ", " sims))
+      (info "Public static resources can be served from:" (conf/public-dir))
+      (server sim-port sim-max-threads admin-port admin-max-threads)
+      (when reload
+        (println "Watching for changes. Press enter to exit")
+        (hawk/watch! [{:paths [c-dir] :handler hnd}])
+        (loop [input (read-line)]
+          (when-not (= "\n" input)
+            (System/exit 0)
+            (recur (read-line))))))))
 
-      ;; configure classpath for this instance of protean
-      ;; we currently support local clj artefacts and remote coords (e.g. clojars)
-      ;; TODO: support local jar files in a directory
-      (pom/add-classpath c-dir)
-      (pom/add-classpath (str (file c-dir "clj")))
-
-      (info (str "Codices loaded : " (build-services c-dir)))
-      (info (str "Sim extensions loaded : " (build-sims c-dir)))
-      (info (str "Public static resources can be served from : " (conf/public-dir)))
-      (server sim-port sim-max-threads admin-port admin-max-threads))))
-
-(defn -main [& args] (start nil))
+(defn -main [& args] (start nil nil))

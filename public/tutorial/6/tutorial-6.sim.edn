@@ -1,16 +1,11 @@
 (ns protean.tutorial6
-  (:require [me.rossputin.diskops :as dk]
-            [protean.api.transformation.sim :refer :all]))
-
-(defn param2rsp [data-path]
-  (if-let [rsp (dk/file-with-path data-path (path-param "stateId") ".json")]
-    (slurp rsp)
-    (respond 404)))
-
+  (:require [protean.api.transformation.sim :refer :all]))
 {
   "tutorial-6" {
     "play/${stateId}" {
-      :get [#(param2rsp "public/tutorial/6")]
+      :get #(if-let [f (find-path % (str "public/tutorial/6" (path-param "stateId") ".json"))]
+             (respond % 200 (slurp f))
+             (respond % 404))
     }
   }
 }

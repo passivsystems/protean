@@ -1,7 +1,6 @@
 (ns protean.cli.main
   "A basic command line interface for Protean."
   (:require [clojure.string :as s]
-            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.tools.cli :refer [parse-opts]]
             [io.aviso.ansi :as aa]
@@ -10,10 +9,10 @@
             [protean.api.transformation.coerce :as c]
             [protean.core.command.bridge :as b]
             [protean.api.codex.reader :as r]
-            [protean.api.codex.document :as d]
             [me.rossputin.diskops :as dsk]
             [protean.server.main :as ps]
-            [protean.cli.simadmin :as admin])
+            [protean.cli.simadmin :as admin]
+            [hawk.core :as hawk])
   (:gen-class))
 
 ;; =============================================================================
@@ -48,6 +47,7 @@
    ["-d" "--directory DIRECTORY" "Project directory"]
    ["-b" "--body BODY" "JSON body"]
    ["-s" "--status-err STATUS-ERROR" "Error status code"]
+   ["-r" "--reload" "Reload sim server on codex, sim or *.clj change & doc on codex or silk_templates/* change"]
    ["-h" "--help"]])
 
 (defn- usage-hud [options-summary]
@@ -110,38 +110,59 @@
 
 (defn- visit [{:keys [host port file body] :as options}]
   ; TODO fail if b has no commands?
-  (let [b (sane-corpus (c/clj body))]
-    (println (aa/bold-green "Exploring quadrant..."))
-    (let [codices (r/read-codex (conf/protean-home) (io/file file))]
-      (b/visit b codices)
-      (println (aa/bold-green "...finished exploring quadrant")))))
+  (println (aa/bold-green "Exploring quadrant..."))
+  (let [options (merge (sane-corpus (c/clj body)) {:host host :port port})
+        codices (r/read-codex (conf/protean-home) (io/file file))]
+    (b/visit options codices)
+    (println (aa/bold-green "...finished exploring quadrant"))))
 
 (defn- doc
   "If no corpus is passed in to a visit doc command - guess sensible defaults"
-  [{:keys [file]}]
-  (let [codices (r/read-codex (conf/protean-home) (io/file file))
-        svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js {:locs [svc] :commands [:doc]})
-        options {:host nil :port nil :file file :body b}
-        cm (if (.contains (conf/os) "Mac") "open" "firefox")
-        site-dir (str (conf/target-dir) "/site/index.html")
-        abs-site-dir (if (dsk/as-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
-    (visit options)
-    (println "Please see your docs, as demonstrated below.")
-    (println (aa/bold-green (str cm " " abs-site-dir)) "\n")))
+  [{:keys [file reload]}]
+  (defn gen-doc []
+    (let [codices (r/read-codex (conf/protean-home) (io/file file))
+          svc (ffirst (filter #(= (type (key %)) String) codices))
+          b (c/jsn {:locs [svc] :commands [:doc]})
+          options {:host nil :port nil :file file :body b}
+          cm (if (.contains (conf/os) "Mac") "open" "firefox")
+          site-dir (str (conf/target-dir) "/site/index.html")
+          abs-site-dir (if (dsk/as-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
+      (visit options)
+      (println "Please see your docs, as demonstrated below.")
+      (println (aa/bold-green (str cm " " abs-site-dir)) "\n")))
+
+  (defn handler [ctx _]
+    (gen-doc)
+    (println "Watching for changes. Press enter to exit")
+    ctx)
+
+  (gen-doc)
+  (when reload
+    (println "Watching for changes. Press enter to exit")
+    (hawk/watch! [{:paths [(io/file file)]
+                   :filter hawk/file?
+                   :handler handler}
+                  {:paths [(io/file (dsk/parent (io/file file)) "silk_templates")
+                           (io/file (conf/protean-home) "silk_templates")]
+                   :filter hawk/file?
+                   :handler handler}])
+    (loop [input (read-line)]
+      (when-not (= "\n" input)
+        (System/exit 0)
+        (recur (read-line))))))
 
 (defn- integration-test
   "If no corpus is passed in to a visit test command - guess sensible defaults"
-  [{:keys [host port file body]}]
+  [{:keys [host port file body reload]}]
   (let [codices (r/read-codex (conf/protean-home) (io/file file))
         svc (ffirst (filter #(= (type (key %)) String) codices))
-        b (c/js (merge
+        b (c/jsn (merge
             {:locs [svc] :commands [:test] :config {:test-level 1}}
             (c/clj body true)))
-        options {:host host :port port :file file :body b}]
+        options {:host host :port port :file file :body b :reload reload}]
     (visit options)))
 
-(defn- sim [{:keys [host port directory body]}] (ps/start directory))
+(defn- sim [{:keys [host port directory body reload]}] (ps/start directory reload))
 
 
 ;; =============================================================================

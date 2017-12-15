@@ -26,7 +26,6 @@ then
     rm -rf $ROOT_DIR/silk_templates/data/protean-api/*
     rm -rf $ROOT_DIR/silk_templates/site/*
     cp -r $ROOT_DIR/silk_templates $ROOT_DIR/target/deb/usr/lib/protean/silk_templates
-    cp -r $ROOT_DIR/test-data $ROOT_DIR/target/deb/usr/lib/protean/test-data
     cp -r $ROOT_DIR/public $ROOT_DIR/target/deb/usr/lib/protean
     cp -r $ROOT_DIR/build/etc/protean $ROOT_DIR/target/deb/usr/bin
     cp -r $ROOT_DIR/build/etc/protean-server $ROOT_DIR/target/deb/usr/bin

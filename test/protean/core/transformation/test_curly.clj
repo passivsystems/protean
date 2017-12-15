@@ -22,23 +22,23 @@
 (let [analysed '(
   {:method :get
    :uri "http://localhost:3000/curly/query-params"
-   :tree [{:rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+   :tree [{:rsp {:200 {:body-examples ["test/resources/200-ref.json"]}}
            :req {:query-params {"blurb" ["${blurb}" :required]}}
            :vars {"blurb" {:doc "A sample request param", :type :String}}}
           {:get {
-             :rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+             :rsp {:200 {:body-examples ["test/resources/200-ref.json"]}}
              :req {:query-params {"blurb" ["${blurb}" :required]}}
              :vars {"blurb" {:doc "A sample request param", :type :String}}}}
           {"query-params" {
              :get {
-               :rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+               :rsp {:200 {:body-examples ["test/resources/200-ref.json"]}}
                :req {:query-params {"blurb" ["${blurb}" :required]}}
                :vars {"blurb" {:doc "A sample request param", :type :String}}}}}
                :get {
           {:rsp {:200 {:doc OK}}}
           {"curly" {
              "query-params" {
-                 :rsp {:200 {:body-examples ["test-data/content/doc/responses/simple/200-ref.json"]}}
+                 :rsp {:200 {:body-examples ["test/resources/200-ref.json"]}}
                  :req {:query-params {"blurb" ["${blurb}" :required]}}
                  :vars {"blurb" {:doc "A sample request param", :type :String}}}}}
                  :types {:String "[a-zA-Z0-9]+"}

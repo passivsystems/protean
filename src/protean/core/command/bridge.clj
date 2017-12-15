@@ -16,7 +16,6 @@
 
    Links expectations to probe results where outcome is a concern."
   (:require [protean.core.transformation.paths :as p]
-            [me.rossputin.diskops :as d]
             [protean.core.command.probe :as pb]
             ; the multi-dispatch probes
             [protean.core.command.docprobe]
