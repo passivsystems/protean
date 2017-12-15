@@ -1,6 +1,0 @@
-{
-  "type": "http://proteanic.org/api/problems/examples/asynchronous-custom-computation-failure",
-  "title": "The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server.",
-  "detail": "Custom asynchronous calculation X has failed, input/environment are not correct.",
-  "instance": "http://host.port/codex/simple/examples"
-}

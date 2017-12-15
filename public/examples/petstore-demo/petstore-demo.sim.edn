@@ -45,7 +45,7 @@
                     handle (fn [res] (log/info [(str "Response from " url) res]))]
                 (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false}))
                 (in 3000 (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false})))
-                (respond % 200 (slurp (find-path % "test-data/content/doc/responses/simple/200-ref.json")))))
+                (respond % 200 (slurp (find-path % "public/data/content/doc/responses/simple/200-ref.json")))))
     }
 
     "api/uploadImage" {
