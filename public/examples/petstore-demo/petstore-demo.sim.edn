@@ -11,7 +11,7 @@
 
 {
   "petstore-demo" {
-    :sim-cfg {:validating false} ; true by default
+    :sim-cfg {:validate? false} ; true by default
     "api/pet" {
       ;; No validation
       :put #(respond % 200)
