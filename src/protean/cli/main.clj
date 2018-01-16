@@ -205,7 +205,7 @@
       (= cmd i/del-sim) (admin/delete-sim options)
       (= cmd i/visit) (visit options)
       (= cmd i/doc) (doc options)
-      (= cmd i/int-test) (integration-test options)
+      (= cmd i/int-test) (integration-test (update options :port #(if (= % 3001) 3000 %)))
       (= cmd i/sim) (sim options)
       :else (exit 1 (usage-exit summary)))
     (shutdown-agents))) ; write graph image file seems to create threads which are not shutdown

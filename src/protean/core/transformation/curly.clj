@@ -34,7 +34,7 @@
   (str payload (e/url-decode uri)))
 
 (defn- curly-query-params-> [{:keys [query-params] :as request} payload]
-  (let [query (if (and query-params (not (empty? query-params)))
+  (let [query (when (and query-params (not (empty? query-params)))
                 (->> query-params
                      (map #(str (key %) "=" (e/form-encode  (val %))))
                      (s/join "&")

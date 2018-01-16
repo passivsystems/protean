@@ -3,6 +3,7 @@
   (:require [clojure.string :as s]
             [io.aviso.ansi :as aa]
             [protean.config :as conf]
+            [protean.utils :as u]
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
@@ -11,9 +12,9 @@
             [protean.core.transformation.paths :as p]
             [protean.api.transformation.validation :as v]
             [protean.core.transformation.request :as r]
-            [protean.core.command.test :as t]
             [protean.core.command.probe :as pb]
             [protean.core.command.junit :as j]
+            [clj-http.client :as clt]
             [loom.graph :as lg]
             [loom.label :as ll]
             [loom.alg :as la]
@@ -64,12 +65,16 @@
       (-> (d/to-path (conf/protean-home) (first examples) tree) slurp s/trim)
       body)))
 
+(defn- with-opts
+  [params opts?]
+  (remove #(and (not opts?) (.contains (second %) :optional)) params))
+
 (defn- inputs [uri tree corpus]
   (let [include-optional (= 2 (test-level corpus))
         phs (concat (list
               uri
-              (d/qps tree include-optional)
-              (d/fps tree include-optional)
+              (u/update-vals (with-opts (d/qps tree) include-optional) first)
+              (u/update-vals (with-opts (d/fps tree) include-optional) first)
               (d/get-in-tree tree [:req :headers])
               (d/get-in-tree tree [:req :body])
               (body-val tree)))]
@@ -84,30 +89,28 @@
 (defn- outputs-hdrs [response [k v]]
   (when-let [holder (ph/holder? v)]
     (for [ph (map second holder)]
-      (do ;(println "ph:" ph)
-        (when-let [response-value (get-in response [:headers k])]
-          (if-let [extract (ph/read-from v ph response-value)]
-            {:ph ph :val extract}
-            {:error (str "could not extract " ph " from " response-value " with template '" v "'")}))))))
+      (when-let [response-value (get-in response [:headers k])]
+        (if-let [extract (ph/read-from v ph response-value)]
+          {:ph ph :val extract}
+          {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))))
 
 (defn- outputs-body [response [k v]]
   (when-let [holder (ph/holder? v)]
     (let [response-body (get-in response [:body])
           ctype (pp/ctype response)]
       (for [ph (map second holder)]
-        (do ;(println "ph:" ph)
-          (cond
-            (h/txt? ctype) (ph/read-from v ph response-body)
-            (h/xml? ctype) nil ; TODO read from xml
-            :else
-              (try
-                (let [json (co/clj response-body true)]
-                  (when-let [response-value (jp/at-path k json)]
-                    (if-let [extract (ph/read-from v ph response-value)]
-                      {:ph ph :val extract}
-                      {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
-                 (catch Exception e
-                   {:error (str "Could not parse json: " response-body " \n " e)}))))))))
+        (cond
+          (h/txt? ctype) (ph/read-from v ph response-body)
+          (h/xml? ctype) nil ; TODO read from xml
+          :else
+            (try
+              (let [json (co/clj response-body true)]
+                (when-let [response-value (jp/at-path k json)]
+                  (if-let [extract (ph/read-from v ph response-value)]
+                    {:ph ph :val extract}
+                    {:error (str "could not extract " ph " from " response-value " with template '" v "'")})))
+               (catch Exception e
+                 {:error (str "Could not parse json: " response-body " \n " e)})))))))
 
 (defn- outputs-values [tree response]
   (let [res (val (first (d/success-status tree)))
@@ -133,10 +136,16 @@
              [:success "only mandatory" (r/prepare-request method uri tree)]))]
   (for [[type label req-template] req-templates]
     [type label (fn [bag]
-        (let [request (ph/swap req-template tree bag)]
-          (if-let [phs (ph/holder? request)]
-            [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
-            (t/test! request))))])))
+      (let [request (ph/swap req-template tree bag)]
+        (if-let [phs (ph/holder? request)]
+          [request {:error (str "Not all placeholders replaced: " (s/join "," (map first phs)))}]
+          (let [the-request (merge request {:url (:uri request)
+                                            :throw-exceptions false
+                                            :follow-redirects false
+                                            :redirect-strategy :none})
+                response (try (clt/request the-request)
+                            (catch Exception e {:error (.getMessage e)}))]
+            [request response]))))])))
 
 (defmethod pb/build :test [_ {:keys [locs host port excludes] :as corpus} {:keys [svc path method tree] :as entry}]
   (let [f (fn [[esvc emethod epath]] (and
@@ -146,20 +155,14 @@
     ; TODO we may just want to exclude endpoint for success testing -
     ;      could still cover it for negative test cases
     (if (some f excludes)
-      (do
-        (println "skipping " method ":" locs)
-        nil)
-      (do
-        (println "building test probes to visit " method ":" locs)
-        (let [h (or host "localhost")
-              p (or port 3000)
-              uri (uri h p entry)
-              engage-fns (prepare-requests method uri tree corpus)]
-          {:entry entry
-           :inputs (inputs uri tree corpus)
-           :outputs (outputs-names tree)
-           :engage engage-fns
-         })))))
+      (println "skipping " method ":" locs)
+      (let [_ (println "building test probes to visit " method ":" locs)
+            uri (uri host port entry)
+            engage-fns (prepare-requests method uri tree corpus)]
+        {:entry entry
+         :inputs (inputs uri tree corpus)
+         :outputs (outputs-names tree)
+         :engage engage-fns}))))
 
 
 ;; =============================================================================
@@ -186,7 +189,6 @@
         (when (empty? dependencies) (hlr "No endpoint available to provide" input "!"))
         (map #(do [input %]) dependencies))))]
   (mapcat dependency-for (:inputs probe))))
-
 
 (defn- all-input-possibilities
   "Generates graphs for all ways the inputs may be satisfied
@@ -263,10 +265,10 @@
          (conj reses {:entry (:entry probe) :request req :response rsp :label l :type type})]
         (do
           [bag (conj reses {:entry (:entry probe)
-                          :request req
-                          :response (update-in rsp [:failures] conj errors)
-                          :label l
-                          :type type})])))))
+                            :request req
+                            :response (update-in rsp [:failures] conj errors)
+                            :label l
+                            :type type})])))))
 
 (defn- execute [[bag reses] probe]
   (reduce (partial collect-rsp probe) [bag reses] (:engage probe)))
@@ -296,15 +298,16 @@
         ordered-probes (select-path gs (get-in (first probes) [:entry :svc]))
         bag (get-in corpus [:seed])
         no-route-response {:error "no route found to traverse probes (cyclic dependencies)"}
-        print-inputs-outputs (fn [p]
-          (pr-str (label p) " inputs:" (:inputs p) " outputs:" (:outputs p)))]
-      (if (empty? ordered-probes)
-        (map #(do {:entry (:entry %) :request nil :response no-route-response}) probes)
-        (do
-          (println "\nexecuting probes in the following order:\n"
-            (s/join "\n" (map print-inputs-outputs ordered-probes))
-            "\n")
-          (reverse (second (reduce execute [bag (list)] ordered-probes)))))))
+        inputs-outputs-str (fn [p]
+          (pr-str (label p) "inputs:" (:inputs p) "outputs:" (:outputs p)))]
+    (if (empty? ordered-probes)
+      (for [p probes]
+        {:entry (:entry p) :request nil :response no-route-response})
+      (do
+        (println "\nexecuting probes in the following order:\n"
+                 (s/join "\n" (map inputs-outputs-str ordered-probes))
+                 "\n")
+        (reverse (second (reduce execute [bag (list)] ordered-probes)))))))
 
 ;; =============================================================================
 ;; Probe data analysis
@@ -320,14 +323,14 @@
           ; TODO we may get other 4xx errors (e.g. 401 for missing auth header)
           expected-status (if (= type :client-error) "400" (name success-rsp-code))
           ; TODO we may have error headers defined in codex
-          expected-hdrs (if (= type :client-error) [] (d/rsp-hdrs success-rsp-code tree))
-          expected-ctype (d/rsp-ctype success-rsp-code tree)]
-      {:failures (->> (into [] (:failures response))
-                      (v/validate-status expected-status response)
-                      (v/validate-headers expected-hdrs response)
-                      (v/validate-body response expected-ctype
-                      (d/to-path (conf/protean-home) (:body-schema success) tree)
-                      (:body success)))})))
+          expected-hdrs (if (= type :client-error)
+                          []
+                          (u/update-vals (d/rsp-hdrs success-rsp-code tree) #(vector % :required)))
+          schema (d/to-path (conf/protean-home) (:body-schema success) tree)]
+      {:failures (remove nil? (conj (into [] (:failures response))
+                                    (v/validate-status expected-status response)
+                                    (v/validate-headers expected-hdrs (assoc response :tree tree))
+                                    (v/validate-body response schema (:body success))))})))
 
 (defn- interpret-resp [type response error failures]
   (cond
@@ -336,8 +339,6 @@
     :else          (aa/bold-green "pass")))
 
 (defn- print-result [{:keys [entry request response error failures label type]}]
-  ;      (println "result - request:" request)
-  ;      (println "result - response:" response)
   (let [name (str (:method entry) " " (:svc entry) " " (:path entry))
         status (:status response)
         so (interpret-resp type response error failures)]

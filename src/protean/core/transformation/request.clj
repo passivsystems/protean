@@ -2,6 +2,7 @@
   "Building Ring requests."
   (:require [clojure.string :as s]
     [protean.config :as conf]
+    [protean.utils :as u]
     [protean.api.codex.document :as d]
     [protean.api.protocol.http :as h]
     [protean.api.protocol.protean :as pp]
@@ -29,14 +30,22 @@
           :else (f body))]
     (assoc-in payload [:body] body-val)))
 
+(defn- with-opts
+  [params opts?]
+  (remove #(and (not opts?) (.contains (second %) :optional)) params))
+
 (defn prepare-request
   "Prepare payload - may still contain placeholders."
-  [method uri tree & {:keys [include-optional gen-from-schema] :or {include-optional false gen-from-schema false}}]
+  [method uri tree & {:keys [include-optional gen-from-schema]
+                      :or {include-optional false gen-from-schema false}}]
   (-> {:method method :uri uri}
-    (copy-> (d/qps tree include-optional) [:query-params])
-    (copy-> (d/fps tree include-optional) [:form-params])
-    (copy-> (d/req-hdrs tree) [:headers])
-    (content-> tree gen-from-schema)))
+      (copy-> (u/update-vals (with-opts (d/qps tree) include-optional) first)
+              [:query-params])
+      (copy-> (u/update-vals (with-opts (d/fps tree) include-optional) first)
+              [:form-params])
+      (copy-> (u/update-vals (with-opts (d/req-hdrs tree) include-optional) first)
+              [:headers])
+      (content-> tree gen-from-schema)))
 
 (defn- missing-qps [request tree]
   (for [required-qp (keys (d/qps tree false))]

@@ -55,7 +55,7 @@
 
    Uses node data encoded in 'codices' to optionally calculate generative input
    values, or document or sim."
-  [{:keys [host port locs commands seed] :as corpus} codices]
+  [{:keys [locs commands] :as corpus} codices]
   (doseq [cmd commands]
     (pb/config cmd corpus)
     (let [paths (sort-by #(.indexOf (:ordered-resources codices) (:path %)) (p/paths codices locs))

@@ -6,6 +6,7 @@
             [me.rossputin.diskops :as dsk]
             [silk.cli.api :as silk]
             [protean.config :as conf]
+            [protean.utils :as u]
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
@@ -67,18 +68,6 @@
 ;; Probe construction
 ;; =============================================================================
 
-(defn- doc-params [params]
-  (for [[k v] params]
-    {:title k
-     :param-type (:ptype v)
-     :value-type (:type v "Undefined")
-     :regx (cond
-             (:regx v) (str "Custom type defined by regx: " (:regx v))
-             (:type v) (str "Standard type: " (name (:type v)))
-             :else     "The type was not defined")
-     :doc-md (:doc v "")
-     :attr (stg/join " " (:attr v))}))
-
 (defn- doc-hdrs [hdrs]
   (for [[k v] hdrs] {:title k :value v}))
 
@@ -109,38 +98,19 @@
        :rsp-body-schema-title (when add-schema (fname schema))
        :rsp-body-schema (when add-schema (slurp-file schema tree))})))
 
-(defn- input-params [tree uri]
-  (let [inputs {:path (list uri)
-                :header (map val (d/get-in-tree tree [:req :headers]))
-                :query (map val (d/qps tree true))
-                :form (map val (d/fps tree true))
-                :body (concat
-                        (map val (d/get-in-tree tree [:req :body]))
-                        (->> (d/get-in-tree tree [:req :body-examples])
-                             (map #(d/to-path (conf/protean-home) % tree))
-                             (map #(slurp %))))}
-        raw1 (for [[k v] inputs]
-               (for [ph (seq (map second (ph/holder? v)))] {ph k}))
-        raw2 (into {} (filter identity (reduce concat raw1)))
-        raw3 (for [[varname type] raw2]
-               (if-let [structs (:struct (d/get-in-tree tree [:vars varname]))]
-                 (for [[k _] structs] [(str varname "@@" k) (if (= type :path) :matrix type)])
-                 [[varname type]]))
-        placeholders (reduce merge (map #(into {} %) raw3))]
-  (reduce merge
-    (for [[k type] placeholders]
-      (let [keys (stg/split k #"@@")
-            structname (first keys)
-            varname (last keys)]
-        {(stg/join "." keys)
-          (-> (d/get-in-tree tree [:vars varname])
-              (merge {:attr (cond
-                              (= type :form)     (drop 1 (d/get-in-tree tree [:req :form-params varname]))
-                              (= type :query)    (drop 1 (d/get-in-tree tree [:req :query-params varname]))
-                              (> (count keys) 1) (drop 1 (d/get-in-tree tree [:vars structname :struct varname]))
-                              :else              nil)})
-              (merge {:ptype (stg/capitalize (name type))})
-              (merge {:regx (d/get-in-tree tree [:types (d/get-in-tree tree [:vars varname :type])])}))})))))
+(defn- doc-params [tree type params]
+  (defn trunc [s n] (str (subs s 0 (min (count s) n))
+                         (when (> (count s) n) "...")))
+  (for [[k v] params]
+    (let [placeholders (map second (ph/holder? (first v)))
+          var-value (d/get-in-tree tree [:vars (first placeholders)])
+          regex-str (str (ph/regex-pattern tree (first v)))]
+      {:title k
+       :param-type type
+       :value-type  (trunc regex-str 100)
+       :regx regex-str
+       :doc-md (:doc var-value "")
+       :attr (stg/join ", " (map #(stg/capitalize (name %)) (drop 1 v)))})))
 
 (defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
@@ -166,6 +136,11 @@
           schema (d/get-in-tree tree [:req :body-schema])
           site {:site-name (d/get-in-tree main [:title])
                 :site-doc-md (if-let [d (d/get-in-tree main [:doc])] d "")}
+          holders (ph/holder? uri)
+          pps (into {} (for [[k v] (remove #(stg/starts-with? (second %) ";") holders)]
+                         {v [k :required]}))
+          mps (into {} (for [[k v] (filter #(stg/starts-with? (second %) ";") holders)]
+                         (u/update-keys (d/mps tree v) #(str v "." %))))
           full {:id id
                 :#id (str "#" id )
                 :path (if (= path "/") (str svc) (str svc "/" path))
@@ -177,8 +152,13 @@
                 :#req-body-schema-id (when schema (str "#schema-" id))
                 :req-body-schema-title (when schema (fname schema))
                 :req-body-schema (when schema (slurp-file schema tree))
-                :req-params (sort-by (juxt :param-type :title) (doc-params (input-params tree uri)))
-                :req-headers (doc-hdrs (d/req-hdrs tree))
+                :req-params (concat
+                              (doc-params tree "Header" (d/req-hdrs tree))
+                              (doc-params tree "Path"   pps)
+                              (doc-params tree "Matrix" mps)
+                              (doc-params tree "Query"  (d/qps tree))
+                              (doc-params tree "Form"   (d/fps tree)))
+                ; :req-headers (doc-hdrs (d/req-hdrs tree))
                 :req-body-examples (doc-body-examples id "req" tree (d/get-in-tree tree [:req :body-examples]))
                 :responses (concat
                             (map #(assoc % :class "success") (doc-status-codes id tree method (d/success-status tree)))
