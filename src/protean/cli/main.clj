@@ -35,6 +35,13 @@
 
 (defn- sane-corpus [m] (-> m nice-keys (update-in [:commands] nice-vals)))
 
+;; No defaults
+(def cli-doc-options
+  [["-p" "--port PORT" "Port number"]
+   ["-H" "--host HOST" "Host name"]
+   ["-f" "--file FILE" "Project configuration file"]
+   ["-r" "--reload" "Reload sim server on codex, sim or *.clj change & doc on codex or silk_templates/* change"]])
+
 (def cli-options
   [["-p" "--port PORT" "Port number"
     :default 3001
@@ -118,12 +125,12 @@
 
 (defn- doc
   "If no corpus is passed in to a visit doc command - guess sensible defaults"
-  [{:keys [file reload]}]
+  [{:keys [host port file reload]}]
   (defn gen-doc []
     (let [codices (r/read-codex (conf/protean-home) (io/file file))
           svc (ffirst (filter #(= (type (key %)) String) codices))
           b (c/jsn {:locs [svc] :commands [:doc]})
-          options {:host nil :port nil :file file :body b}
+          options {:host host :port port :file file :body b}
           cm (if (.contains (conf/os) "Mac") "open" "firefox")
           site-dir (str (conf/target-dir) "/site/index.html")
           abs-site-dir (if (dsk/as-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
@@ -204,7 +211,7 @@
       (= cmd i/add-sims) (admin/add-sims options)
       (= cmd i/del-sim) (admin/delete-sim options)
       (= cmd i/visit) (visit options)
-      (= cmd i/doc) (doc options)
+      (= cmd i/doc) (doc (:options (parse-opts args cli-doc-options)))
       (= cmd i/int-test) (integration-test (update options :port #(if (= % 3001) 3000 %)))
       (= cmd i/sim) (sim options)
       :else (exit 1 (usage-exit summary)))

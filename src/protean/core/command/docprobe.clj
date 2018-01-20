@@ -112,7 +112,7 @@
        :doc-md (:doc var-value "")
        :attr (stg/join ", " (map #(stg/capitalize (name %)) (drop 1 v)))})))
 
-(defmethod pb/build :doc [_ {:keys [locs] :as corpus} entry]
+(defmethod pb/build :doc [_ {:keys [locs host port] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
   ; TODO review this
   ;      we should prepare staging in config step, since build is executed
@@ -125,7 +125,7 @@
   {:entry entry
    :engage (fn []
     (let [{:keys [svc method tree path codex-order] :as e} entry
-          uri (p/uri "host" 1234 svc path)
+          uri (p/uri (or host "host") (or port 1234) svc path)
           id (str (name method) (-> uri
                                     (ph/replace-all-with #(str "_" % "_"))
                                     (stg/replace #";" "")
