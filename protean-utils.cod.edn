@@ -8,6 +8,7 @@
 
   "protean-utils" {
     "echo" {
+      :get   {:doc "An echo endpoint" :rsp {:200 {} :400 {}}}
       :post  {:doc "An echo endpoint" :rsp {:201 {} :400 {}}}
       :put   {:doc "An echo endpoint" :rsp {:204 {} :400 {}}}
       :patch {:doc "An echo endpoint" :rsp {:204 {} :400 {}}}
