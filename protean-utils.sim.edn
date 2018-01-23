@@ -9,7 +9,7 @@
 ;; Utility Functions
 ;; =============================================================================
 
-(defn echo [req] (l/info ">>>> echo request: " req))
+(defn echo [req] (l/info ">>>> echo request: " (dissoc req :tree :response :endpoint :protean-home)))
 
 ;; =============================================================================
 ;; Utility Endpoints
@@ -18,6 +18,7 @@
 {
   "protean-utils" {
     "echo" {
+      :get (fn [req] (echo req) (respond req 200))
       :post (fn [req] (echo req) (respond req 201))
       :put (fn [req] (echo req) (respond req 204))
       :patch (fn [req] (echo req) (respond req 204))
