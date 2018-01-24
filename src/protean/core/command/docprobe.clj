@@ -90,7 +90,7 @@
           add-schema (and success-body schema)]
       {:code (name rsp-code)
        :doc-md (:doc v (rsp-code h/status-docs))
-       :headers (if-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h) "N/A")
+       :headers (when-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h))
        :rsp-first-body-example (first examples)
        :rsp-body-examples (drop 1 examples)
        :rsp-body-schema-id (when add-schema (str "schema-" (name rsp-code) "-" id))
