@@ -1,1 +1,5 @@
-{"status":"available","name":"puss"}
+{
+  "petId": "${petId}",
+  "status":"available",
+  "name":"puss"
+}
