@@ -139,8 +139,7 @@
           holders (ph/holder? uri)
           pps (into {} (for [[k v] (remove #(stg/starts-with? (second %) ";") holders)]
                          {v [k :required]}))
-          mps (into {} (for [[k v] (filter #(stg/starts-with? (second %) ";") holders)]
-                         (u/update-keys (d/mps tree v) #(str v "." %))))
+          mps (d/mps tree (vals (into {} holders)))
           full {:id id
                 :#id (str "#" id )
                 :path (if (= path "/") (str svc) (str svc "/" path))
