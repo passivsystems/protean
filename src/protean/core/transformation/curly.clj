@@ -61,7 +61,7 @@
   (let [request-template (r/prepare-request method uri tree :include-optional true)
         ; Note, placeholder generation will be different each time we request them
         ; also may not be url friendly (though we will encode them)
-        request (ph/swap request-template tree {})]
+        request (ph/swap request-template tree {} :gen-all true)]
     (curly-request-> request)))
 
 ;; =============================================================================
