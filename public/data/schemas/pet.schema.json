@@ -4,7 +4,7 @@
   "title": "pet",
   "description": "Pet representation",
   "properties": {
-    "id": { "type": "string" },
+    "petId": { "type": "string" },
     "status": { "type": "string", "enum": ["available", "pending", "sold"] },
     "name": { "type": "string" },
     "age": { "type": "integer" }
