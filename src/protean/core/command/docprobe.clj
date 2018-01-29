@@ -82,13 +82,14 @@
 (defn- name-pun [k] (if k (name k) ""))
 
 ; TODO: this conflates things - separate
-(defn- doc-status-codes [id tree method statuses]
+(defn- doc-status-codes [id css tree method statuses]
   (for [[rsp-code v] statuses]
     (let [schema (d/get-in-tree tree [:rsp :200 :body-schema])
           examples (doc-body-examples id "rsp" tree (:body-examples v))
           success-body (re-matches #"[2]\d\d" (name-pun (ffirst statuses)))
           add-schema (and success-body schema)]
       {:code (name rsp-code)
+       :class css
        :doc-md (:doc v (rsp-code h/status-docs))
        :headers (when-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h))
        :rsp-first-body-example (first examples)
@@ -114,56 +115,40 @@
 
 (defmethod pb/build :doc [_ {:keys [locs host port] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
-  ; TODO review this
-  ;      we should prepare staging in config step, since build is executed
-  ;      multiple times for each entry.
-  ;      However to resolve the silk-template we need tree (for :codex-dir)
-  ;      an alternative is to store :codex-dir in corpus, but this assumes
-  ;      probes never run against entries from multiple codices
-  ;      (which certainly is the assumption for docprobe, which generates a single output doc)
-  (prep-staging "silk_templates" (:tree entry))
-  {:entry entry
-   :engage (fn []
-    (let [{:keys [svc method tree path codex-order] :as e} entry
-          uri (p/uri (or host "host") (or port 1234) svc path)
-          id (str (name method) (-> uri
-                                    (ph/replace-all-with #(str "_" % "_"))
-                                    (stg/replace #";" "")
-                                    (URI.)
-                                    (.getPath)
-                                    (stg/replace #"/" "-")))
-          main (filter #(get-in % [:title]) tree)
-          schema (d/get-in-tree tree [:req :body-schema])
-          site {:site-name (d/get-in-tree main [:title])
-                :site-doc-md (if-let [d (d/get-in-tree main [:doc])] d "")}
-          holders (ph/holder? uri)
-          pps (into {} (for [[k v] (remove #(stg/starts-with? (second %) ";") holders)]
-                         {v [k :required]}))
-          mps (d/mps tree (vals (into {} holders)))
-          full {:id id
-                :#id (str "#" id )
-                :path (if (= path "/") (str svc) (str svc "/" path))
-                :codex-order codex-order
-                :curl (c/curly-entry-> (assoc-in e [:uri] uri))
-                :doc-md (d/get-in-tree tree [:doc])
-                :method (name method)
-                :req-body-schema-id (when schema (str "schema-" id))
-                :#req-body-schema-id (when schema (str "#schema-" id))
-                :req-body-schema-title (when schema (fname schema))
-                :req-body-schema (when schema (slurp-file schema tree))
-                :req-params (concat
-                              (doc-params tree "Header" (d/req-hdrs tree))
-                              (doc-params tree "Path"   pps)
-                              (doc-params tree "Matrix" mps)
-                              (doc-params tree "Query"  (d/qps tree))
-                              (doc-params tree "Form"   (d/fps tree)))
-                ; :req-headers (doc-hdrs (d/req-hdrs tree))
-                :req-body-examples (doc-body-examples id "req" tree (d/get-in-tree tree [:req :body-examples]))
-                :responses (concat
-                            (map #(assoc % :class "success") (doc-status-codes id tree method (d/success-status tree)))
-                            (map #(assoc % :class "danger") (doc-status-codes id tree method (d/error-status tree))))}]
-      (spit-to (str data-dir "/global/site.edn") (pr-str site))
-      (spit-to (str data-dir "/api/" id ".edn") (pr-str full))))})
+  (let [{:keys [svc method tree path codex-order] :as e} entry
+        uri (p/uri (or host "host") (or port 1234) svc path)
+        id (str (name method) (-> uri
+                                  (ph/replace-all-with #(str "_" % "_"))
+                                  (stg/replace #";" "")
+                                  (URI.)
+                                  (.getPath)
+                                  (stg/replace #"/" "-")))
+        schema (d/get-in-tree tree [:req :body-schema])
+        holders (ph/holder? uri)]
+    {:entry entry
+     :engage
+      {:id id
+       :#id (str "#" id )
+       :path (if (= path "/") (str svc) (str svc "/" path))
+       :codex-order codex-order
+       :curl (c/curly-entry-> (assoc-in e [:uri] uri))
+       :doc-md (d/get-in-tree tree [:doc])
+       :method (name method)
+       :req-body-schema-id (when schema (str "schema-" id))
+       :#req-body-schema-id (when schema (str "#schema-" id))
+       :req-body-schema-title (when schema (fname schema))
+       :req-body-schema (when schema (slurp-file schema tree))
+       :req-params (concat
+                     (doc-params tree "Header" (d/req-hdrs tree))
+                     (doc-params tree "Path" (into {} (for [[k v] (remove #(stg/starts-with? (second %) ";") holders)]
+                                               {v [k :required]})))
+                     (doc-params tree "Matrix" (d/mps tree (vals (into {} holders))))
+                     (doc-params tree "Query" (d/qps tree))
+                     (doc-params tree "Form" (d/fps tree)))
+       :req-body-examples (doc-body-examples id "req" tree (d/get-in-tree tree [:req :body-examples]))
+       :responses (concat
+                    (doc-status-codes id "success" tree method (d/success-status tree))
+                    (doc-status-codes id "danger" tree method (d/error-status tree)))}}))
 
 ;; =============================================================================
 ;; Probe dispatch
@@ -171,8 +156,7 @@
 
 (defmethod pb/dispatch :doc [_ corpus probes]
   (hlg "dispatching probes")
-  (doall (map (fn [x] [(:entry x) ((:engage x))]) probes)))
-
+  (doall (map (fn [x] [(:entry x) (:engage x)]) probes)))
 
 ;; =============================================================================
 ;; Probe data analysis
@@ -180,5 +164,14 @@
 
 (defmethod pb/analyse :doc [_ corpus results]
   (hlg "analysing probe data")
+  (let [tree (:tree (ffirst results))
+        main (filter #(:title %) tree)
+        site {:site-name (d/get-in-tree main [:title])
+              :site-doc-md (str (d/get-in-tree main [:doc]))}]
+    (prep-staging "silk_templates" tree)
+    (spit-to (str data-dir "/global/site.edn") (pr-str site))
+    (doseq [[_ api] results]
+      (spit-to (str data-dir "/api/" (:id api) ".edn") (pr-str api))))
+
   (silk/spin silk-staging-dir)
   (dsk/copy-recursive (str silk-staging-dir "/site") (conf/target-dir)))
