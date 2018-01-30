@@ -33,14 +33,10 @@
 
 (defn curl-option [] (or (env :protean-curl-option) "-i"))
 
-(defn- to-bool [str]
-  (some
-    #{(s/lower-case str)}
-    ["on" "true" "yes" "y"]))
+(defn- to-bool [str] (some #{(s/lower-case str)} ["on" "true" "yes" "y"]))
 
-(defn curl-flatten? []
-  (to-bool (or (env :protean-curl-flatten) "on")))
+(defn curl-flatten? [] (to-bool (or (env :protean-curl-flatten) "on")))
 
-(defn admin-server? [] (to-bool (or (env :protean-admin-server) "false")))
+(defn admin-server? [] (to-bool (or (env :protean-admin-server) "true")))
 
-(defn sim-server? [] (to-bool (or (env :protean-sim-server) "false")))
+(defn sim-server? [] (to-bool (or (env :protean-sim-server) "true")))

@@ -69,7 +69,7 @@
     (handler (update-in request [:uri] s/replace #"(?<=.)/$" ""))))
 
 (defn- server [sim-port sim-max-threads admin-port admin-max-threads]
-  (when-not (conf/sim-server?)
+  (when (conf/admin-server?)
     (jetty/run-jetty
       (-> admin-routes
           wrap-multipart-params)
@@ -77,7 +77,7 @@
        :join? false
        :max-threads (co/int admin-max-threads)})
     (info "Protean Admin Server has started Admin Port:" admin-port "Max threads:" admin-max-threads))
-  (when-not (conf/admin-server?)
+  (when (conf/sim-server?)
     (jetty/run-jetty
       (-> api-routes
           wrap-params
