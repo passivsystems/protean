@@ -30,8 +30,7 @@
     (map to-xml failures)))
 
 (defn- testcase-to-xml [{:keys [entry request response error failures] :as result}]
-  (let [status (:status response)
-        name (str (:method entry) " " (:svc entry) " " (:path entry))
+  (let [name (str (:method entry) " " (:svc entry) " " (:path entry))
         classname "classname"
         time "time ms"
         out (str "Entry:" (co/pretty-jsn entry) "\n"

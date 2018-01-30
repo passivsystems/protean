@@ -3,16 +3,17 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as s]
             [ring.adapter.jetty :as jetty]
-            [ring.middleware.multipart-params :as mp]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [ring.middleware.nested-params :refer [wrap-nested-params]]
+            [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+            [ring.middleware.params :refer [wrap-params]]
             [compojure.core :refer [defroutes ANY DELETE GET POST PUT]]
-            [compojure.handler :as handler]
             [compojure.route :as route]
             [cemerick.pomegranate :as pom]
             [me.rossputin.diskops :as do]
             [protean.config :as conf]
             [protean.server.pipeline :as pipe]
             [protean.api.transformation.coerce :as co]
-            [clojure.pprint]
             [taoensso.timbre.appenders.core :as appenders]
             [hawk.core :as hawk])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
@@ -70,17 +71,23 @@
 (defn- server [sim-port sim-max-threads admin-port admin-max-threads]
   (when-not (conf/sim-server?)
     (jetty/run-jetty
-      (-> admin-routes mp/wrap-multipart-params)
-      { :port (co/int admin-port)
-        :join? false
-        :max-threads (co/int admin-max-threads)})
+      (-> admin-routes
+          wrap-multipart-params)
+      {:port (co/int admin-port)
+       :join? false
+       :max-threads (co/int admin-max-threads)})
     (info "Protean Admin Server has started Admin Port:" admin-port "Max threads:" admin-max-threads))
   (when-not (conf/admin-server?)
     (jetty/run-jetty
-      (-> api-routes handler/api mp/wrap-multipart-params wrap-ignore-trailing-slash)
-      { :port (co/int sim-port)
-        :join? false
-        :max-threads (co/int sim-max-threads)})
+      (-> api-routes
+          wrap-params
+          wrap-nested-params
+          wrap-keyword-params
+          wrap-multipart-params
+          wrap-ignore-trailing-slash)
+      {:port (co/int sim-port)
+       :join? false
+       :max-threads (co/int sim-max-threads)})
     (info "Protean Sim Server has started Sim Port:" sim-port "Max threads:" sim-max-threads)))
 
 

@@ -9,8 +9,7 @@
             [protean.api.codex.reader :as r]
             [protean.core.transformation.paths :as p]
             [protean.core.transformation.request :as req])
-  (:use [clojure.java.io :refer [file]]
-        [taoensso.timbre :as timbre :only (trace debug info warn error)])
+  (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.IOException))
 
 ;; =============================================================================
@@ -56,10 +55,6 @@
 
 (defn- prep-request [{:keys [tree method uri]}]
   (req/prepare-request method uri tree :include-optional true))
-
-(defn- custom-keys
-  "returns only keys which are not keywords"
-  [c] (seq (remove keyword? (keys c))))
 
 (defn- sim-cfg
   "returns a merge of the first two levels of sim config (global and svc)"

@@ -6,7 +6,6 @@
             [me.rossputin.diskops :as dsk]
             [silk.cli.api :as silk]
             [protean.config :as conf]
-            [protean.utils :as u]
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
@@ -67,9 +66,6 @@
 ;; =============================================================================
 ;; Probe construction
 ;; =============================================================================
-
-(defn- doc-hdrs [hdrs]
-  (for [[k v] hdrs] {:title k :value v}))
 
 (defn- doc-body-examples [id type tree paths]
   (defn handle [idx itm]

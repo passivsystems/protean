@@ -48,12 +48,12 @@
       (content-> tree gen-from-schema)))
 
 (defn- missing-qps [request tree]
-  (for [required-qp (keys (d/qps tree false))]
+  (for [required-qp (keys (with-opts (d/qps tree) false))]
     [(str "missing required query-param: " required-qp)
      (update-in request [:query-params] dissoc required-qp)]))
 
 (defn- missing-fps [request tree]
-  (for [required-fp (keys (d/qps tree false))]
+  (for [required-fp (keys (with-opts (d/fps tree) false))]
     [(str "missing required form-param: " required-fp)
      (update-in request [:form-params] dissoc required-fp)]))
 

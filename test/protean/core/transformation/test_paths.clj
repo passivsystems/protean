@@ -1,6 +1,5 @@
 (ns protean.core.transformation.test-paths
-  (:require [clojure.pprint]
-            [clojure.java.io :refer [file]]
+  (:require [clojure.java.io :refer [file]]
             [protean.config :as conf]
             [protean.api.codex.reader :as r]
             [protean.core.transformation.paths :refer [paths]]
