@@ -23,30 +23,26 @@
                 <td colspan="2"></td>
               </tr>
               <tr data-sw-class="responses.class">
-                <td class="small">Status</td>
-                <td data-sw-text="responses.code">N/A</td>
-              </tr>
-              <tr data-sw-class="responses.class">
-                <td class="small">Description</td>
-                <td data-sw-text="responses.doc-md">N/A</td>
+                <th data-sw-text="responses.code">Placeholder for response status</th>
+                <td data-sw-text="responses.doc-md">Placeholder for response description</td>
               </tr>
               <tr data-sw-class="responses.class" data-sw-when="responses.headers">
-                <td class="small">Headers</td>
-                <td data-sw-text="responses.headers">N/A</td>
+                <th>Headers</th>
+                <td data-sw-text="responses.headers">Placeholder for response headers</td>
               </tr>
               <tr data-sw-class="responses.class" data-sw-when="responses.rsp-first-body-example">
-                <td class="small">Sample responses</td>
+                <th>Body Examples</th>
                 <td data-sw-component="response-body-examples">Placeholder for response body examples</td>
               </tr>
               <tr data-sw-class="responses.class" data-sw-when="responses.rsp-body-schema-id">
-                <td class="small">Response Schema</td>
+                <th>Schema</th>
                 <td data-sw-component="response-schema">Placeholder for response schema</td>
               </tr>
             </tbody>
           </table>
         </div>
         <div data-sw-when-not="responses">
-          N/A
+          Responses have not been defined!
         </div>
       </section>
     </li>

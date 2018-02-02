@@ -5,6 +5,10 @@
   margin: 10mm 5mm 10mm 5mm;
 }
 
+*, ::after, ::before {
+  color: auto !important;
+}
+
 .navbar, .btn-clipboard {
   display: none !important;
 }
@@ -34,6 +38,50 @@ h1, .page-header {
 
 /* Show body examples */
 div, span, p, pre {
-  max-height: none !important;;
+  max-height: none !important;
   overflow: visible !important;
+  page-break-inside: auto;
+}
+
+tr.blank-row td {
+  margin: 0px !important;
+  padding: 0px !important;
+}
+
+.modal-link {
+  display: none;
+}
+
+.modal {
+  position: relative;
+  display: block;
+}
+
+.fade {
+  opacity: 100;
+}
+
+.modal-header, .modal-footer {
+  display: none;
+}
+
+.modal-body {
+  position: relative !important;
+  display: block !important;
+  padding: 0px;
+}
+
+.modal-body .method-path {
+  display: none;
+}
+
+.modal.fade .modal-dialog {
+  transform: none;
+}
+.modal-lg {
+  width: auto;
+  margin: 0px;
+}
+.modal-content {
+  border: none;
 }
