@@ -28,7 +28,22 @@
               </tr>
               <tr data-sw-class="responses.class" data-sw-when="responses.headers">
                 <th>Headers</th>
-                <td data-sw-text="responses.headers">Placeholder for response headers</td>
+                <td>
+                  <table class="table table-striped">
+                    <tbody>
+                      <tr>
+                        <td data-sw-text="responses.headers.title"></td>
+                        <td>
+                          <a href="#self" data-sw-text="responses.headers.value-type"
+                                          data-toggle="tooltip"
+                                          data-sw-title="responses.headers.regx"></a>
+                        </td>
+                        <td data-sw-text="responses.headers.doc-md"></td>
+                        <td data-sw-text="responses.headers.attr"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
               </tr>
               <tr data-sw-class="responses.class" data-sw-when="responses.rsp-first-body-example">
                 <th>Body Examples</th>

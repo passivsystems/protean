@@ -75,7 +75,7 @@
               uri
               (u/update-vals (with-opts (d/qps tree) include-optional) first)
               (u/update-vals (with-opts (d/fps tree) include-optional) first)
-              (d/get-in-tree tree [:req :headers])
+              (u/update-vals (with-opts (d/req-hdrs tree) include-optional) first)
               (d/get-in-tree tree [:req :body])
               (body-val tree)))]
     (mapcat collect-params phs)))
@@ -325,7 +325,7 @@
           ; TODO we may have error headers defined in codex
           expected-hdrs (if (= type :client-error)
                           []
-                          (u/update-vals (d/rsp-hdrs success-rsp-code tree) #(vector % :required)))
+                          (d/rsp-hdrs success-rsp-code tree))
           schema (d/to-path (conf/protean-home) (:body-schema success) tree)]
       {:failures (remove nil? (conj (into [] (:failures response))
                                     (v/validate-status expected-status response)

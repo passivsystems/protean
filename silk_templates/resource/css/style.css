@@ -118,6 +118,7 @@ table.response th {
   text-align: center;
   font-weight: normal;
   border-color: #fff !important;
+  vertical-align: middle !important;
 }
 
 table.response td {
@@ -128,6 +129,10 @@ table.response td {
 table.response td p {
   padding: 0px;
   margin: 0px;
+}
+
+table.response table td {
+  border-color: #ddd !important;
 }
 
 tr.blank-row td {

@@ -77,24 +77,6 @@
 
 (defn- name-pun [k] (if k (name k) ""))
 
-; TODO: this conflates things - separate
-(defn- doc-status-codes [id css tree method statuses]
-  (for [[rsp-code v] statuses]
-    (let [schema (d/get-in-tree tree [:rsp :200 :body-schema])
-          examples (doc-body-examples id "rsp" tree (:body-examples v))
-          success-body (re-matches #"[2]\d\d" (name-pun (ffirst statuses)))
-          add-schema (and success-body schema)]
-      {:code (name rsp-code)
-       :class css
-       :doc-md (:doc v (rsp-code h/status-docs))
-       :headers (when-let [h (d/rsp-hdrs rsp-code tree)] (pr-str h))
-       :rsp-first-body-example (first examples)
-       :rsp-body-examples (drop 1 examples)
-       :rsp-body-schema-id (when add-schema (str "schema-" (name rsp-code) "-" id))
-       :#rsp-body-schema-id (when add-schema (str "#schema-" (name rsp-code) "-" id))
-       :rsp-body-schema-title (when add-schema (fname schema))
-       :rsp-body-schema (when add-schema (slurp-file schema tree))})))
-
 (defn- doc-params [tree type params]
   (defn trunc [s n] (str (subs s 0 (min (count s) n))
                          (when (> (count s) n) "...")))
@@ -108,6 +90,24 @@
        :regx regex-str
        :doc-md (:doc var-value "")
        :attr (stg/join ", " (map #(stg/capitalize (name %)) (drop 1 v)))})))
+
+; TODO: this conflates things - separate
+(defn- doc-status-codes [id css tree method statuses]
+  (for [[rsp-code v] statuses]
+    (let [schema (d/get-in-tree tree [:rsp :200 :body-schema])
+          examples (doc-body-examples id "rsp" tree (:body-examples v))
+          success-body (re-matches #"[2]\d\d" (name-pun (ffirst statuses)))
+          add-schema (and success-body schema)]
+      {:code (name rsp-code)
+       :class css
+       :doc-md (:doc v (rsp-code h/status-docs))
+       :headers (doc-params tree "Header" (d/rsp-hdrs rsp-code tree))
+       :rsp-first-body-example (first examples)
+       :rsp-body-examples (drop 1 examples)
+       :rsp-body-schema-id (when add-schema (str "schema-" (name rsp-code) "-" id))
+       :#rsp-body-schema-id (when add-schema (str "#schema-" (name rsp-code) "-" id))
+       :rsp-body-schema-title (when add-schema (fname schema))
+       :rsp-body-schema (when add-schema (slurp-file schema tree))})))
 
 (defmethod pb/build :doc [_ {:keys [locs host port] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
