@@ -1,6 +1,6 @@
 language: clojure
 
-script: lein2 expectations
+script: lein expectations
 
 branches:
   only:
