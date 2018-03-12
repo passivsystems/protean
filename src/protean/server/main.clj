@@ -52,7 +52,8 @@
   (PUT    "/sims" req (pipe/put-sims req))
   (DELETE "/sims/:id" [id] (pipe/del-sim-handled id))
   (GET    "/status" [] (pipe/status))
-  (GET    "/version" [] (pipe/version (version))))
+  (GET    "/version" [] (pipe/version (version)))
+  (route/not-found nil))
 
 (defroutes api-routes
   (ANY "*" req (pipe/api req)))
