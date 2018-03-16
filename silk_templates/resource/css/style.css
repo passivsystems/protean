@@ -176,6 +176,9 @@ section div.page-header {
 
 /* Show and affix the side nav when space allows it */
 @media screen and (min-width: 992px) {
+  .container-fluid {
+    overflow-x: hidden;
+  }
   /* Widen the fixed sidebar */
   .bs-sidebar-affix {
     width: inherit;
