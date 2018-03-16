@@ -70,13 +70,6 @@ section {
   font-size: 90%;
 }
 
-/* a.company-brand {
-  float:right;
-  padding:10px;
-  font-size: 25px;
-  color:#ff6600;
-} */
-
 pre {
   white-space: pre-wrap;       /* css-3 */
   white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
@@ -85,10 +78,6 @@ pre {
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
   max-height: 400px;
 }
-
-/* ul, ol {
-  margin-bottom: 10px !important; /* For markdown pargraph, list, pargraph styling */
-} */
 
 ol.nav, ul.nav {
   margin-bottom: 0px !important;
@@ -152,8 +141,6 @@ div.modal-footer {
 section div.page-header {
   padding-top: 76px;
   margin-top: -76px;
-	/* border-bottom: 1px solid rgba(0,0,0,.1);
-  margin-bottom: 16px; */
 }
 
 .bd-clipboard {
@@ -172,12 +159,14 @@ section div.page-header {
   color: #818a91;
   cursor: pointer;
   background-color: #f7f7f9;
-  border-color: #f7f7f9;260
+  border-color: #f7f7f9;
 }
 
 .snippet {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
+  padding-right: .75rem;
+  padding-left: .75rem;
   background-color: #f7f7f9;
 }
 
