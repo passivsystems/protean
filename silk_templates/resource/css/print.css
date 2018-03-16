@@ -9,13 +9,16 @@
   color: auto !important;
 }
 
+a {
+  text-decoration: none !important;
+}
+
 .navbar, .btn-clipboard {
   display: none !important;
 }
 
-body, section, article, .jumbotron, .bs-sidebar, ul, ol {
-  margin: 0mm !important;
-  padding: 0mm !important;
+.row {
+  display: block; /* firefox issue when display: flex; */
 }
 
 section {
@@ -28,8 +31,18 @@ h1, .page-header {
   border-bottom: 0.1mm solid #eee;
 }
 
-.label {
+.jumbotron, .snippet {
+  margin: 0mm !important;
+  padding: 0mm !important;
+}
+
+pre {
   border: none;
+}
+
+.badge {
+  border: none;
+  color: #000;
 }
 
 .jumbotron p {
