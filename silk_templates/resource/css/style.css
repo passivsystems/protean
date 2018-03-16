@@ -9,19 +9,18 @@ body {
   margin: 70px auto 0px auto;
 }
 
-.jumbotron {
-  margin-bottom: 10px;
+section {
+  margin-bottom: 30px;
 }
 
 /* By default it's not affixed in mobile views, so undo that */
-.bs-sidebar.affix {
+.bs-sidebar-affix {
   position: static;
   margin-top: 10px;
 }
 
 /* First level of nav */
 .bs-sidenav {
-  margin-top: 20px;
   margin-bottom: 30px;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -32,6 +31,7 @@ body {
 /* All levels of nav */
 .bs-sidebar .nav > li > a {
   display: block;
+  outline: 0;
   color: #716b7a;
   padding: 5px 10px;
   word-wrap: auto;
@@ -44,14 +44,18 @@ body {
   text-decoration: none;
   background-color: #e5e3e9;
   border-right: 1px solid #dbd8e0;
+  border-top: none;
+  border-bottom: none;
 }
-.bs-sidebar .nav > .active > a,
-.bs-sidebar .nav > .active:hover > a,
-.bs-sidebar .nav > .active:focus > a {
+.bs-sidebar .nav > li > a.active,
+.bs-sidebar .nav > li > a.active:hover,
+.bs-sidebar .nav > li > a.active:focus {
   font-weight: bold;
   color: #563d7c;
   background-color: transparent;
   border-right: 1px solid #563d7c;
+  border-top: none !important;
+  border-bottom: none;
 }
 
 /* Nav: second level (shown on .active) */
@@ -66,12 +70,12 @@ body {
   font-size: 90%;
 }
 
-a.company-brand {
+/* a.company-brand {
   float:right;
   padding:10px;
   font-size: 25px;
   color:#ff6600;
-}
+} */
 
 pre {
   white-space: pre-wrap;       /* css-3 */
@@ -80,13 +84,11 @@ pre {
   white-space: -o-pre-wrap;    /* Opera 7 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
   max-height: 400px;
-  margin: 0px;
-  padding: 0px;
 }
 
-ul, ol {
+/* ul, ol {
   margin-bottom: 10px !important; /* For markdown pargraph, list, pargraph styling */
-}
+} */
 
 ol.nav, ul.nav {
   margin-bottom: 0px !important;
@@ -144,47 +146,67 @@ td.small {
 }
 
 div.modal-footer {
-  text-align: center;
+  justify-content: center;
 }
 
 section div.page-header {
-  padding-top: 40px;
-  margin-top: -40px;
+  padding-top: 76px;
+  margin-top: -76px;
+	/* border-bottom: 1px solid rgba(0,0,0,.1);
+  margin-bottom: 16px; */
+}
+
+.bd-clipboard {
+  position: relative;
+  float: right;
 }
 
 .btn-clipboard {
-  float: right;
-  z-index: 30;
-  margin-left: 5px;
+  position: absolute;
+  top: .4rem;
+  right: .6rem;
+  z-index: 10;
+  display: block;
+  padding: .25rem .5rem;
+  font-size: 75%;
+  color: #818a91;
+  cursor: pointer;
+  background-color: #f7f7f9;
+  border-color: #f7f7f9;260
+}
+
+.snippet {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background-color: #f7f7f9;
+}
+
+.table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th {
+   background-color: #f7f7f9;
 }
 
 /* Show and affix the side nav when space allows it */
 @media screen and (min-width: 992px) {
   /* Widen the fixed sidebar */
-  .bs-sidebar.affix,
-  .bs-sidebar.affix-bottom {
+  .bs-sidebar-affix {
     width: inherit;
     padding-left: 0px;
     padding-right: 30px;
     width: 33.333333%;
   }
-  .bs-sidebar.affix {
+  .bs-sidebar-affix {
     position: fixed;
-    top: 30px;
-  }
-  .bs-sidebar.affix-bottom {
-    position: relative;;
+    top: 60px;
   }
   .bs-sidenav {
-    max-height: 90vh;
+    max-height: 91vh;
     overflow-y: auto;
   }
 }
 
 @media screen and (min-width: 1200px) {
   /* Widen the fixed sidebar */
-  .bs-sidebar.affix,
-  .bs-sidebar.affix-bottom {
+  .bs-sidebar-affix {
     width: 25%;
   }
 }

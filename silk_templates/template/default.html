@@ -9,14 +9,14 @@
     <link rel="stylesheet" type="text/css" href="resource/css/bootstrap.min.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/pygments-manni.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/tipuesearch.css"></link>
-    <link rel="stylesheet" type="text/css" href="resource/css/tipuedrop.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/style.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/print.css" media="print"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/highlightjs-github.css"></link>
     <script type="text/javascript" src="resource/js/jquery.min.js"></script>
+    <script type="text/javascript" src="resource/js/proper.min.js"></script>
     <script type="text/javascript" src="resource/js/tipuesearch_content.js"></script>
+    <!-- <script type="text/javascript" src="resource/js/tipuesearch_set.js"></script> -->
     <script type="text/javascript" src="resource/js/tipuesearch.min.js"></script>
-    <script type="text/javascript" src="resource/js/tipuedrop.min.js"></script>
     <script type="text/javascript" src="resource/js/clipboard.min.js"></script>
     <script type="text/javascript" src="resource/js/highlight.min.js"></script>
     <script type="text/javascript" src="resource/js/bootstrap.min.js"></script>
@@ -25,7 +25,6 @@
     <div data-sw-component="header">Placeholder for header</div>
     <div class="container-fluid">
       <div data-sw-view="">Placeholder for view</div>
-      <script src="resource/js/application.js"></script>
       <div data-sw-component="footer">Placeholder for footer</div>
     </div>
     <script>
@@ -39,15 +38,17 @@
       [].forEach.call(document.querySelectorAll('.snippet'), function(snippet) {
         snippet.insertAdjacentHTML(
           'beforebegin',
-          '<button class="btn btn-default btn-sm btn-clipboard" data-clipboard-snippet data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="Copied!" alt="Copy">' +
-            '<span class="glyphicon glyphicon-copy"></span>' +
-          '</button>'
+          '<div class="bd-clipboard">' +
+            '<button class="btn btn-primary btn-sm btn-clipboard" data-clipboard-snippet data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="Copied!">' +
+              'Copy' +
+            '</button>' +
+          '</div>'
         );
       });
 
-      var clipboardSnippets = new Clipboard('[data-clipboard-snippet]', {
+      var clipboardSnippets = new ClipboardJS('[data-clipboard-snippet]', {
         target: function(trigger) {
-          return trigger.nextElementSibling;
+          return trigger.parentNode.nextElementSibling;
         }
       });
       clipboardSnippets.on('success', function(e) {

@@ -143,8 +143,8 @@
                      (doc-params tree "Form" (d/fps tree)))
        :req-body-examples (doc-body-examples id "req" tree (d/get-in-tree tree [:req :body-examples]))
        :responses (concat
-                    (doc-status-codes id "success" tree method (d/success-status tree))
-                    (doc-status-codes id "danger" tree method (d/error-status tree)))}}))
+                    (doc-status-codes id "table-success" tree method (d/success-status tree))
+                    (doc-status-codes id "table-danger" tree method (d/error-status tree)))}}))
 
 ;; =============================================================================
 ;; Probe dispatch
