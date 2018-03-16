@@ -23,7 +23,9 @@
       function affix() {
         if ($window.scrollTop() >= 250) {
           $('.bs-sidebar').addClass('bs-sidebar-affix');
-          $('.active').focus();
+          if ($window.width() > 980) {
+            $('.active').focus();
+          }
         } else {
           $('.bs-sidebar').removeClass('bs-sidebar-affix');
           $('.form-control').focus();
