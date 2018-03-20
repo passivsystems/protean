@@ -1,6 +1,10 @@
 <html>
 <body>
   <div class="bs-sidebar" role="complementary">
+    <div class="bs-sideheader clearfix">
+      <a class="float-left collapse-all" title="Collapse all API descriptions" href="#">Collapse all</a>
+      <a class="float-right expand-all" title="Expand all API descriptions" href="#">Expand all</a>
+    </div>
     <nav id="menu" class="bs-sidenav">
       <ul class="nav flex-column">
         <li class="nav-item">
@@ -19,6 +23,16 @@
       var $window   = $(window);
       var $body     = $(document.body);
       var navHeight = $('.navbar').outerHeight(true);
+
+      $('.collapse-all').click(function(event) {
+        event.preventDefault();
+        $('.collapse.show').collapse('hide');
+      });
+
+      $('.expand-all').click(function(event) {
+        event.preventDefault();
+        $('.collapse:not(".show")').collapse('show');
+      });
 
       function affix() {
         if ($window.scrollTop() >= 250) {

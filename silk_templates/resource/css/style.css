@@ -9,14 +9,22 @@ body {
   margin: 70px auto 0px auto;
 }
 
-section {
-  margin-bottom: 30px;
+.bs-sidebar {
+  font-size: 90%;
 }
 
 /* By default it's not affixed in mobile views, so undo that */
 .bs-sidebar-affix {
   position: static;
   margin-top: 10px;
+}
+
+.bs-sideheader {
+  padding-bottom: 4px;
+}
+
+.bs-sideheader a {
+  color: #563d7c;
 }
 
 /* First level of nav */
@@ -67,7 +75,6 @@ section {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 30px;
-  font-size: 90%;
 }
 
 pre {
@@ -100,10 +107,6 @@ ol.nav, ul.nav {
   word-break: break-word !important;  /* For Chrome and Safari */
 }
 
-table {
-  margin-bottom: 0px !important;
-}
-
 table.response th {
   width: 80px;
   text-align: center;
@@ -134,13 +137,57 @@ td.small {
   width: 100px;
 }
 
-div.modal-footer {
+td p,
+td table,
+td ul,
+td pre {
+  margin-bottom: 0px !important;
+}
+
+.modal-footer {
   justify-content: center;
 }
 
-section div.page-header {
-  padding-top: 76px;
-  margin-top: -76px;
+.page-header {
+  padding-top: 28px;
+  margin-top: -28px;
+}
+
+.page-header a {
+  color: #495057;
+  text-decoration: none;
+  width: 100%;
+  display: block;
+  outline: 0;
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+
+.page-header a:hover {
+  background-color: #f7f7f9;
+}
+
+.page-header a .symbol:after {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  float: right;
+  transition: transform .25s linear;
+  -webkit-transition: -webkit-transform .25s linear;
+}
+
+.page-header a[aria-expanded="true"] .symbol:after {
+  content: "\2212";
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.page-header a[aria-expanded="false"] .symbol:after {
+  content: "\002b";
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .bd-clipboard {

@@ -124,7 +124,9 @@
     {:entry entry
      :engage
       {:id id
-       :#id (str "#" id )
+       :#id (str "#" id)
+       :collapseId (str "collapse-" id)
+       :#collapseId (str "#collapse-" id)
        :path (if (= path "/") (str svc) (str svc "/" path))
        :codex-order codex-order
        :curl (c/curly-entry-> (assoc-in e [:uri] uri))
