@@ -117,7 +117,7 @@ table.response th {
 
 table.response td {
   border-color: #fff !important;
-  vertical-align: middle !important;;
+  vertical-align: middle !important;
 }
 
 table.response td p {
@@ -142,6 +142,10 @@ td table,
 td ul,
 td pre {
   margin-bottom: 0px !important;
+}
+
+.modal-lg {
+    max-width: 80%;
 }
 
 .modal-footer {
