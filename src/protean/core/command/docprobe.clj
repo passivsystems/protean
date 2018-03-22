@@ -86,7 +86,7 @@
           regex-str (str (ph/regex-pattern tree (first v)))]
       {:title k
        :param-type type
-       :value-type  (trunc regex-str 100)
+       :value-type (trunc regex-str 50)
        :regx regex-str
        :doc-md (:doc var-value "")
        :attr (stg/join ", " (map #(stg/capitalize (name %)) (drop 1 v)))})))
