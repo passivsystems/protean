@@ -110,7 +110,7 @@ ol.nav, ul.nav {
 table.response th {
   width: 80px;
   text-align: center;
-  font-weight: normal;
+  font-weight: 500;
   border-color: #fff !important;
   vertical-align: middle !important;
 }
