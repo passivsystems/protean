@@ -1,18 +1,11 @@
 <html>
 <body>
   <div class="bs-sidebar" role="complementary">
-    <div class="bs-sideheader clearfix">
-      <a class="float-left collapse-all" title="Collapse all API descriptions" href="#">Collapse all</a>
-      <a class="float-right expand-all" title="Expand all API descriptions" href="#">Expand all</a>
-    </div>
     <nav id="menu" class="bs-sidenav">
       <ul class="nav flex-column">
         <li class="nav-item">
           <a data-sw-href="#id" href="#anchor" class="nav-link">
-            <div class="table-custom">
-              <div class="cell" style="width: 46px;"><span class="badge badge-info" data-sw-text="method">placeholder method</span></div>
-              <div class="cell"><span class="path" data-sw-text="path">placeholder path</span></div>
-            </div>
+            <div data-sw-component="method-path"/>
           </a>
         </li>
       </ul>
@@ -22,30 +15,17 @@
     $(document).ready(function(){
       var $window   = $(window);
       var $body     = $(document.body);
+      var $sidebar   = $('.bs-sidebar');
       var navHeight = $('.navbar').outerHeight(true);
-
-      $('.collapse-all').click(function(event) {
-        event.preventDefault();
-        $('.collapse.show').collapse('hide');
-      });
-
-      $('.expand-all').click(function(event) {
-        event.preventDefault();
-        $('.collapse:not(".show")').collapse('show');
-      });
+      var jumbotron = $('.jumbotron').outerHeight(true) - 4;
 
       function affix() {
-        if ($window.scrollTop() >= 250) {
-          $('.bs-sidebar').addClass('bs-sidebar-affix');
-          if ($window.width() > 980) {
-            $('.active').focus();
-          }
+        if ($window.scrollTop() >= jumbotron) {
+          $sidebar.addClass('bs-sidebar-affix');
         } else {
-          $('.bs-sidebar').removeClass('bs-sidebar-affix');
-          $('.form-control').focus();
+          $sidebar.removeClass('bs-sidebar-affix');
         }
       }
-
       $body.scrollspy({
         target: '.bs-sidebar',
         offset: navHeight
