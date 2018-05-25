@@ -22,4 +22,8 @@ cp $ROOT_DIR/protean-utils.sim.edn $ROOT_DIR/target/tgz
 cp $ROOT_DIR/build/tgz/* $ROOT_DIR/target/tgz
 cd $ROOT_DIR/target/tgz
 tar cvzf protean.tgz *
+
+# copy sha256 value to build/nix/from-jar.nix
+cat protean.tgz | sha256sum > sha256.txt
+
 cd -

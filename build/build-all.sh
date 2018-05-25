@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# release.sh Builds for neutral linux targets; OSX and TGZ.
+# build-all.sh Builds for neutral linux targets; OSX and TGZ.
 #
 # Ross McDonald <ross@bheap.co.uk>
 #
@@ -14,7 +14,10 @@ if [ "$VERSION" != "" ]
   lein uberjar
   cd -
   sh $ROOT_DIR/build/build-tgz.sh $VERSION
+  sh $ROOT_DIR/build/build-deb.sh $VERSION
+  sh $ROOT_DIR/build/build-rpm.sh $VERSION
   sh $ROOT_DIR/build/build-osx.sh $VERSION
+  sh $ROOT_DIR/build/build-docker.sh $VERSION
   sh $ROOT_DIR/build/build-nix.sh $VERSION
 else
   echo "ERROR: VERSION variable not defined"
