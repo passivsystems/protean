@@ -4,25 +4,25 @@
 #remove:
 # nix-store --delete `readlink result` --ignore-liveness
 #
-{ stdenv, fetchFromGitHub, makeWrapper, leiningen, jre }:
+{ stdenv, /*fetchgit*/ fetchFromGitHub, makeWrapper, leiningen, jre }:
 
 let
   version = "0.12.1";
 in
 stdenv.mkDerivation rec {
   name = "protean-${version}";
-  #src = fetchgit {
-  #  url = "https://github.com/passivsystems/protean.git";
-  #  rev = "fa0dfd10d0b2ce180c2b89cbeaab9f1c2c18ae6c";
-  #  sha256 = "04jz5rfqcpw6zlnryqzkbv6bp3pxf763kq1p7lqvw5zfyqbn6vrc";
-  #};
+  /* src = fetchgit {
+    url = "https://github.com/passivsystems/protean.git";
+    rev = "1e1e43302021f7993e536a954d2b83c68bcb58dc";
+    sha256 = "0xs8y61r13zqw29nk9hw49phih4vp3n401g3a981fsf009qz68a0";
+  }; */
 
   # faster
   src = fetchFromGitHub {
     owner = "passivsystems";
     repo = "protean";
     rev = "${version}";
-    sha256 = "04jz5rfqcpw6zlnryqzkbv6bp3pxf763kq1p7lqvw5zfyqbn6vrc";
+    sha256 = "0xs8y61r13zqw29nk9hw49phih4vp3n401g3a981fsf009qz68a0";
   };
 
   buildInputs = [ leiningen makeWrapper ];
