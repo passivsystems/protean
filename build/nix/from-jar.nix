@@ -7,13 +7,13 @@
 { stdenv, fetchurl, makeWrapper, jre }:
 
 let
-  version = "0.11.0";
+  version = "0.12.1";
 in
 stdenv.mkDerivation rec {
   name = "protean-${version}";
   src = fetchurl {
     url = "https://github.com/passivsystems/protean/releases/download/${version}/protean.tgz";
-    sha256 = "ac7d6bc830515e5a959f66535a5dd82a4d9391ba0cc7643bb17499b59b2cadc7";
+    sha256 = "33f06c72f62db0a6eb12b3204c7e2455ca0a194eb0ae5a1aeac6debb477a0fa1";
   };
 
   # downloaded tarball doesn't have a root directory - move into one while unpacking.

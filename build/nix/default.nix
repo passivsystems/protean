@@ -1,2 +1,2 @@
 { }:
-with import <nixpkgs> {}; callPackage ./from-src.nix {}
+with import <nixpkgs> {}; callPackage ./from-jar.nix {}

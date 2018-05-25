@@ -4,7 +4,7 @@
 (ns protean.helloworld.json
   (:require [protean.api.transformation.sim :refer :all]))
 
-(dependencies '[[protean-simlib "0.12.0"]])
+(dependencies '[[protean-simlib "0.12.1"]])
 (require '[protean.simlib :as sl])
 
 ;; =============================================================================
