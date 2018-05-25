@@ -13,8 +13,9 @@ if [ "$VERSION" != "" ]
   lein clean
   lein uberjar
   cd -
-  sh $ROOT_DIR/build/build-tgz.sh $1
-  sh $ROOT_DIR/build/build-osx.sh $1
+  sh $ROOT_DIR/build/build-tgz.sh $VERSION
+  sh $ROOT_DIR/build/build-osx.sh $VERSION
+  sh $ROOT_DIR/build/build-nix.sh $VERSION
 else
   echo "ERROR: VERSION variable not defined"
   echo "Usage: $(basename "$0") VERSION"
