@@ -13,7 +13,7 @@ stdenv.mkDerivation rec {
   name = "protean-${version}";
   src = fetchurl {
     url = "https://github.com/passivsystems/protean/releases/download/${version}/protean.tgz";
-    sha256 = "33f06c72f62db0a6eb12b3204c7e2455ca0a194eb0ae5a1aeac6debb477a0fa1";
+    sha256 = "CHANGE_ME";
   };
 
   # downloaded tarball doesn't have a root directory - move into one while unpacking.
