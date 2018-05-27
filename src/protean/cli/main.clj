@@ -95,7 +95,7 @@
         "  del-service            -n myservice (Delete a service)"
         "  sims                   (List sims)"
         "  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
-        "  del-sim                -n myservice (Delete a sim)"
+        "  del-sim                -f sim-config-file.sim.edn (Delete a sim)"
         ""
         "Please refer to the manual page for more information."]
        (s/join \newline)))
@@ -190,7 +190,7 @@
       (and (= cmd i/add-svcs) (not file)) (bomb summary)
       (and (= cmd i/del-svc) (not name)) (bomb summary)
       (and (= cmd i/add-sims) (not file)) (bomb summary)
-      (and (= cmd i/del-sim) (not name)) (bomb summary)
+      (and (= cmd i/del-sim) (not file)) (bomb summary)
       (and (= cmd i/visit) (i/visit? options)) (bomb summary)
       (and (= cmd i/doc) (i/doc? options)) (bomb summary)
       (and (= cmd i/int-test) (i/int-test? options)) (bomb summary)
