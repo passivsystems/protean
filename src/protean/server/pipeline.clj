@@ -67,8 +67,8 @@
 (defn api [req]
   (debug "request is:" req)
   (let [{:keys [request-method uri query-params]} req]
-    (info "method: " request-method ", uri: " uri ", query-params: " query-params))
-  (api-core/sim-rsp (conf/protean-home) req @paths @sims))
+    (info "method: " request-method ", uri: " uri ", query-params: " query-params)
+    (api-core/sim-rsp (conf/protean-home) req @paths (vals @file-sims))))
 
 
 ;; =============================================================================
