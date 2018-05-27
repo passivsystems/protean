@@ -1,4 +1,4 @@
-(defproject protean "0.12.1"
+(defproject protean "0.12.2"
   :description "Take control of your RESTful API's, simulate, doc, test easily."
   :url "http://github.com/passivsystems/protean"
   :license {:name "Apache License v2.0"
@@ -27,7 +27,7 @@
                  [clj-time "0.14.2"]
                  [com.cemerick/pomegranate "0.3.1"]
                  [json-path "1.0.1"]
-                 [protean-api "0.12.1"]
+                 [protean-api "0.12.2"]
                  [hawk "0.2.11"]]
   :plugins [[lein-ring "0.12.0"]
             [lein-expectations "0.0.8"]]
