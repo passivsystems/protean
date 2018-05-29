@@ -37,7 +37,7 @@
                             :content (clojure.java.io/file file)}]})]
     (println (:body rsp))))
 
-(defn delete-sim [{:keys [host port name] :as options}]
-  (let [rsp (clt/delete (str "http://" host ":" port "/sims/" name)
+(defn delete-sim [{:keys [file host port] :as options}]
+  (let [rsp (clt/delete (str "http://" host ":" port "/sims/" file)
                         {:throw-exceptions false})]
    (sims options)))
