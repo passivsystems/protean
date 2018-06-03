@@ -33,15 +33,21 @@
         $('[data-toggle="popover"]').popover();
       });
 
-      [].forEach.call(document.querySelectorAll('.snippet'), function(snippet) {
-        snippet.insertAdjacentHTML(
-          'beforebegin',
-          '<div class="bd-clipboard">' +
-            '<button class="btn btn-primary btn-sm btn-clipboard" data-clipboard-snippet data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="Copied!">' +
-              'Copy' +
-            '</button>' +
-          '</div>'
-        );
+      var clipboardBtn = (
+        '<div class="bd-clipboard">' +
+          '<button class="btn btn-primary btn-sm btn-clipboard" data-clipboard-snippet data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="Copied!">' +
+            'Copy' +
+          '</button>' +
+        '</div>'
+      );
+
+      [].forEach.call(document.querySelectorAll('pre.snippet'), function(el) {
+        el.insertAdjacentHTML('beforebegin', clipboardBtn);
+      });
+
+      /* For markdown generated snippets */
+      [].forEach.call(document.querySelectorAll('code.snippet'), function(el) {
+        el.parentElement.insertAdjacentHTML('beforebegin', clipboardBtn);
       });
 
       var clipboardSnippets = new ClipboardJS('[data-clipboard-snippet]', {
