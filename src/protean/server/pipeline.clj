@@ -1,5 +1,6 @@
 (ns protean.server.pipeline
   (:require [clojure.main :as m]
+            [clojure.string :as str]
             [protean.core :as api-core]
             [protean.config :as conf]
             [protean.api.protocol.http :as h]
@@ -62,12 +63,21 @@
 ;; Service pipelines
 ;; =============================================================================
 
-(defn api [req]
-  (debug "request is:" req)
-  (let [{:keys [request-method uri query-params]} req]
-    (info "method: " request-method ", uri: " uri ", query-params: " query-params)
-    (api-core/sim-rsp (conf/protean-home) req @paths (vals @file-sims))))
-
+(defn api
+  [{:keys [request-method :as method uri query-params] :as req}]
+  (debug "request:" req)
+  (let [{:keys [status headers body] :as rsp} (api-core/sim-rsp (conf/protean-home) req @paths (vals @file-sims))
+        ctype (get headers "Content-Type" "")
+        readable? (some #(str/starts-with? ctype %) [h/txt h/html h/xml h/jsn-simple])]
+    (info "request with"
+          "\n     method:" method
+          "\n     uri:" uri
+          "\n     query-params:" query-params
+          "\nresponded with"
+          "\n     status:" status
+          "\n     headers:" headers
+          "\n     body:" (when body (if readable? body "<suppressed>")))
+    rsp))
 
 ;; =============================================================================
 ;; Admin pipelines
