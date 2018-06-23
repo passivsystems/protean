@@ -64,19 +64,18 @@
 ;; =============================================================================
 
 (defn api
-  [{:keys [request-method :as method uri query-params] :as req}]
+  [{:keys [request-method uri query-string] :as req}]
   (debug "request:" req)
-  (let [{:keys [status headers body] :as rsp} (api-core/sim-rsp (conf/protean-home) req @paths (vals @file-sims))
-        ctype (get headers "Content-Type" "")
-        readable? (some #(str/starts-with? ctype %) [h/txt h/html h/xml h/jsn-simple])]
-    (info "request with"
-          "\n     method:" method
-          "\n     uri:" uri
-          "\n     query-params:" query-params
-          "\nresponded with"
-          "\n     status:" status
-          "\n     headers:" headers
-          "\n     body:" (when body (if readable? body "<suppressed>")))
+  (let [rsp (api-core/sim-rsp (conf/protean-home) req @paths (vals @file-sims))
+        {:keys [status headers body]} rsp
+        ct (get headers "Content-Type" "")
+        show? (some #(str/starts-with? ct %) [h/txt h/html h/xml h/jsn-simple])]
+    (info (str/upper-case (name request-method))
+          (if query-string (str uri "?" query-string) uri)
+          "responded with"
+          "\n  status:" status
+          "\n  headers:" headers
+          "\n  body:" (when body (if show? body "<suppressed>")))
     rsp))
 
 ;; =============================================================================
