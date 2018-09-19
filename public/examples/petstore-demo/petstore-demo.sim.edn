@@ -14,12 +14,12 @@
     :sim-cfg {:validate? false} ; true by default
     "api/pet" {
       ;; No validation
-      :put #(respond % 200)
+      :put #(response % 200)
 
       ;; Change default validation error response to 405 and adds errors to body
       :post #(if-let [errors (validate %)]
-              (respond % 405 errors)
-              (respond % 201))
+              (response % 405 errors)
+              (response % 201))
     }
 
     "api/pet/${petId}" {
@@ -27,7 +27,7 @@
       ; wait 2 seconds before responding
       :get #(do (log/info lib/hello-world)
                 (Thread/sleep 2000)
-                (respond % 200))
+                (response % 200))
 
       ; select a random codex error response
       :delete #(rand-nth (error-responses %))
@@ -39,13 +39,13 @@
 
       ;; Sends synchronous and asynchronous requests to another API and logs the response
       :post #(if-let [errors (validate %)]
-              (respond % 405 errors)
+              (response % 405 errors)
               (let [url "http://localhost:3000/protean-utils/echo"
                     fps (:form-params %)
                     handle (fn [res] (log/info [(str "Response from " url) res]))]
                 (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false}))
                 (in 3000 (handle (client/post url {:form-params fps :content-type :json :throw-exceptions false})))
-                (respond % 200 (slurp (find-path % "public/data/content/doc/responses/simple/200-ref.json")))))
+                (response % 200 (slurp (find-path % "public/data/content/doc/responses/simple/200-ref.json")))))
     }
 
     "api/uploadImage" {

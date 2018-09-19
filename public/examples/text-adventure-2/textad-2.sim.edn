@@ -70,9 +70,9 @@
 
 {
   "textad-2" {
-    "look" {:get #(respond % 200 (look))}
-    "go" {:put #(respond % 200 (go (symbol (query-param % "direction"))))}
-    "inventory" {:get #(respond % 200 (inventory))}
-    "pickup" {:put #(respond % 200 (pickup (symbol (query-param % "item"))))}
+    "look" {:get #(response % 200 (look))}
+    "go" {:put #(response % 200 (go (symbol (query-param % "direction"))))}
+    "inventory" {:get #(response % 200 (inventory))}
+    "pickup" {:put #(response % 200 (pickup (symbol (query-param % "item"))))}
   }
 }

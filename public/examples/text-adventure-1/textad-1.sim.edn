@@ -43,7 +43,7 @@
 
 {
   "textad-1" {
-    "look" {:get #(respond % 200 (look))}
-    "go" {:put #(respond % 200 (go (symbol (query-param % "direction"))))}
+    "look" {:get #(response % 200 (look))}
+    "go" {:put #(response % 200 (go (symbol (query-param % "direction"))))}
   }
 }

@@ -18,10 +18,10 @@
 {
   "protean-utils" {
     "echo" {
-      :get (fn [req] (echo req) (respond req 200))
-      :post (fn [req] (echo req) (respond req 201))
-      :put (fn [req] (echo req) (respond req 204))
-      :patch (fn [req] (echo req) (respond req 204))
+      :get (fn [req] (echo req) (response req 200))
+      :post (fn [req] (echo req) (response req 201))
+      :put (fn [req] (echo req) (response req 204))
+      :patch (fn [req] (echo req) (response req 204))
     }
   }
 }

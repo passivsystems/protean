@@ -96,9 +96,9 @@
 (defn handle
   [request result success-status error-status]
   (cond
-    (and result (= success-status 204)) (respond request success-status)
-    result                              (respond request success-status result)
-    :else                               (respond request error-status)))
+    (and result (= success-status 204)) (response request success-status)
+    result                              (response request success-status result)
+    :else                               (response request error-status)))
 
 {
   "textad-3" {
