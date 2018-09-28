@@ -115,13 +115,15 @@
 ;; Domain functionality
 ;; =============================================================================
 
-(defn- visit [{:keys [host port file body] :as options}]
-  ; TODO fail if b has no commands?
-  (println (aa/bold-green "Exploring quadrant..."))
-  (let [options (merge (sane-corpus (c/clj body)) {:host host :port port})
-        codices (r/read-codex (conf/protean-home) (io/file file))]
-    (b/visit options codices)
-    (println (aa/bold-green "...finished exploring quadrant"))))
+; TODO fail if b has no commands?
+(defn- visit
+  ([{:keys [file] :as options}]
+    (visit options (r/read-codex (conf/protean-home) (io/file file))))
+  ([{:keys [host port body]} codices]
+    (println (aa/bold-green "Exploring quadrant..."))
+    (let [options (merge (sane-corpus (c/clj body)) {:host host :port port})]
+      (b/visit options codices)
+      (println (aa/bold-green "...finished exploring quadrant")))))
 
 (defn- doc
   "If no corpus is passed in to a visit doc command - guess sensible defaults"
@@ -129,12 +131,12 @@
   (defn gen-doc []
     (let [codices (r/read-codex (conf/protean-home) (io/file file))
           svc (ffirst (filter #(= (type (key %)) String) codices))
-          b (c/jsn {:locs [svc] :commands [:doc]})
-          options {:host host :port port :file file :body b}
+          body (c/jsn {:locs [svc] :commands [:doc]})
+          options {:host host :port port :file file :body body}
           cm (if (.contains (conf/os) "Mac") "open" "firefox")
           site-dir (str (conf/target-dir) "/site/index.html")
           abs-site-dir (if (dsk/as-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
-      (visit options)
+      (visit options codices)
       (println "Please see your docs, as demonstrated below.")
       (println (aa/bold-green (str cm " " abs-site-dir)) "\n")))
 
@@ -167,7 +169,7 @@
             {:locs [svc] :commands [:test] :config {:test-level 1}}
             (c/clj body true)))
         options {:host host :port port :file file :body b :reload reload}]
-    (visit options)))
+    (visit options codices)))
 
 (defn- sim [{:keys [host port directory body reload]}] (ps/start directory reload))
 
