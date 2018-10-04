@@ -1,0 +1,77 @@
+{
+  :includes ["defaults.edn"]
+
+  :title "Text Adventure Part 2"
+  :doc "Walk, look and play in a game world"
+
+  "textad-2" {
+    "look" {
+      :get {
+        :doc "See your current location"
+        :rsp {
+          :200 {
+            :body-examples ["look-ref.json"]
+          }
+        }
+      }
+    }
+
+    "go" {
+      :types {
+        :Direction "(north|south|west|east)"
+      }
+      :put {
+        :doc
+"
+# Go somewhere in the game world
+
+Will move you to a new location.
+
+Accepts a request parameter called direction.
+"
+        :vars {"direction" {:type :Direction :doc "Direction to move in"}}
+        :req {:query-params {"direction" ["${direction}" :required]}}
+        :rsp {
+          :200 {
+            :body-examples ["look-ref.json"]
+          }
+          :404 {}
+        }
+      }
+    }
+
+    "inventory" {
+      :get {
+        :doc "See your inventory"
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-examples ["inventory-ref.json"]
+          }
+        }
+      }
+    }
+
+    "pickup" {
+      :put {
+        :doc
+"
+# Pickup an item
+
+Will pickup an item in the game world.
+
+Accepts a request parameter called item.
+"
+        :vars {"item" {:type :String :doc "Item to pick up"}}
+        :req {:query-params {"item" ["${item}" :required]}}
+        :rsp {
+          :200 {
+            :doc "OK"
+            :body-examples ["look-ref.json"]
+          }
+          :404 {:doc "Not Found"}
+        }
+      }
+    }
+  }
+}

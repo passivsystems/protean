@@ -1,0 +1,11 @@
+(ns protean.tutorial6
+  (:require [protean.api.transformation.sim :refer :all]))
+{
+  "tutorial-6" {
+    "play/${stateId}" {
+      :get #(if-let [f (find-path % (str (path-param "stateId") ".json"))]
+             (response % 200 (slurp f))
+             (response % 404))
+    }
+  }
+}
