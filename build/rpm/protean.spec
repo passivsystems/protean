@@ -22,7 +22,6 @@ mkdir -p %{buildroot}/usr/lib/protean
 mkdir -p %{buildroot}/usr/share/protean
 install -m644 target/*standalone* %{buildroot}/usr/lib/protean/protean.jar
 install -m644 defaults.edn %{buildroot}/usr/lib/protean/defaults.edn
-install -m644 sample-petstore.cod.edn %{buildroot}/usr/lib/protean/sample-petstore.cod.edn
 install -m644 protean-utils.cod.edn %{buildroot}/usr/lib/protean/protean-utils.cod.edn
 install -m644 protean-utils.sim.edn %{buildroot}/usr/lib/protean/protean-utils.sim.edn
 cp -r public/ %{buildroot}/usr/lib/protean/public/

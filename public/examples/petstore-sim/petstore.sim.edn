@@ -1,0 +1,89 @@
+; Sims override Protean's default server behaviour with the power of Clojure.
+;
+; Generate the site docs then run the server to interact with this sim.
+; To run from source substitue the protean command for lein return.
+; protean doc -r public/examples/petstore-sim/petstore.cod.edn --host localhost --port 3000
+; protean sim -d public/examples/petstore-sim/
+;
+; Namespace the sim to aviod collision with others.
+(ns protean.petstore
+  (:require [petstorelib :as lib] ; imports petstorelib.clj from same directory as codex.
+            [protean.api.transformation.sim :as sim])) ; import Protean's sim API - see https://github.com/passivsystems/protean-api for docs
+
+; Import dependencies from https://clojars.org to maximise your sim behaviour.
+(sim/dependencies '[[clj-http "3.7.0"] ; to make http calls - https://github.com/dakrone/clj-http
+                    [com.taoensso/timbre "4.10.0"]]) ; to write to a log file - https://github.com/ptaoussanis/timbre
+; Actually both these libraries are currently on Protean's classpath and could
+; be imported normally. But Protean's dependency tree may change so this is best
+; practice.
+
+; Note the ' prefix is required when importing external dependencies.
+(require '[clj-http.client :as client]
+         '[taoensso.timbre :as log])
+
+; Add shared methods or variables here.
+(def counter (atom 0))
+
+{
+  ; Sim struture is the same as the codex.
+  "petstore" {
+    ; Like the codex, :sim-cfg can be inhertied or overriden to reconfigure the
+    ; default behaviour. Default :sim-cfg is as follows.
+    :sim-cfg {
+      :cors true ; for any request  - adds "Access-Control-Allow-Origin" "*" to response header for Cross-Origin Resource Sharing.
+                 ; for HTTP OPTIONS requests - responds to requests accurately saying what methods exists for Cross-Origin Resource Sharing.
+      :validate? true ; Protean will validate using the :validate-rule when true
+      ; Changing the validation rule allows you to write one function to return validation responses as you desire.
+      ; This function could be shared between multiple sims (local clj or clojars)
+      ; Below shows how Protean's default implementation would look.
+      :validate-rule (fn [request rule] ; This anonymous function takes two args
+                                        ; request - map of HTTP request data
+                                        ; rule - sim implementation (can be nil)
+        (let [errs (sim/validate request)] ; map of error messages per param type (:header-errors :query-errors :form-errors :matrix-errors :body-errors)
+                                           ; empty values are removed from the map so errs can be nil.
+          (cond
+            ; When an error is found, by default Protean will respond with a 400 response code
+            ; (doesn't matter if its in the codex or not) and includes the error as custom
+            ; Protean header value, as to not influce spec.
+            errs {:status 400 :headers {"Protean-error" "Bad Request"
+                                        "Protean-error-messages" (clojure.string/join ", " (vals errs))}}
+            ; run the sim implementation code if it exists
+            rule (apply rule [request])
+            ; otherwise first success response defined in codex
+            :else (first (sim/success-responses request)))))
+    }
+
+    ; Only need to specify the resources that you wish to enchance.
+    ; The default sim behaviour (plus any sim-cfg overrides) will take care of the rest.
+    "api/pet" {
+      ; A simulation rule is an anonymous function which is passed a Ring request map plus some
+      ; additional Protean related values. Most Protean APIs will require the request to be feed to them.
+      ; Use either Clojure short hand notation #(sim/response % 200) or (fn [r] (sim/response r 200))
+      ; when creating sim rules. See https://github.com/ring-clojure/ring for details on Ring.
+      ;
+      ; See https://github.com/passivsystems/protean-api for a full list of protean APIs
+      ;
+      ; Your simulation rule must return a Ring response map E.G - {:status Int :headers String :body String}
+      ; Status is the only required key. Protean's sim API allows you to construct a response that has been defined
+      ; in the codex, as illustrated below. Note an exception would be thrown if 200 was not found.
+      :get #(sim/response % 200) ; This request is validated via :sim-cfg :validate-rule above
+    }
+
+    "api/pet/${petId}" {
+      ; You may wish a rule which responds differently based on a param.
+      :get #(case (sim/path-param % "petId")
+                  "cc11d131-ed9e-4d8b-b038-fdc1ded07978" (sim/response % 200)
+                  (sim/response % 404))
+
+      ; Or a 50% chance of a random codex error response
+      :put #(if (< (rand) 0.5)
+                  (first (sim/success-responses %))
+                  (rand-nth (sim/error-responses %)))
+
+      ; Or to error every third access
+      :delete #(if (= 0 (mod (swap! counter inc) 3))
+                (rand-nth (sim/error-responses %))
+                (first (sim/success-responses %)))
+    }
+  }
+}

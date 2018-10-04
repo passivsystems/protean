@@ -1,0 +1,93 @@
+; This codex is the same as the default petstore but a sim is overriding the
+; default server responses. See petstore.sim.edn for further details.
+{
+  :title "Pet Store API Docs"
+  :doc "Demonstrates how to sim override **Protean** server responses"
+  :includes [ "defaults.edn" ]
+  :types {
+    :Status "(available|pending|sold)"
+  }
+  :vars {
+    "petId" {:type :Uuid :doc "Universally unique identifier for a pet" :examples ["cc11d131-ed9e-4d8b-b038-fdc1ded07978"]}
+    "name" {:type :String :doc "Name of the pet" :examples ["tiddles"]}
+    "status" {:type :Status :doc "Status of the pet"}
+    "bearerToken" {:type :Token :doc "Auth token" :examples ["08d2301e-ee81-4654-b448-0636f454612a"]}
+  }
+  :req {:headers {"Authorization" "Bearer ${bearerToken}"}}
+
+  "petstore" {
+    "pets" {
+      :get {
+        :doc "Finds all pets, or pets filtered by status or name"
+        :req {
+          :headers {"Authorization" false}
+          :query-params {
+            "status" ["${status}" :optional]
+            "name" ["${name}" :optional]
+          }
+        }
+
+        :rsp {
+          :200 {:body-examples ["data/rsp/pets.json"]}
+          :400 {}
+        }
+      }
+
+      :post {
+        :doc "Add a new pet to the store"
+        :req {:body-examples ["data/req/new-pet.json"]
+              :body-schema "data/pet.schema.json"}
+        :rsp {
+          :201 {:headers {"Location" "/pet/${petId}"}}
+          :400 {}
+        }
+      }
+    }
+
+    "pets/${petId}" {
+      :rsp {
+        :200 {:body-examples ["data/rsp/pet.json"]
+              :body-schema "data/pet.schema.json" }
+        :404 {}
+      }
+
+      :get {:doc "Find a pet by ID"}
+
+      :put {
+        :doc "Updates a pet in the store with form data"
+        :req {:form-params {"name" ["${name}" :required]
+                            "status" ["${status}" :required]}}
+        :rsp {:400 {}}
+      }
+
+      :delete {
+        :doc "Deletes a pet"
+        :rsp {:200 false :204 {}}
+      }
+
+      :patch {
+        :doc "Partial updates to a pet"
+        :rsp {:400 {}}
+      }
+    }
+
+    "pets${;petsFilter}" {
+      :get {
+        :doc "Finds all pets, or pets filtered by status or name"
+        :vars {
+          ";petsFilter" {
+            :type :MatrixParams
+            :struct {
+              "status" ["${status}" :optional]
+              "name" ["${name}" :optional]
+            }
+          }
+        }
+        :rsp {
+          :200 {:body-examples ["data/rsp/pets.json"]}
+          :400 {}
+        }
+      }
+    }
+  }
+}

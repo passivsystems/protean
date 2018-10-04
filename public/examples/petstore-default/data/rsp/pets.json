@@ -1,0 +1,5 @@
+[{
+  "petId": "${petId}",
+  "status":"${status}",
+  "name":"${name}"
+}]
