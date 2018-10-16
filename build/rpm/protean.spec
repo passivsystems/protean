@@ -22,13 +22,10 @@ mkdir -p %{buildroot}/usr/lib/protean
 mkdir -p %{buildroot}/usr/share/protean
 install -m644 target/*standalone* %{buildroot}/usr/lib/protean/protean.jar
 install -m644 defaults.edn %{buildroot}/usr/lib/protean/defaults.edn
-install -m644 protean-utils.cod.edn %{buildroot}/usr/lib/protean/protean-utils.cod.edn
-install -m644 protean-utils.sim.edn %{buildroot}/usr/lib/protean/protean-utils.sim.edn
 cp -r public/ %{buildroot}/usr/lib/protean/public/
 rm -rf silk_templates/data/protean-api/*
 rm -rf silk_templates/site/*
 cp -r silk_templates/ %{buildroot}/usr/lib/protean/silk_templates/
-install -m755 build/etc/protean-server %{buildroot}/usr/bin
 install -m755 build/etc/protean %{buildroot}/usr/bin
 
 %files

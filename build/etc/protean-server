@@ -1,3 +1,0 @@
-#!/bin/bash
-
-java -cp /usr/lib/protean/protean.jar -Xmx32m protean.server.main

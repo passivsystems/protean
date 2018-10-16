@@ -20,14 +20,11 @@ then
 
     cp $ROOT_DIR/target/*standalone* $ROOT_DIR/target/deb/usr/lib/protean/protean.jar
     cp $ROOT_DIR/defaults.edn $ROOT_DIR/target/deb/usr/lib/protean/defaults.edn
-    cp $ROOT_DIR/protean-utils.cod.edn $ROOT_DIR/target/deb/usr/lib/protean/protean-utils.cod.edn
-    cp $ROOT_DIR/protean-utils.sim.edn $ROOT_DIR/target/deb/usr/lib/protean/protean-utils.sim.edn
     rm -rf $ROOT_DIR/silk_templates/data/protean-api/*
     rm -rf $ROOT_DIR/silk_templates/site/*
     cp -r $ROOT_DIR/silk_templates $ROOT_DIR/target/deb/usr/lib/protean/silk_templates
     cp -r $ROOT_DIR/public $ROOT_DIR/target/deb/usr/lib/protean
     cp -r $ROOT_DIR/build/etc/protean $ROOT_DIR/target/deb/usr/bin
-    cp -r $ROOT_DIR/build/etc/protean-server $ROOT_DIR/target/deb/usr/bin
 
     # Copy over the DEBIAN directory
     cp -r $ROOT_DIR/build/DEBIAN $ROOT_DIR/target/deb
