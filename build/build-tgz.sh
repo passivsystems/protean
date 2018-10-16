@@ -16,8 +16,6 @@ rm -rf $ROOT_DIR/silk_templates/site/*
 cp -r $ROOT_DIR/silk_templates $ROOT_DIR/target/tgz
 cp -r $ROOT_DIR/public $ROOT_DIR/target/tgz
 cp $ROOT_DIR/defaults.edn $ROOT_DIR/target/tgz
-cp $ROOT_DIR/protean-utils.cod.edn $ROOT_DIR/target/tgz
-cp $ROOT_DIR/protean-utils.sim.edn $ROOT_DIR/target/tgz
 cp $ROOT_DIR/build/tgz/* $ROOT_DIR/target/tgz
 cd $ROOT_DIR/target/tgz
 tar cvzf protean.tgz *

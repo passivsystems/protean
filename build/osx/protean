@@ -1,5 +1,5 @@
 #!/bin/bash
 
-export PROTEAN_HOME=$HOME/bin
-export PROTEAN_CODEX_DIR=$HOME/bin
-java -jar $HOME/bin/protean.jar "$@"
+export PROTEAN_HOME=/usr/local/Cellar/protean
+export PROTEAN_CODEX_DIR=/usr/local/Cellar/protean
+java -jar $PROTEAN_HOME/protean.jar "$@"
