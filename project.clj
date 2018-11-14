@@ -19,7 +19,7 @@
                  [io.aviso/pretty "0.1.34"]
                  [expectations "2.1.9"]
                  [me.rossputin/diskops "0.8.0"]
-                 [org.silkyweb/silk "0.13.0"]
+                 [org.silkyweb/silk "0.14.0"]
                  [alandipert/enduro "1.2.0"]
                  [org.slf4j/slf4j-simple "1.7.25"]
                  [aysylu/loom "1.0.0"]
