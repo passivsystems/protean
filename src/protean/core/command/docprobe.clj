@@ -72,7 +72,7 @@
     {:id (str id "-" type "-" idx)
      :#id (str "#" id "-" type "-" idx)
      :title (fname itm)
-     :value (slurp-file itm tree)})
+     :value (ph/swap (slurp-file itm tree) tree nil :gen-all true)})
   (map-indexed handle paths))
 
 (defn- name-pun [k] (if k (name k) ""))
@@ -94,20 +94,18 @@
 ; TODO: this conflates things - separate
 (defn- doc-status-codes [id css tree method statuses]
   (for [[rsp-code v] statuses]
-    (let [schema (d/get-in-tree tree [:rsp :200 :body-schema])
-          examples (doc-body-examples id "rsp" tree (:body-examples v))
-          success-body (re-matches #"[2]\d\d" (name-pun (ffirst statuses)))
-          add-schema (and success-body schema)]
+    (let [schema (:body-schema v)
+          examples (doc-body-examples id "rsp" tree (:body-examples v))]
       {:code (name rsp-code)
        :class css
        :doc-md (:doc v (rsp-code h/status-docs))
        :headers (doc-params tree "Header" (d/rsp-hdrs rsp-code tree))
        :rsp-first-body-example (first examples)
        :rsp-body-examples (drop 1 examples)
-       :rsp-body-schema-id (when add-schema (str "schema-" (name rsp-code) "-" id))
-       :#rsp-body-schema-id (when add-schema (str "#schema-" (name rsp-code) "-" id))
-       :rsp-body-schema-title (when add-schema (fname schema))
-       :rsp-body-schema (when add-schema (slurp-file schema tree))})))
+       :rsp-body-schema-id (when schema (str "schema-" (name rsp-code) "-" id))
+       :#rsp-body-schema-id (when schema (str "#schema-" (name rsp-code) "-" id))
+       :rsp-body-schema-title (when schema (fname schema))
+       :rsp-body-schema (when schema (slurp-file schema tree))})))
 
 (defmethod pb/build :doc [_ {:keys [locs host port] :as corpus} entry]
   (println "building a doc probe to visit " (:method entry) ":" locs)
@@ -167,9 +165,9 @@
         site {:site-name (d/get-in-tree main [:title])
               :site-doc-md (str (d/get-in-tree main [:doc]))}]
     (prep-staging "silk_templates" tree)
-    (spit-to (str data-dir "/global/site.edn") (pr-str site))
+    (spit-to (str data-dir "/global/site.edn") site)
     (doseq [[_ api] results]
-      (spit-to (str data-dir "/api/" (:id api) ".edn") (pr-str api))))
+      (spit-to (str data-dir "/api/" (:id api) ".edn") api)))
 
   (silk/spin silk-staging-dir)
   (dsk/copy-recursive (str silk-staging-dir "/site") (conf/target-dir)))

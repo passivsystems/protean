@@ -68,20 +68,14 @@
         ""
         "Actions:"
         "Codex actions:"
-        ;"  visit                  -f codex -b body (Visit node(s) with probe(s) to doc etc)"
-        ;"                           e.g. To generate documentation"
-        ;"                             visit -f sample-petstore.cod.edn -b '{\"locs\":[\"petstore\"], \"commands\":[\"doc\"], \"directory\":\"silk_templates/data/protean-api\"}'"
-        ;"                           e.g. To run tests against a server"
-        ;"                             visit -f sample-petstore.cod.edn -b '{\"host\": \"localhost\", \"port\": 3000, \"locs\":[\"petstore\"], \"commands\":[\"test\"], \"config\":{\"test-level\":1}}'"
-        ;""
         "  doc                    -f codex (A shortcut to the doc visit command - makes some assumptions about defaults)"
         "                            e.g. To generate documentation"
-        "                              doc -f sample-petstore.cod.edn"
+        "                              doc -f examples/petstore/petstore.cod.edn"
         ""
         "  test                   -f codex (A shortcut to the test visit command - makes assumptions about defaults)"
         "                            e.g. To integration test the sample-petstore service"
-        "                              test -f sample-petstore.cod.edn"
-        "                              test -f sample-petstore.cod.edn -b '{\"seed\": {\"tokenValue\": \"VALID_TOKEN\"}}'"
+        "                              test -f examples/petstore/petstore.cod.edn"
+        "                              test -f examples/petstore/petstore.cod.edn -b '{\"seed\": {\"tokenValue\": \"VALID_TOKEN\"}}'"
         ""
         "  sim                     -d /path/to/codex"
         "                             e.g. To start a sim server for mycodex.cod.edn"
@@ -95,7 +89,7 @@
         "  del-service            -n myservice (Delete a service)"
         "  sims                   (List sims)"
         "  add-sims               -f sim-config-file.sim.edn (Add sims in a codex)"
-        "  del-sim                -n myservice (Delete a sim)"
+        "  del-sim                -f sim-config-file.sim.edn (Delete a sim)"
         ""
         "Please refer to the manual page for more information."]
        (s/join \newline)))
@@ -115,13 +109,15 @@
 ;; Domain functionality
 ;; =============================================================================
 
-(defn- visit [{:keys [host port file body] :as options}]
-  ; TODO fail if b has no commands?
-  (println (aa/bold-green "Exploring quadrant..."))
-  (let [options (merge (sane-corpus (c/clj body)) {:host host :port port})
-        codices (r/read-codex (conf/protean-home) (io/file file))]
-    (b/visit options codices)
-    (println (aa/bold-green "...finished exploring quadrant"))))
+; TODO fail if b has no commands?
+(defn- visit
+  ([{:keys [file] :as options}]
+    (visit options (r/read-codex (conf/protean-home) (io/file file))))
+  ([{:keys [host port body]} codices]
+    (println (aa/bold-green "Exploring quadrant..."))
+    (let [options (merge (sane-corpus (c/clj body)) {:host host :port port})]
+      (b/visit options codices)
+      (println (aa/bold-green "...finished exploring quadrant")))))
 
 (defn- doc
   "If no corpus is passed in to a visit doc command - guess sensible defaults"
@@ -129,12 +125,12 @@
   (defn gen-doc []
     (let [codices (r/read-codex (conf/protean-home) (io/file file))
           svc (ffirst (filter #(= (type (key %)) String) codices))
-          b (c/jsn {:locs [svc] :commands [:doc]})
-          options {:host host :port port :file file :body b}
+          body (c/jsn {:locs [svc] :commands [:doc]})
+          options {:host host :port port :file file :body body}
           cm (if (.contains (conf/os) "Mac") "open" "firefox")
           site-dir (str (conf/target-dir) "/site/index.html")
           abs-site-dir (if (dsk/as-relative site-dir) (str (dsk/pwd) "/" site-dir) site-dir)]
-      (visit options)
+      (visit options codices)
       (println "Please see your docs, as demonstrated below.")
       (println (aa/bold-green (str cm " " abs-site-dir)) "\n")))
 
@@ -167,7 +163,7 @@
             {:locs [svc] :commands [:test] :config {:test-level 1}}
             (c/clj body true)))
         options {:host host :port port :file file :body b :reload reload}]
-    (visit options)))
+    (visit options codices)))
 
 (defn- sim [{:keys [host port directory body reload]}] (ps/start directory reload))
 
@@ -190,7 +186,7 @@
       (and (= cmd i/add-svcs) (not file)) (bomb summary)
       (and (= cmd i/del-svc) (not name)) (bomb summary)
       (and (= cmd i/add-sims) (not file)) (bomb summary)
-      (and (= cmd i/del-sim) (not name)) (bomb summary)
+      (and (= cmd i/del-sim) (not file)) (bomb summary)
       (and (= cmd i/visit) (i/visit? options)) (bomb summary)
       (and (= cmd i/doc) (i/doc? options)) (bomb summary)
       (and (= cmd i/int-test) (i/int-test? options)) (bomb summary)
