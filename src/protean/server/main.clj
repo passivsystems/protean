@@ -17,7 +17,6 @@
             [taoensso.timbre.appenders.core :as appenders]
             [hawk.core :as hawk])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
-  (:import java.io.File)
   (:gen-class))
 
 ;; =============================================================================
@@ -106,20 +105,21 @@
           ;; configure classpath for this instance of protean
           ;; we currently support local clj artefacts and remote coords (e.g. clojars)
           ;; TODO: support local jar files in a directory
-          _ (pom/add-classpath c-dir)
-          _ (pom/add-classpath (str (io/file c-dir "clj")))
-          cods (mapv pipe/load-codex (files c-dir "cod.edn"))
-          sims (mapv pipe/load-sim   (files c-dir "sim.edn"))
+          _ (pom/add-classpath (str c-dir))
+          cods (mapv #(str (.getName %) "(" (pipe/load-codex %) ")") (files c-dir "cod.edn"))
+          sims (mapv #(str (.getName %) "(" (pipe/load-sim %) ")") (files c-dir "sim.edn"))
           cod? #(s/ends-with? (.getPath %) ".cod.edn")
           sim? #(s/ends-with? (.getPath %) ".sim.edn")
           clj? #(s/ends-with? (.getPath %) ".clj")
           hnd (fn [ctx {f :file kind :kind}]
                 (when-let [msg (cond
-                    (and (.exists f) (cod? f)) (str "loaded codex: "  (.getName f) " - " (pipe/load-codex f))
-                    (and (.exists f) (sim? f)) (str "loaded sim: "    (.getName f) " - " (pipe/load-sim f))
-                    (and (.exists f) (clj? f)) (str "loaded clj: "    (.getName f) " - " (pom/add-classpath f))
-                    (cod? f)                   (str "removed codex: " (.getName f) " - " (pipe/unload-codex f))
-                    (sim? f)                   (str "removed sim: "   (.getName f) " - " (pipe/unload-sim f))
+                    (and (.exists f) (cod? f)) (str "reloaded: " (.getName f) "(" (pipe/load-codex f) ")")
+                    (and (.exists f) (sim? f)) (str "reloaded: " (.getName f) "(" (pipe/load-sim f) ")")
+                    (and (.exists f) (clj? f)) (do (clojure.main/load-script (.getPath f))
+                                                   (mapv pipe/load-sim (files c-dir "sim.edn"))
+                                                   (str "reloaded: " (.getName f)))
+                    (cod? f)                   (str "removed: " (.getName f) " - " (pipe/unload-codex f))
+                    (sim? f)                   (str "removed: " (.getName f) " - " (pipe/unload-sim f))
                     :else                      nil)]
                   (println msg "Watching for changes. Press enter to exit"))
                 ctx)]

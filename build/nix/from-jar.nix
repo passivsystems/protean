@@ -7,13 +7,13 @@
 { stdenv, fetchurl, makeWrapper, jre }:
 
 let
-  version = "0.12.1";
+  version = "0.13.0";
 in
 stdenv.mkDerivation rec {
   name = "protean-${version}";
   src = fetchurl {
     url = "https://github.com/passivsystems/protean/releases/download/${version}/protean.tgz";
-    sha256 = "33f06c72f62db0a6eb12b3204c7e2455ca0a194eb0ae5a1aeac6debb477a0fa1";
+    sha256 = "CHANGE_ME";
   };
 
   # downloaded tarball doesn't have a root directory - move into one while unpacking.
@@ -36,21 +36,16 @@ stdenv.mkDerivation rec {
 
     # remove invalid executables
     rm $out/lib/protean
-    rm $out/lib/protean-server
 
     # create executables
     makeWrapper ${jre}/bin/java $out/bin/protean \
       --add-flags "-Xmx64m -jar $out/lib/protean.jar" \
       --set PROTEAN_HOME $out/lib \
       --set PROTEAN_CODEX_DIR $out/lib
-
-    makeWrapper ${jre}/bin/java $out/bin/protean-server \
-      --add-flags "-cp $out/lib/protean.jar -Xmx32m protean.server.main"
   '';
 
   fixupPhase = ''
     chmod +x $out/bin/protean
-    chmod +x $out/bin/protean-server
   '';
 
   meta = {

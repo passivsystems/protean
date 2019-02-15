@@ -2,10 +2,10 @@
 <html>
   <head>
     <meta charset="utf-8"></meta>
-    <meta name="description" content="API Documentation" />
     <meta name="author" content="Protean" />
+    <meta name="description" data-sw-content="site-name" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Documentation</title>
+    <title data-sw-source="protean-api/global/site.edn" data-sw-text="site-name"></title>
     <link rel="stylesheet" type="text/css" href="resource/css/bootstrap.min.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/tipuesearch.css"></link>
     <link rel="stylesheet" type="text/css" href="resource/css/style.css"></link>
@@ -33,15 +33,21 @@
         $('[data-toggle="popover"]').popover();
       });
 
-      [].forEach.call(document.querySelectorAll('.snippet'), function(snippet) {
-        snippet.insertAdjacentHTML(
-          'beforebegin',
-          '<div class="bd-clipboard">' +
-            '<button class="btn btn-primary btn-sm btn-clipboard" data-clipboard-snippet data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="Copied!">' +
-              'Copy' +
-            '</button>' +
-          '</div>'
-        );
+      var clipboardBtn = (
+        '<div class="bd-clipboard">' +
+          '<button class="btn btn-primary btn-sm btn-clipboard" data-clipboard-snippet data-container="body" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="Copied!">' +
+            'Copy' +
+          '</button>' +
+        '</div>'
+      );
+
+      [].forEach.call(document.querySelectorAll('pre.snippet'), function(el) {
+        el.insertAdjacentHTML('beforebegin', clipboardBtn);
+      });
+
+      /* For markdown generated snippets */
+      [].forEach.call(document.querySelectorAll('code.snippet'), function(el) {
+        el.parentElement.insertAdjacentHTML('beforebegin', clipboardBtn);
       });
 
       var clipboardSnippets = new ClipboardJS('[data-clipboard-snippet]', {

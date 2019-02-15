@@ -1,6 +1,6 @@
 (ns protean.server.pipeline
-  (:require [clojure.core.incubator :as ib]
-            [clojure.main :as m]
+  (:require [clojure.main :as m]
+            [clojure.string :as str]
             [protean.core :as api-core]
             [protean.config :as conf]
             [protean.api.protocol.http :as h]
@@ -21,7 +21,6 @@
 (def file-codices (atom {}))
 (def file-sims (atom {}))
 (def paths (atom {}))
-(def sims (atom {}))
 
 (defn handler
   [f & handlers]
@@ -64,12 +63,20 @@
 ;; Service pipelines
 ;; =============================================================================
 
-(defn api [req]
-  (debug "request is:" req)
-  (let [{:keys [request-method uri query-params]} req]
-    (info "method: " request-method ", uri: " uri ", query-params: " query-params))
-  (api-core/sim-rsp (conf/protean-home) req @paths @sims))
-
+(defn api
+  [{:keys [request-method uri query-string] :as req}]
+  (debug "request:" req)
+  (let [rsp (api-core/sim-rsp (conf/protean-home) req @paths (vals @file-sims))
+        {:keys [status headers body]} rsp
+        ct (get headers "Content-Type" "")
+        show? (some #(str/starts-with? ct %) [h/txt h/html h/xml h/jsn-simple])]
+    (info (str/upper-case (name request-method))
+          (if query-string (str uri "?" query-string) uri)
+          "responded with"
+          "\n  status:" status
+          "\n  headers:" headers
+          "\n  body:" (when body (if show? body "<suppressed>")))
+    rsp))
 
 ;; =============================================================================
 ;; Admin pipelines
@@ -95,7 +102,7 @@
     (assoc json :body (co/jsn (txc/curly-analysis-> analysed)))))
 
 (defn del-service [svc]
-  (reset! paths (ib/dissoc-in @paths [svc]))
+  (swap! paths dissoc svc)
   {:status 204})
 
 (def del-service-handled (handler del-service handle-error))
@@ -127,32 +134,24 @@
 ;; sims
 ;;;;;;;;;;;
 
-(defn sims-names [] (assoc json :body (co/jsn (sort (custom-keys @sims)))))
+(defn sims-names [] (assoc json :body (co/jsn (sort (keys @file-sims)))))
 
-(defn del-sim [svc]
-  (reset! sims (ib/dissoc-in @sims [svc]))
+(defn del-sim [f]
+  (swap! file-sims dissoc f)
   {:status 204})
 
 (def del-sim-handled (handler del-sim handle-error))
-
-(defn- reload-sims
-  []
-  (reset! sims {})
-  (doseq [sim (vals @file-sims)]
-    (reset! sims (merge @sims sim))))
 
 (defn unload-sim [f]
   (let [sim (@file-sims (.getName f))
         svc (first (custom-keys sim))]
     (swap! file-sims dissoc (.getName f))
-    (reload-sims)
     (str svc (when-let [c (sim-cfg sim svc)] (str " (sim config: " c ")")))))
 
 (defn load-sim [f]
   (let [sim (m/load-script (.getPath f))
         svc (first (custom-keys sim))]
     (swap! file-sims assoc (.getName f) sim)
-    (reload-sims)
     (str svc (when-let [c (sim-cfg sim svc)] (str " (sim config: " c ")")))))
 
 (defn put-sims [req]

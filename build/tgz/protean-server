@@ -1,3 +1,0 @@
-#!/bin/bash
-
-cd $HOME/bin && java -cp protean.jar protean.server.main

@@ -7,7 +7,7 @@
 { stdenv, /*fetchgit*/ fetchFromGitHub, makeWrapper, leiningen, jre }:
 
 let
-  version = "0.12.1";
+  version = "0.13.0";
 in
 stdenv.mkDerivation rec {
   name = "protean-${version}";
@@ -48,23 +48,16 @@ stdenv.mkDerivation rec {
     cp -r ./silk_templates $out/lib
     cp -r ./public $out/lib
     cp ./defaults.edn $out/lib
-    cp ./sample-petstore.cod.edn $out/lib
-    cp ./protean-utils.cod.edn $out/lib
-    cp ./protean-utils.sim.edn $out/lib
 
     # create executables
     makeWrapper ${jre}/bin/java $out/bin/protean \
       --add-flags "-Xmx64m -jar $out/lib/protean.jar" \
       --set PROTEAN_HOME $out/lib \
       --set PROTEAN_CODEX_DIR $out/lib
-
-    makeWrapper ${jre}/bin/java $out/bin/protean-server \
-      --add-flags "-cp $out/lib/protean.jar -Xmx32m protean.server.main"
   '';
 
   fixupPhase = ''
     chmod +x $out/bin/protean
-    chmod +x $out/bin/protean-server
   '';
 
   meta = {
