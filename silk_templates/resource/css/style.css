@@ -169,6 +169,11 @@ td pre {
   justify-content: center;
 }
 
+/* Make bottom nav link accessible - page-header overlaps on small screens */
+div.col-xl-3, div.col-lg-4 {
+  z-index: 2;
+}
+
 .page-header {
   padding-top: 68px;
   margin-top: -68px;
