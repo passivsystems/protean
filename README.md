@@ -297,7 +297,7 @@ Taken from reference sim file -  [protean-examples/petstore-sim/petstore.sim.edn
       :cors true ; for any request  - adds "Access-Control-Allow-Origin" "*" to response header for Cross-Origin Resource Sharing.
                  ; for HTTP OPTIONS requests - responds to requests accurately saying what methods exists for Cross-Origin Resource Sharing.
       :validate? true ; Protean will validate using the :validate-rule when true
-      ; Changing the validation rule allows you to write one function to return validation responses as you desire.
+      ; Change the validation rule to provide a reusable validation strategy across your API.
       ; This function could be shared between multiple sims (local clj or clojars)
       ; Below shows how Protean's default implementation would look.
       :validate-rule (fn [request rule] ; This anonymous function takes two args
@@ -314,7 +314,7 @@ Taken from reference sim file -  [protean-examples/petstore-sim/petstore.sim.edn
             ; run the sim implementation code if it exists
             rule (apply rule [request])
             ; otherwise first success response defined in codex
-            :else (first (sim/success-responses request)))))
+            :else (sim/response request (first (sim/success-codes request))))))
     }
 
     ; Only need to specify the resources that you wish to enhance.
@@ -334,20 +334,20 @@ Taken from reference sim file -  [protean-examples/petstore-sim/petstore.sim.edn
     }
 
     "api/pet/${petId}" {
-      ; Respond differently based on petId value.
+      ; 200 response for petId cc11d131-ed9e-4d8b-b038-fdc1ded07978 only
       :get #(case (sim/path-param % "petId")
-                  "cc11d131-ed9e-4d8b-b038-fdc1ded07978" (sim/response % 200)
-                  (sim/response % 404))
+             "cc11d131-ed9e-4d8b-b038-fdc1ded07978" (sim/response % 200)
+             (sim/response % 404))
 
       ; 50% chance of a random codex error response.
-      :put #(if (< (rand) 0.5)
-                  (first (sim/success-responses %))
-                  (rand-nth (sim/error-responses %)))
+      :put #(sim/response % (if (< (rand) 0.5)
+                              (first (sim/success-codes %))
+                              (rand-nth (sim/error-codes %))))
 
       ; Error every third access
-      :delete #(if (= 0 (mod (swap! counter inc) 3))
-                (rand-nth (sim/error-responses %))
-                (first (sim/success-responses %)))
+      :delete #(sim/response % (if (= 0 (mod (swap! counter inc) 3))
+                                 (rand-nth (sim/error-codes % %))
+                                 (first (sim/success-codes %))))
     }
   }
 }
