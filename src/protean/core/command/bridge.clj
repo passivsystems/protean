@@ -15,7 +15,7 @@
    Reconciles the results certain probes record across time.
 
    Links expectations to probe results where outcome is a concern."
-  (:require [protean.core.transformation.paths :as p]
+  (:require [protean.api.transformation.paths :as p]
             [protean.core.command.probe :as pb]
             ; the multi-dispatch probes
             [protean.core.command.docprobe]
@@ -58,7 +58,7 @@
   [{:keys [locs commands] :as corpus} codices]
   (doseq [cmd commands]
     (pb/config cmd corpus)
-    (let [paths (sort-by #(.indexOf (:ordered-resources codices) (:path %)) (p/paths codices locs))
-          probes (filter some? (doall (map-indexed (fn [idx itm] (build cmd corpus idx itm)) paths)))
+    (let [services (sort-by #(.indexOf (:ordered-resources codices) (:path %)) (p/services codices locs))
+          probes (filter some? (doall (map-indexed (fn [idx itm] (build cmd corpus idx itm)) services)))
           results (pb/dispatch cmd corpus probes)]
       (pb/analyse cmd corpus results))))

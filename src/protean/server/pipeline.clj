@@ -3,11 +3,11 @@
             [clojure.string :as str]
             [protean.core :as api-core]
             [protean.config :as conf]
+            [protean.api.codex.reader :as r]
             [protean.api.protocol.http :as h]
             [protean.api.transformation.coerce :as co]
+            [protean.api.transformation.paths :as p]
             [protean.core.transformation.curly :as txc]
-            [protean.api.codex.reader :as r]
-            [protean.core.transformation.paths :as p]
             [protean.core.transformation.request :as req])
   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)])
   (:import java.io.IOException))
@@ -107,23 +107,16 @@
 
 (def del-service-handled (handler del-service handle-error))
 
-(defn- reload-paths
-  []
-  (reset! paths {})
-  (doseq [codex (vals @file-codices)]
-    (doseq [{:keys [svc path method tree]} (p/paths codex (custom-keys codex))]
-      (swap! paths assoc-in [svc path method] tree))))
-
 (defn unload-codex [f]
   (let [codex (@file-codices (.getName f))]
     (swap! file-codices dissoc (.getName f))
-    (reload-paths)
+    (reset! paths (p/paths (vals @file-codices)))
     (first (custom-keys codex))))
 
 (defn load-codex [f]
   (let [codex (r/read-codex (conf/protean-home) f)]
     (swap! file-codices assoc (.getName f) codex)
-    (reload-paths)
+    (reset! paths (p/paths (vals @file-codices)))
     (first (custom-keys codex))))
 
 (defn put-services [req]
