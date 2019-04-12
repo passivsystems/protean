@@ -29,7 +29,7 @@
 (timbre/set-level! (conf/log-level))
 
 (defn- files [c-dir ext]
-  (-> (remove #(.isDirectory %) (.listFiles (io/file c-dir)))
+  (-> (remove #(or (.isHidden %) (.isDirectory %)) (.listFiles (io/file c-dir)))
       (do/filter-exts [ext])))
 
 (defmacro version [] (System/getProperty "protean.version"))
@@ -108,9 +108,9 @@
           _ (pom/add-classpath (str c-dir))
           cods (mapv #(str (.getName %) "(" (pipe/load-codex %) ")") (files c-dir "cod.edn"))
           sims (mapv #(str (.getName %) "(" (pipe/load-sim %) ")") (files c-dir "sim.edn"))
-          cod? #(s/ends-with? (.getPath %) ".cod.edn")
-          sim? #(s/ends-with? (.getPath %) ".sim.edn")
-          clj? #(s/ends-with? (.getPath %) ".clj")
+          cod? #(and (not (.isHidden %)) (s/ends-with? (.getPath %) ".cod.edn"))
+          sim? #(and (not (.isHidden %)) (s/ends-with? (.getPath %) ".sim.edn"))
+          clj? #(and (not (.isHidden %)) (s/ends-with? (.getPath %) ".clj"))
           hnd (fn [ctx {f :file kind :kind}]
                 (when-let [msg (cond
                     (and (.exists f) (cod? f)) (str "reloaded: " (.getName f) "(" (pipe/load-codex f) ")")
