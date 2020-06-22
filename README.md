@@ -144,7 +144,7 @@ Taken from reference codex -  [protean-examples/petstore-default/petstore.cod.ed
   ; Add authentication headers to everything.
   :req {:headers {"Authorization" "Bearer ${bearerToken}"}}
 
-  ; API name is mandatory, can only be defined once per codex and can't be blank.
+  ; API name. A codex can consist of multiple APIs.
   "petstore" {
     ; An API consists of multiple resources.
     "pets" {

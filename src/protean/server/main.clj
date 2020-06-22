@@ -106,27 +106,29 @@
           ;; we currently support local clj artefacts and remote coords (e.g. clojars)
           ;; TODO: support local jar files in a directory
           _ (pom/add-classpath (str c-dir))
-          cods (mapv #(str (.getName %) "(" (pipe/load-codex %) ")") (files c-dir "cod.edn"))
-          sims (mapv #(str (.getName %) "(" (pipe/load-sim %) ")") (files c-dir "sim.edn"))
+          cods (map-indexed (fn [i x] (str (+ i 1) ") " (.getName x) " - services " (pipe/load-codex x)))
+                            (files c-dir "cod.edn"))
+          sims (map-indexed (fn [i x] (str (+ i 1) ") " (.getName x) " - " (pipe/load-sim x)))
+                            (files c-dir "sim.edn"))
           cod? #(and (not (.isHidden %)) (s/ends-with? (.getPath %) ".cod.edn"))
           sim? #(and (not (.isHidden %)) (s/ends-with? (.getPath %) ".sim.edn"))
           clj? #(and (not (.isHidden %)) (s/ends-with? (.getPath %) ".clj"))
           hnd (fn [ctx {f :file kind :kind}]
                 (when-let [msg (cond
-                    (and (.exists f) (cod? f)) (str "reloaded: " (.getName f) "(" (pipe/load-codex f) ")")
-                    (and (.exists f) (sim? f)) (str "reloaded: " (.getName f) "(" (pipe/load-sim f) ")")
+                    (and (.exists f) (cod? f)) (str "reloaded: " (.getName f) " - services " (pipe/load-codex f))
+                    (and (.exists f) (sim? f)) (str "reloaded: " (.getName f) " - " (pipe/load-sim f))
                     (and (.exists f) (clj? f)) (do (clojure.main/load-script (.getPath f))
                                                    (mapv pipe/load-sim (files c-dir "sim.edn"))
                                                    (str "reloaded: " (.getName f)))
-                    (cod? f)                   (str "removed: " (.getName f) " - " (pipe/unload-codex f))
+                    (cod? f)                   (str "removed: " (.getName f) " - services " (pipe/unload-codex f))
                     (sim? f)                   (str "removed: " (.getName f) " - " (pipe/unload-sim f))
                     :else                      nil)]
                   (println msg "Watching for changes. Press enter to exit"))
                 ctx)]
       (info "Starting protean - v" (version))
       (info "Codex directory:" c-dir)
-      (info "Codices loaded:" (s/join ", " cods))
-      (info "Sim extensions loaded:" (s/join ", " sims))
+      (info (str "Codices loaded:\n" (s/join "\n" cods)))
+      (info (str "Sim extensions loaded:\n" (s/join "\n" sims)))
       (info "Public static resources can be served from:" (conf/public-dir))
       (server sim-port sim-max-threads admin-port admin-max-threads)
       (when reload

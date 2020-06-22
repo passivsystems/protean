@@ -124,8 +124,7 @@
   [{:keys [host port file reload]}]
   (defn gen-doc []
     (let [codex (r/read-codex (conf/protean-home) (io/file file))
-          svc (ffirst (filter #(= (type (key %)) String) codex))
-          body (c/jsn {:locs [svc] :commands [:doc]})
+          body (c/jsn {:locs (r/services codex) :commands [:doc]})
           options {:host host :port port :file file :body body}
           cm (if (.contains (conf/os) "Mac") "open" "firefox")
           site-dir (str (conf/target-dir) "/site/index.html")

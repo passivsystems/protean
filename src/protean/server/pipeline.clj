@@ -34,10 +34,6 @@
       (error (.getMessage ioex))
       {:status 500})))
 
-(defn- custom-keys
-  "returns only keys which are not keywords"
-  [c] (seq (remove keyword? (keys c))))
-
 (defn- body [req-body]
   (let [rbody (slurp req-body)] (if (not-empty rbody) (co/clj rbody) nil)))
 
@@ -57,7 +53,12 @@
 
 (defn- sim-cfg
   "returns a merge of the first two levels of sim config (global and svc)"
-   [sim svc] (merge (:sim-cfg sim) (get-in sim [svc :sim-cfg])))
+   [sim services]
+   (let [cfg-fn #(merge (:sim-cfg sim) (get-in sim [% :sim-cfg]))
+         str-fn #(if-let [c (cfg-fn %)]
+                   (str "sim config: " c)
+                   (str "sim config: default"))]
+     (into {} (map #(do {% (str-fn %)}) services))))
 
 ;; =============================================================================
 ;; Service pipelines
@@ -111,13 +112,13 @@
   (let [codex (@file-codices (.getName f))]
     (swap! file-codices dissoc (.getName f))
     (reset! paths (p/paths (vals @file-codices)))
-    (first (custom-keys codex))))
+    (r/services codex)))
 
 (defn load-codex [f]
   (let [codex (r/read-codex (conf/protean-home) f)]
     (swap! file-codices assoc (.getName f) codex)
     (reset! paths (p/paths (vals @file-codices)))
-    (first (custom-keys codex))))
+    (r/services codex)))
 
 (defn put-services [req]
   (let [file ((:params req) "file")]
@@ -136,16 +137,14 @@
 (def del-sim-handled (handler del-sim handle-error))
 
 (defn unload-sim [f]
-  (let [sim (@file-sims (.getName f))
-        svc (first (custom-keys sim))]
+  (let [sim (@file-sims (.getName f))]
     (swap! file-sims dissoc (.getName f))
-    (str svc (when-let [c (sim-cfg sim svc)] (str " (sim config: " c ")")))))
+    (sim-cfg sim (r/services sim))))
 
 (defn load-sim [f]
-  (let [sim (m/load-script (.getPath f))
-        svc (first (custom-keys sim))]
+  (let [sim (m/load-script (.getPath f))]
     (swap! file-sims assoc (.getName f) sim)
-    (str svc (when-let [c (sim-cfg sim svc)] (str " (sim config: " c ")")))))
+    (sim-cfg sim (r/services sim))))
 
 (defn put-sims [req]
   (let [file ((:params req) "file")]
