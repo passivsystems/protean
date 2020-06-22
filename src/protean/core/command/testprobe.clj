@@ -9,7 +9,7 @@
             [protean.api.protocol.http :as h]
             [protean.api.protocol.protean :as pp]
             [protean.api.transformation.coerce :as co]
-            [protean.core.transformation.paths :as p]
+            [protean.api.transformation.paths :as p]
             [protean.api.transformation.validation :as v]
             [protean.core.transformation.request :as r]
             [protean.core.command.probe :as pb]

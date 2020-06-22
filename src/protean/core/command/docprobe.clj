@@ -9,7 +9,7 @@
             [protean.api.codex.document :as d]
             [protean.api.codex.placeholder :as ph]
             [protean.api.protocol.http :as h]
-            [protean.core.transformation.paths :as p]
+            [protean.api.transformation.paths :as p]
             [protean.core.transformation.curly :as c]
             [protean.core.command.probe :as pb])
   (:import java.net.URI))

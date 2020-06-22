@@ -5,7 +5,7 @@
    Several different types of probe may be instructed to visit a node to
    perform several different type of analysis on it.
 
-   Reads from codices to analyse nodes to enable generation of documentation
+   Reads from codex to analyse nodes to enable generation of documentation
    payloads, sim responses, generation of input values, or rationalisation
    of placeholder values depending on the task.
 
@@ -15,7 +15,7 @@
    Reconciles the results certain probes record across time.
 
    Links expectations to probe results where outcome is a concern."
-  (:require [protean.core.transformation.paths :as p]
+  (:require [protean.api.transformation.paths :as p]
             [protean.core.command.probe :as pb]
             ; the multi-dispatch probes
             [protean.core.command.docprobe]
@@ -53,12 +53,12 @@
    the 'command' issued; :sim, :doc, :test, :negotiate.  E.G. [:doc] or
    [:doc :test].
 
-   Uses node data encoded in 'codices' to optionally calculate generative input
+   Uses node data encoded in 'codex' to optionally calculate generative input
    values, or document or sim."
-  [{:keys [locs commands] :as corpus} codices]
+  [{:keys [locs commands] :as corpus} codex]
   (doseq [cmd commands]
     (pb/config cmd corpus)
-    (let [paths (sort-by #(.indexOf (:ordered-resources codices) (:path %)) (p/paths codices locs))
-          probes (filter some? (doall (map-indexed (fn [idx itm] (build cmd corpus idx itm)) paths)))
+    (let [services (sort-by #(.indexOf (:ordered-resources codex) (:path %)) (p/services codex locs))
+          probes (filter some? (doall (map-indexed (fn [idx itm] (build cmd corpus idx itm)) services)))
           results (pb/dispatch cmd corpus probes)]
       (pb/analyse cmd corpus results))))

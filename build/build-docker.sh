@@ -10,6 +10,7 @@
 ROOT_DIR=$(dirname $0)/..
 
 mkdir -p $ROOT_DIR/target/docker
+mkdir -p $ROOT_DIR/target/docker/codex
 cp $ROOT_DIR/target/*standalone* $ROOT_DIR/target/docker/protean.jar
 rm -rf $ROOT_DIR/silk_templates/data/protean-api/*
 rm -rf $ROOT_DIR/silk_templates/site/*

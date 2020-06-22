@@ -6,7 +6,7 @@
     <img src="https://api.travis-ci.org/passivsystems/protean.svg" /></a>
   </a>
   <a href="https://github.com/passivsystems/protean-api/releases/latest" alt="Latest Release">
-    <img src="https://img.shields.io/github/downloads/passivsystems/protean/0.12.1/total.svg" /></a>
+    <img src="https://img.shields.io/github/downloads/passivsystems/protean/0.14.0/total.svg" /></a>
   </a>
 </p>
 
@@ -26,23 +26,23 @@ to encode, document & simulate RESTful APIs.
 
 ### On [Debian-based](https://en.wikipedia.org/wiki/Category:Debian-based_distributions) Linux distributions E.G. Ubuntu
 
-Download [protean_0.13.0_all.deb](https://github.com/passivsystems/protean/releases/download/0.13.0/protean_0.13.0_all.deb) and double click on the file or run.
+Download [protean_0.14.0_all.deb](https://github.com/passivsystems/protean/releases/download/0.14.0/protean_0.14.0_all.deb) and double click on the file or run.
 
 ``` bash
-sudo dpkg -i ~/Downloads/protean_0.13.0_all.deb
+sudo dpkg -i ~/Downloads/protean_0.14.0_all.deb
 ```
 
 ### On [RPM-based](https://en.wikipedia.org/wiki/Category:RPM-based_Linux_distributions) Linux distributions E.G. Fedora & Centos
 
-Download [protean-0.13.0-develop.noarch.rpm](https://github.com/passivsystems/protean/releases/download/0.13.0/protean-0.13.0-develop.noarch.rpm) and double click on the file or run.
+Download [protean-0.14.0-develop.noarch.rpm](https://github.com/passivsystems/protean/releases/download/0.14.0/protean-0.14.0-develop.noarch.rpm) and double click on the file or run.
 
 ``` bash
-sudo rpm -i ~/Downloads/protean-0.13.0-develop.noarch.rpm
+sudo rpm -i ~/Downloads/protean-0.14.0-develop.noarch.rpm
 ```
 
 ### On macOS
 
-Download [protean-osx.tgz](https://github.com/passivsystems/protean/releases/download/0.13.0/protean-osx.tgz), extract the file and run.
+Download [protean-osx.tgz](https://github.com/passivsystems/protean/releases/download/0.14.0/protean-osx.tgz), extract the file and run.
 
 ```bash
 sudo ~/Downloads/protean/install.sh
@@ -57,7 +57,7 @@ TODO - see docker install for now.
 You can install `protean` using the [nix package manager](https://nixos.org/nix).
 
 ```bash
-nix-env -i -f https://github.com/passivsystems/protean/releases/download/0.13.0/protean-nix.tgz
+nix-env -i -f https://github.com/passivsystems/protean/releases/download/0.14.0/protean-nix.tgz
 ```
 
 ### Via Docker
@@ -70,7 +70,7 @@ docker pull rossputin/protean-example
 
 ### Other
 
-Download [protean.tgz](https://github.com/passivsystems/protean/releases/download/0.13.0/protean.tgz) and extract it. Place the contents into `$HOME/bin` and add this directory to your `$PATH` by either:
+Download [protean.tgz](https://github.com/passivsystems/protean/releases/download/0.14.0/protean.tgz) and extract it. Place the contents into `$HOME/bin` and add this directory to your `$PATH` by either:
 * editing `~/.profile` or `~/.bashrc` with `export PATH="$PATH:$HOME/bin"` then running `source ~/.profile` or `source ~/.bashrc`
 * creating a symlink to the Protean executable file to a directory thats already on your `$PATH`
 
@@ -144,7 +144,7 @@ Taken from reference codex -  [protean-examples/petstore-default/petstore.cod.ed
   ; Add authentication headers to everything.
   :req {:headers {"Authorization" "Bearer ${bearerToken}"}}
 
-  ; API name is mandatory, can only be defined once per codex and can't be blank.
+  ; API name. A codex can consist of multiple APIs.
   "petstore" {
     ; An API consists of multiple resources.
     "pets" {
@@ -297,7 +297,7 @@ Taken from reference sim file -  [protean-examples/petstore-sim/petstore.sim.edn
       :cors true ; for any request  - adds "Access-Control-Allow-Origin" "*" to response header for Cross-Origin Resource Sharing.
                  ; for HTTP OPTIONS requests - responds to requests accurately saying what methods exists for Cross-Origin Resource Sharing.
       :validate? true ; Protean will validate using the :validate-rule when true
-      ; Changing the validation rule allows you to write one function to return validation responses as you desire.
+      ; Change the validation rule to provide a reusable validation strategy across your API.
       ; This function could be shared between multiple sims (local clj or clojars)
       ; Below shows how Protean's default implementation would look.
       :validate-rule (fn [request rule] ; This anonymous function takes two args
@@ -314,7 +314,7 @@ Taken from reference sim file -  [protean-examples/petstore-sim/petstore.sim.edn
             ; run the sim implementation code if it exists
             rule (apply rule [request])
             ; otherwise first success response defined in codex
-            :else (first (sim/success-responses request)))))
+            :else (sim/response request (first (sim/success-codes request))))))
     }
 
     ; Only need to specify the resources that you wish to enhance.
@@ -334,20 +334,20 @@ Taken from reference sim file -  [protean-examples/petstore-sim/petstore.sim.edn
     }
 
     "api/pet/${petId}" {
-      ; Respond differently based on petId value.
+      ; 200 response for petId cc11d131-ed9e-4d8b-b038-fdc1ded07978 only
       :get #(case (sim/path-param % "petId")
-                  "cc11d131-ed9e-4d8b-b038-fdc1ded07978" (sim/response % 200)
-                  (sim/response % 404))
+             "cc11d131-ed9e-4d8b-b038-fdc1ded07978" (sim/response % 200)
+             (sim/response % 404))
 
       ; 50% chance of a random codex error response.
-      :put #(if (< (rand) 0.5)
-                  (first (sim/success-responses %))
-                  (rand-nth (sim/error-responses %)))
+      :put #(sim/response % (if (< (rand) 0.5)
+                              (first (sim/success-codes %))
+                              (rand-nth (sim/error-codes %))))
 
       ; Error every third access
-      :delete #(if (= 0 (mod (swap! counter inc) 3))
-                (rand-nth (sim/error-responses %))
-                (first (sim/success-responses %)))
+      :delete #(sim/response % (if (= 0 (mod (swap! counter inc) 3))
+                                 (rand-nth (sim/error-codes % %))
+                                 (first (sim/success-codes %))))
     }
   }
 }
