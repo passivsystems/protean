@@ -6,7 +6,7 @@
     <img src="https://api.travis-ci.org/passivsystems/protean.svg" /></a>
   </a>
   <a href="https://github.com/passivsystems/protean-api/releases/latest" alt="Latest Release">
-    <img src="https://img.shields.io/github/downloads/passivsystems/protean/0.14.0/total.svg" /></a>
+    <img src="https://img.shields.io/github/downloads/passivsystems/protean/0.14.1/total.svg" /></a>
   </a>
 </p>
 
@@ -26,23 +26,23 @@ to encode, document & simulate RESTful APIs.
 
 ### On [Debian-based](https://en.wikipedia.org/wiki/Category:Debian-based_distributions) Linux distributions E.G. Ubuntu
 
-Download [protean_0.14.0_all.deb](https://github.com/passivsystems/protean/releases/download/0.14.0/protean_0.14.0_all.deb) and double click on the file or run.
+Download [protean_0.14.1_all.deb](https://github.com/passivsystems/protean/releases/download/0.14.1/protean_0.14.1_all.deb) and double click on the file or run.
 
 ``` bash
-sudo dpkg -i ~/Downloads/protean_0.14.0_all.deb
+sudo dpkg -i ~/Downloads/protean_0.14.1_all.deb
 ```
 
 ### On [RPM-based](https://en.wikipedia.org/wiki/Category:RPM-based_Linux_distributions) Linux distributions E.G. Fedora & Centos
 
-Download [protean-0.14.0-develop.noarch.rpm](https://github.com/passivsystems/protean/releases/download/0.14.0/protean-0.14.0-develop.noarch.rpm) and double click on the file or run.
+Download [protean-0.14.1-develop.noarch.rpm](https://github.com/passivsystems/protean/releases/download/0.14.1/protean-0.14.1-develop.noarch.rpm) and double click on the file or run.
 
 ``` bash
-sudo rpm -i ~/Downloads/protean-0.14.0-develop.noarch.rpm
+sudo rpm -i ~/Downloads/protean-0.14.1-develop.noarch.rpm
 ```
 
 ### On macOS
 
-Download [protean-osx.tgz](https://github.com/passivsystems/protean/releases/download/0.14.0/protean-osx.tgz), extract the file and run.
+Download [protean-osx.tgz](https://github.com/passivsystems/protean/releases/download/0.14.1/protean-osx.tgz), extract the file and run.
 
 ```bash
 sudo ~/Downloads/protean/install.sh
@@ -57,7 +57,7 @@ TODO - see docker install for now.
 You can install `protean` using the [nix package manager](https://nixos.org/nix).
 
 ```bash
-nix-env -i -f https://github.com/passivsystems/protean/releases/download/0.14.0/protean-nix.tgz
+nix-env -i -f https://github.com/passivsystems/protean/releases/download/0.14.1/protean-nix.tgz
 ```
 
 ### Via Docker
@@ -70,7 +70,7 @@ docker pull rossputin/protean-example
 
 ### Other
 
-Download [protean.tgz](https://github.com/passivsystems/protean/releases/download/0.14.0/protean.tgz) and extract it. Place the contents into `$HOME/bin` and add this directory to your `$PATH` by either:
+Download [protean.tgz](https://github.com/passivsystems/protean/releases/download/0.14.1/protean.tgz) and extract it. Place the contents into `$HOME/bin` and add this directory to your `$PATH` by either:
 * editing `~/.profile` or `~/.bashrc` with `export PATH="$PATH:$HOME/bin"` then running `source ~/.profile` or `source ~/.bashrc`
 * creating a symlink to the Protean executable file to a directory thats already on your `$PATH`
 
