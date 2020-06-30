@@ -5,7 +5,7 @@
   <a href="https://travis-ci.org/passivsystems/protean" alt="Build Status">
     <img src="https://api.travis-ci.org/passivsystems/protean.svg" /></a>
   </a>
-  <a href="https://github.com/passivsystems/protean-api/releases/latest" alt="Latest Release">
+  <a href="https://github.com/passivsystems/protean/releases/latest" alt="Latest Release">
     <img src="https://img.shields.io/github/downloads/passivsystems/protean/0.14.1/total.svg" /></a>
   </a>
 </p>
