@@ -1,4 +1,4 @@
-(defproject protean "0.14.0"
+(defproject protean "0.14.1"
   :description "Take control of your RESTful API's, simulate, doc, test easily."
   :url "http://github.com/passivsystems/protean"
   :license {:name "Apache License v2.0"
@@ -25,10 +25,10 @@
                  [aysylu/loom "1.0.2"]
                  [joda-time/joda-time "2.10.1"]
                  [clj-time "0.15.2"]
-                 [org.tcrawley/dynapath "1.1.0"]
+                 [org.tcrawley/dynapath "0.2.5"] ;; Fixes Could not find a suitable classloader to modify from clojure.lang.LazySeq
                  [com.cemerick/pomegranate "1.1.0"]
                  [json-path "2.1.0"]
-                 [protean-api "0.14.0"]
+                 [protean-api "0.14.1"]
                  [hawk "0.2.11"]]
   :plugins [[lein-ring "0.12.5"]
             [lein-expectations "0.0.8"]]

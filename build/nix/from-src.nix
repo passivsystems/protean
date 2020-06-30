@@ -7,7 +7,7 @@
 { stdenv, fetchFromGitHub, makeWrapper, leiningen, jre }:
 
 let
-  version = "0.14.0";
+  version = "0.14.1";
 in
 stdenv.mkDerivation rec {
   name = "protean-${version}";
