@@ -16,7 +16,7 @@ to encode, document & simulate RESTful APIs.
 ## Key Features
 
 * Encode - build a specification in a codex file (`*.cod.edn`)
-* Document - generate customisable site docs from your codex (see [silk_templates](silk_templates) and [Silk Web Toolkit](http://www.silkyweb.org) for more details)
+* Document - generate customisable site docs from your codex (see [silk_templates](silk_templates) and [Silk Web Toolkit](http://silk-web-toolkit.github.io/silk-site/) for more details)
 * Service Usage - generate Curl commands from your codex
 * Simulate - create drop in replacements for existing or planned HTTP APIs
 * Customisable - override the default simulation strategy via [Protean API](https://github.com/passivsystems/protean-api) in a sim file (`*.sim.edn`)
